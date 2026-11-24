@@ -5,54 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Мои фильмы</title>
 <style>
-:root{--bg:#12151e;--paper:#efe6d2;--ink:#1c1a17;--mut:#8a8470;--amber:#f0a830;--line:#2b3040;--tx:#e9e4d6;--field:#1b2030}
-[data-theme=light]{--bg:#f4efe3;--paper:#fffaf0;--ink:#1c1a17;--mut:#7a745f;--line:#d8cfb8;--tx:#1c1a17;--field:#fffaf0}
+:root{--bg:#14181c;--paper:#1f252c;--ink:#dde4ea;--mut:#8796a5;--amber:#f0a830;--line:#2c3540;--tx:#dde4ea;--field:#1b2127}
+[data-theme=light]{--bg:#f3f1ec;--paper:#fff;--ink:#1d232a;--mut:#6b7783;--line:#dcd8cf;--tx:#1d232a;--field:#fff}
 *{box-sizing:border-box}
-body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx)}
-h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;margin:0}
-h1{font-size:2rem;font-style:italic}
-main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:18px}
-button,select,input{font:inherit;border-radius:6px;border:1px solid var(--line);background:var(--field);color:var(--tx);padding:8px 12px}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx)}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:400;margin:0}
+h1{font-size:1.9rem;font-style:italic}
+main{max-width:1180px;margin:0 auto;padding:20px 20px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+button,select,input,textarea{font:inherit;border-radius:6px;border:1px solid var(--line);background:var(--field);color:var(--tx);padding:8px 12px}
 button{cursor:pointer}
 button:hover{border-color:var(--amber)}
 button.main{background:var(--amber);color:#1c1a17;border-color:var(--amber);font-weight:600}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.tabs button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--mut);padding:10px 14px}
+.tabs button.on{color:var(--tx);border-bottom-color:var(--amber)}
 .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.card{display:flex;background:var(--paper);color:var(--ink);border-radius:8px;overflow:hidden}
-.card img,.noimg{width:92px;min-height:138px;object-fit:cover;background:#cfc4a8;flex:none}
-.body{flex:1;padding:10px 12px;border-left:2px dashed #b9ad8f;display:flex;flex-direction:column;gap:4px}
-.body h2{font-size:1.05rem;line-height:1.2}
-.meta{color:#6b6551;font-size:.82rem}
-.note{font-size:.85rem;font-style:italic}
-.my{font-family:Georgia,serif;font-size:1.3rem;color:#a2611a}
-.acts{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
-.card button{background:transparent;color:var(--ink);border-color:#b9ad8f;padding:4px 9px;font-size:.85rem}
-.card button:hover{border-color:var(--ink)}
+.posters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.tile{position:relative;display:block;width:100%;padding:0;aspect-ratio:2/3;overflow:hidden;background:var(--paper);border-radius:5px}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile .noimg{width:100%;height:100%;padding:10px;font-size:.9rem}
+.tile .ov{position:absolute;inset:auto 0 0;padding:28px 8px 8px;background:linear-gradient(transparent,#000d);color:#fff;font-size:.82rem;text-align:left;opacity:0;transition:opacity .15s}
+.tile:hover .ov,.tile:focus-visible .ov{opacity:1}
+.tile .ov i{opacity:.7}
+.tile .bd{position:absolute;top:6px;right:6px;font-size:.75rem}
+.tile .bd>*{background:#000b;color:#fff;padding:2px 6px;border-radius:4px}
+.tile .bd b{color:var(--amber)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.card{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.card img,.noimg{width:92px;min-height:138px;object-fit:cover;flex:none;background:var(--field);color:var(--mut);display:flex;align-items:center;justify-content:center;text-align:center}
+.card .body{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.card h2{font-size:1.05rem;line-height:1.2}
+.card img,.card h2{cursor:pointer}
+.meta{color:var(--mut);font-size:.85rem}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.card .acts button{padding:4px 9px;font-size:.85rem}
 .empty{color:var(--mut);padding:30px 0}
 #auth{max-width:340px;margin:12vh auto;display:grid;gap:10px}
 #auth input,#auth button{width:100%}
 #msg{color:var(--amber);min-height:1.2em;font-size:.9rem}
-#pick{background:var(--paper);color:var(--ink);border-radius:8px;padding:12px 14px;margin-bottom:16px}
+#pick{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px}
 #pick h2{font-size:1.2rem}
 footer{margin-top:40px;color:var(--mut);font-size:.78rem}
-[hidden]{display:none!important}
-.card{border:1px solid #cfc4a8}
-dialog{background:var(--paper);color:var(--ink);border:0;border-radius:10px;padding:18px;width:min(420px,92vw)}
-dialog::backdrop{background:#000a}
-dialog button{background:transparent;color:var(--ink);border-color:#b9ad8f}
-dialog textarea{width:100%;background:#fff;color:var(--ink);border:1px solid #b9ad8f;border-radius:6px;padding:8px;font:inherit}
+.hint{color:var(--mut);margin:0 0 14px}
+.prof{padding-left:18px;max-width:70ch}.prof li{margin:6px 0}
+#profileView h2{margin:18px 0 8px}
+dialog{background:var(--paper);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(420px,92vw)}
+dialog::backdrop{background:#000b}
+dialog textarea{width:100%}
 dialog .acts{margin-top:12px;justify-content:flex-end}
 .nums{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
 .nums button{width:36px;padding:6px 0}
-.nums button.on{background:var(--amber);border-color:var(--amber)}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:8px;box-shadow:0 4px 18px #0007;z-index:9}
-.prof{padding-left:18px;max-width:70ch}.prof li{margin:6px 0}
-.hint{color:var(--mut);margin:0 0 14px}
-#profileView h2{margin:18px 0 8px}
+.nums button.on{background:var(--amber);border-color:var(--amber);color:#1c1a17}
+#mv{width:min(900px,96vw);max-height:92vh;overflow:auto;padding:0}
+#mv .x{position:absolute;top:8px;right:8px;z-index:2;padding:0 11px;font-size:1.4rem}
+.bk{height:190px;background-size:cover;background-position:center 20%;-webkit-mask-image:linear-gradient(#000 40%,transparent);mask-image:linear-gradient(#000 40%,transparent)}
+.pv{display:flex;gap:22px;padding:0 22px 18px;margin-top:-70px;position:relative}
+.pv>img{width:200px;height:300px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex:none}
+.pv h2{font-size:1.7rem}.pv p{margin:8px 0;max-width:62ch}
+.tag{color:var(--mut);font-style:italic}
+.mine{margin:8px 0}.star{color:var(--amber)}
+#tr iframe{width:100%;aspect-ratio:16/9;border:0;margin-top:12px;border-radius:6px}
+#mv h3{padding:0 22px;font-size:1.1rem;margin:6px 0 10px}
+.sim{display:flex;gap:10px;overflow-x:auto;padding:0 22px 22px}.sim .tile{width:110px;flex:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--paper);border:1px solid var(--line);padding:10px 16px;border-radius:8px;box-shadow:0 4px 18px #0007;z-index:99}
+[hidden]{display:none!important}
+@media(max-width:640px){.pv{flex-direction:column;margin-top:-30px}.pv>img{width:140px;height:210px}}
 </style>
 </head>
 <body>
@@ -99,7 +118,7 @@ dialog .acts{margin-top:12px;justify-content:flex-end}
       <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
     </div>
     <div id="pick" hidden></div>
-    <div class="grid" id="list"></div>
+    <div class="posters" id="list"></div>
   </div>
 
   <div id="searchView" hidden>
@@ -113,6 +132,7 @@ dialog .acts{margin-top:12px;justify-content:flex-end}
   <div id="picksView" hidden></div>
   <div id="profileView" hidden></div>
   <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
+  <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
   <div id="toast" hidden></div>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
@@ -166,19 +186,10 @@ function filtered() {
     && (m.tmdb_rating || 0) >= mr).sort(SORTS[$("#fs").value] || SORTS.new);
 }
 
-function card(m) {
-  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
-  const mine = m.status === "watched" ? `<div class="my">${m.my_rating}/10</div>` : "";
-  const note = m.note ? `<div class="note">${esc(m.note)}</div>` : "";
-  const btns = m.status === "watchlist"
-    ? `<button data-a="seen" data-id="${m.id}">Посмотрел</button>`
-    : `<button data-a="rate" data-id="${m.id}">Изменить оценку</button>`;
-  return `<article class="card">${img}<div class="body">
-    <h2>${esc(m.title)}</h2>
-    <div class="meta">${esc(m.year)}${m.runtime ? ", " + m.runtime + " мин" : ""}${m.tmdb_rating ? ", TMDB " + m.tmdb_rating : ""}</div>
-    <div class="meta">${esc(m.genres)}</div>${mine}${note}
-    <div class="acts">${btns}<button data-a="del" data-id="${m.id}">Удалить</button></div>
-  </div></article>`;
+function tile(m) {
+  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="${esc(m.title)}" loading="lazy">` : `<div class="noimg">${esc(m.title)}</div>`;
+  const badge = m.status === "watched" ? `<b>★ ${m.my_rating}</b>` : (m.tmdb_rating ? `<span>${m.tmdb_rating}</span>` : "");
+  return `<button class="tile" data-tid="${m.tmdb_id}" title="${esc(m.title)}">${img}<span class="ov">${esc(m.title)} <i>${esc(m.year)}</i></span><span class="bd">${badge}</span></button>`;
 }
 
 function render() {
@@ -192,7 +203,7 @@ function render() {
   $("#fg").innerHTML = `<option value="">Любой жанр</option>` +
     gs.map(x => `<option ${x === cur ? "selected" : ""}>${esc(x)}</option>`).join("");
   const l = filtered();
-  $("#list").innerHTML = l.length ? l.map(card).join("")
+  $("#list").innerHTML = l.length ? l.map(tile).join("")
     : `<div class="empty">Здесь пусто. Откройте «Найти фильм» и добавьте первый.</div>`;
 }
 
@@ -216,24 +227,11 @@ $("#pickBtn").onclick = () => {
   if (tab !== "watchlist") { p.innerHTML = "Выбор делается из списка «Хочу посмотреть»."; return; }
   if (!l.length) { p.innerHTML = "Нет подходящих фильмов. Измените фильтры или добавьте новые."; return; }
   const m = l[Math.floor(Math.random() * l.length)];
-  p.innerHTML = `<h2>${esc(m.title)} (${esc(m.year)})</h2><div class="meta">${m.runtime ? m.runtime + " мин, " : ""}${esc(m.genres)}</div>`;
+  p.innerHTML = `<h2>${esc(m.title)} (${esc(m.year)})</h2><div class="meta">${m.runtime ? m.runtime + " мин, " : ""}${esc(m.genres)}</div><p><button class="main" data-tid="${m.tmdb_id}">Открыть страницу фильма</button></p>`;
 };
 
 /* ---------- действия над карточками ---------- */
-$("#list").onclick = async e => {
-  const a = e.target.dataset.a, id = +e.target.dataset.id; if (!a) return;
-  const m = movies.find(x => x.id === id); if (!m) return;
-  if (a === "del") {
-    if (!confirm("Удалить «" + m.title + "»?")) return;
-    const { error } = await sb.from("movies").delete().eq("id", id);
-    if (error) return alert(error.message);
-  } else {
-    const r = await rateDialog(m.title, m.my_rating, m.note); if (!r) return;
-    const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", id);
-    if (error) return alert(error.message);
-  }
-  load();
-};
+$("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid); };
 
 function askRating(def) {
   const v = prompt("Ваша оценка от 1 до 10", def || "");
@@ -250,15 +248,16 @@ async function doSearch() {
   try {
     const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=ru-RU&query=${encodeURIComponent(q)}`);
     const j = await r.json();
+    if (!r.ok) throw new Error(j.status_message || "HTTP " + r.status);
     found = (j.results || []).slice(0, 12);
   } catch (err) {
-    $("#found").innerHTML = `<div class="empty">Не удалось связаться с TMDB. Проверьте ключ и доступ к сайту.</div>`;
+    $("#found").innerHTML = `<div class="empty">Не удалось получить ответ от TMDB (${esc(err.message)}). Проверьте VPN, блокировщики рекламы и ключ.</div>`;
     return;
   }
   $("#found").innerHTML = found.length ? found.map(f => {
     const have = movies.find(m => m.tmdb_id === f.id);
     const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
-    return `<article class="card">${img}<div class="body">
+    return `<article class="card" data-tid="${f.id}">${img}<div class="body">
       <h2>${esc(f.title)}</h2>
       <div class="meta">${esc((f.release_date || "").slice(0, 4))}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
       <div class="meta">${esc((f.overview || "").slice(0, 110))}${(f.overview || "").length > 110 ? "…" : ""}</div>
@@ -288,7 +287,7 @@ async function addMovie(tid, status) {
   if (error) { toast(error.message); return false; }
   await load(); toast("Добавлено: " + d.title); return true;
 }
-$("#found").onclick = async e => { const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s)) doSearch(); };
+$("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if (c && e.target.closest("img,h2")) return openMovie(+c.dataset.tid); const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s)) doSearch(); };
 
 function rateDialog(title, rating, note) {
   return new Promise(res => {
@@ -369,177 +368,60 @@ $("#th").onclick = () => {
   const r = document.documentElement; r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
   try { localStorage.setItem("th", r.dataset.theme); } catch (e) {}
 };
-</script>
-<script>
-/* ===== Вставьте свои ключи ===== */
-const SUPABASE_URL = "https://qthdglmqonzmpiwrqjhr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_HejCyEo-h39wfHXEjcrzXA_m4JHNuBq";
-const TMDB_KEY = "5646152e8fba735a975c49162c0d2a88";
-/* ================================ */
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const IMG = "https://image.tmdb.org/t/p/w342";
-let movies = [], found = [], tab = "watchlist";
+/* ---------- страница фильма ---------- */
+$("#mvX").onclick = () => $("#mv").close();
+$("#mv").onclick = e => { if (e.target.id === "mv") $("#mv").close(); };
+$("#pick").onclick = e => { const t = e.target.dataset.tid; if (t) openMovie(+t); };
 
-/* ---------- вход ---------- */
-async function authGo(kind) {
-  const email = $("#em").value.trim(), password = $("#pw").value;
-  const { error } = kind === "in"
-    ? await sb.auth.signInWithPassword({ email, password })
-    : await sb.auth.signUp({ email, password });
-  $("#msg").textContent = error ? error.message
-    : (kind === "up" ? "Готово. Если сайт просит подтвердить почту, подтвердите её и войдите." : "");
-}
-function showSession(s) {
-  $("#auth").hidden = !!s;
-  $("#app").hidden = !s;
-  if (s) load();
-}
-sb.auth.getSession().then(({ data }) => showSession(data.session));
-sb.auth.onAuthStateChange((_, s) => showSession(s));
-
-/* ---------- данные ---------- */
-async function load() {
-  const { data, error } = await sb.from("movies").select("*").order("created_at", { ascending: false });
-  if (error) return alert("Ошибка загрузки: " + error.message);
-  movies = data;
-  render();
-}
-
-function filtered() {
-  const g = $("#fg").value, rt = +$("#fr").value || 9999, mr = +$("#fm").value || 0;
-  return movies.filter(m => m.status === tab
-    && (!g || (m.genres || "").split(", ").includes(g))
-    && (m.runtime || 0) <= rt
-    && (m.tmdb_rating || 0) >= mr).sort(SORTS[$("#fs").value] || SORTS.new);
-}
-
-function card(m) {
-  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
-  const mine = m.status === "watched" ? `<div class="my">${m.my_rating}/10</div>` : "";
-  const note = m.note ? `<div class="note">${esc(m.note)}</div>` : "";
-  const btns = m.status === "watchlist"
-    ? `<button data-a="seen" data-id="${m.id}">Посмотрел</button>`
-    : `<button data-a="rate" data-id="${m.id}">Изменить оценку</button>`;
-  return `<article class="card">${img}<div class="body">
-    <h2>${esc(m.title)}</h2>
-    <div class="meta">${esc(m.year)}${m.runtime ? ", " + m.runtime + " мин" : ""}${m.tmdb_rating ? ", TMDB " + m.tmdb_rating : ""}</div>
-    <div class="meta">${esc(m.genres)}</div>${mine}${note}
-    <div class="acts">${btns}<button data-a="del" data-id="${m.id}">Удалить</button></div>
-  </div></article>`;
-}
-
-function render() {
-  const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
-  for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).textContent = `${L[k]} (${movies.filter(m => m.status === k).length})`;
-  if (tab === "picks") return renderPicks();
-  if (tab === "profile") return renderProfile();
-  if (tab === "search") return;
-  const cur = $("#fg").value;
-  const gs = [...new Set(movies.flatMap(m => (m.genres || "").split(", ").filter(Boolean)))].sort();
-  $("#fg").innerHTML = `<option value="">Любой жанр</option>` +
-    gs.map(x => `<option ${x === cur ? "selected" : ""}>${esc(x)}</option>`).join("");
-  const l = filtered();
-  $("#list").innerHTML = l.length ? l.map(card).join("")
-    : `<div class="empty">Здесь пусто. Откройте «Найти фильм» и добавьте первый.</div>`;
-}
-
-/* ---------- вкладки и фильтры ---------- */
-const VIEWS = { watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
-$("#tabs").onclick = e => {
-  const t = e.target.dataset.t; if (!t) return;
-  tab = t;
-  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
-  for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
-  $("#pick").hidden = true;
-  render();
-};
-["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
-
-$("#pickBtn").onclick = () => {
-  const prev = tab; tab = "watchlist";
-  const l = filtered(); tab = prev;
-  const p = $("#pick");
-  p.hidden = false;
-  if (tab !== "watchlist") { p.innerHTML = "Выбор делается из списка «Хочу посмотреть»."; return; }
-  if (!l.length) { p.innerHTML = "Нет подходящих фильмов. Измените фильтры или добавьте новые."; return; }
-  const m = l[Math.floor(Math.random() * l.length)];
-  p.innerHTML = `<h2>${esc(m.title)} (${esc(m.year)})</h2><div class="meta">${m.runtime ? m.runtime + " мин, " : ""}${esc(m.genres)}</div>`;
-};
-
-/* ---------- действия над карточками ---------- */
-$("#list").onclick = async e => {
-  const a = e.target.dataset.a, id = +e.target.dataset.id; if (!a) return;
-  const m = movies.find(x => x.id === id); if (!m) return;
-  if (a === "del") {
-    if (!confirm("Удалить «" + m.title + "»?")) return;
-    const { error } = await sb.from("movies").delete().eq("id", id);
-    if (error) return alert(error.message);
-  } else {
-    const r = await rateDialog(m.title, m.my_rating, m.note); if (!r) return;
-    const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", id);
-    if (error) return alert(error.message);
-  }
-  load();
-};
-
-function askRating(def) {
-  const v = prompt("Ваша оценка от 1 до 10", def || "");
-  if (v === null) return null;
-  const n = Math.round(+String(v).replace(",", "."));
-  if (!(n >= 1 && n <= 10)) { alert("Введите число от 1 до 10."); return null; }
-  return n;
-}
-
-/* ---------- поиск через TMDB ---------- */
-async function doSearch() {
-  const q = $("#q").value.trim(); if (!q) return;
-  $("#found").innerHTML = `<div class="empty">Ищу…</div>`;
+async function openMovie(tid) {
+  const dlg = $("#mv"), body = $("#mvBody");
+  if (!dlg.open) dlg.showModal();
+  body.innerHTML = `<div class="empty" style="padding:50px 22px">Загружаю…</div>`;
+  let f;
   try {
-    const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=ru-RU&query=${encodeURIComponent(q)}`);
-    const j = await r.json();
-    found = (j.results || []).slice(0, 12);
-  } catch (err) {
-    $("#found").innerHTML = `<div class="empty">Не удалось связаться с TMDB. Проверьте ключ и доступ к сайту.</div>`;
-    return;
-  }
-  $("#found").innerHTML = found.length ? found.map(f => {
-    const have = movies.find(m => m.tmdb_id === f.id);
-    const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
-    return `<article class="card">${img}<div class="body">
-      <h2>${esc(f.title)}</h2>
-      <div class="meta">${esc((f.release_date || "").slice(0, 4))}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
-      <div class="meta">${esc((f.overview || "").slice(0, 110))}${(f.overview || "").length > 110 ? "…" : ""}</div>
-      <div class="acts">${have ? `<span class="meta">Уже в списке</span>` :
-        `<button data-s="watchlist" data-id="${f.id}">Хочу посмотреть</button><button data-s="watched" data-id="${f.id}">Уже смотрел</button>`}</div>
-    </div></article>`;
-  }).join("") : `<div class="empty">Ничего не найдено.</div>`;
-}
-$("#qBtn").onclick = doSearch;
-$("#q").onkeydown = e => { if (e.key === "Enter") doSearch(); };
-
-$("#found").onclick = async e => {
-  const status = e.target.dataset.s, tid = +e.target.dataset.id; if (!status) return;
-  let my = null, note = null;
-  if (status === "watched") {
-    my = askRating(); if (my === null) return;
-    note = prompt("Заметка (можно оставить пустой)") || null;
-  }
-  let d;
-  try {
-    d = await (await fetch(`https://api.themoviedb.org/3/movie/${tid}?api_key=${TMDB_KEY}&language=ru-RU`)).json();
-  } catch (err) { return alert("Не удалось получить данные о фильме."); }
-  const row = {
-    tmdb_id: tid, title: d.title, year: (d.release_date || "").slice(0, 4), poster: d.poster_path,
-    tmdb_rating: d.vote_average ? +d.vote_average.toFixed(1) : null, runtime: d.runtime || null,
-    genres: (d.genres || []).map(x => x.name).join(", "), status, my_rating: my, note
+    const r = await fetch(`https://api.themoviedb.org/3/movie/${tid}?api_key=${TMDB_KEY}&language=ru-RU&append_to_response=credits,videos,similar&include_video_language=ru,en,null`);
+    f = await r.json(); if (!r.ok) throw new Error(f.status_message || r.status);
+  } catch (err) { body.innerHTML = `<div class="empty" style="padding:50px 22px">Не удалось загрузить фильм (${esc(err.message)}).</div>`; return; }
+  const m = movies.find(x => x.tmdb_id === tid);
+  const dir = (f.credits?.crew || []).filter(c => c.job === "Director").map(c => c.name).join(", ");
+  const cast = (f.credits?.cast || []).slice(0, 8).map(c => c.name).join(", ");
+  const vids = f.videos?.results || [];
+  const vid = vids.find(v => v.site === "YouTube" && v.type === "Trailer") || vids.find(v => v.site === "YouTube");
+  const sim = (f.similar?.results || []).filter(x => x.poster_path).slice(0, 10);
+  const acts = !m ? `<button class="main" data-a="want">Хочу посмотреть</button><button data-a="seen">Уже смотрел</button>`
+    : m.status === "watchlist" ? `<button class="main" data-a="seen">Посмотрел, оценить</button><button data-a="del">Убрать из списка</button>`
+    : `<button class="main" data-a="seen">Изменить оценку</button><button data-a="del">Удалить</button>`;
+  const mine = m && m.status === "watched" ? `<div class="mine"><b class="star">★ ${m.my_rating}/10</b>${m.note ? " " + `<i>${esc(m.note)}</i>` : ""}</div>` : "";
+  body.innerHTML = `${f.backdrop_path ? `<div class="bk" style="background-image:url(https://image.tmdb.org/t/p/w780${f.backdrop_path})"></div>` : `<div style="height:60px"></div>`}
+    <div class="pv">${f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="">` : ""}<div>
+      <h2>${esc(f.title)} <span class="meta">${esc((f.release_date || "").slice(0, 4))}</span></h2>
+      <div class="meta">${f.runtime ? f.runtime + " мин" : ""}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
+      <div class="meta">${esc((f.genres || []).map(g => g.name).join(", "))}</div>
+      ${f.tagline ? `<p class="tag">${esc(f.tagline)}</p>` : ""}
+      <p>${esc(f.overview || "Описания пока нет.")}</p>
+      ${dir ? `<p class="meta">Режиссёр: ${esc(dir)}</p>` : ""}${cast ? `<p class="meta">В ролях: ${esc(cast)}</p>` : ""}
+      ${mine}<div class="acts" style="margin-top:12px">${acts}${vid ? `<button data-a="tr" data-k="${esc(vid.key)}">Трейлер</button>` : ""}</div>
+      <div id="tr"></div></div></div>
+    ${sim.length ? `<h3>Похожие фильмы</h3><div class="sim">${sim.map(x => `<button class="tile" data-sim="${x.id}" title="${esc(x.title)}"><img src="${IMG}${x.poster_path}" alt="${esc(x.title)}" loading="lazy"></button>`).join("")}</div>` : ""}`;
+  body.onclick = async e => {
+    const sm = e.target.closest("[data-sim]"); if (sm) return openMovie(+sm.dataset.sim);
+    const a = e.target.dataset.a; if (!a) return;
+    if (a === "tr") { $("#tr").innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(e.target.dataset.k)}?autoplay=1" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`; return; }
+    if (a === "want") await addMovie(tid, "watchlist");
+    else if (a === "seen" && !m) await addMovie(tid, "watched");
+    else if (a === "seen") {
+      const r = await rateDialog(f.title, m.my_rating, m.note); if (!r) return;
+      const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", m.id);
+      if (error) return toast(error.message); await load();
+    } else if (a === "del") {
+      if (!confirm("Удалить «" + f.title + "» из списка?")) return;
+      const { error } = await sb.from("movies").delete().eq("id", m.id);
+      if (error) return toast(error.message); await load();
+    }
+    openMovie(tid);
   };
-  const { error } = await sb.from("movies").upsert(row, { onConflict: "user_id,tmdb_id" });
-  if (error) return alert(error.message);
-  await load(); doSearch();
-};
+}
 </script>
 </body>
 </html>
