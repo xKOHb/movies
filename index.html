@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Мои фильмы</title>
 <style>
-:root{--bg:#12151e;--paper:#efe6d2;--ink:#1c1a17;--mut:#8a8470;--amber:#f0a830;--line:#2b3040;--tx:#e9e4d6}
+:root{--bg:#12151e;--paper:#efe6d2;--ink:#1c1a17;--mut:#8a8470;--amber:#f0a830;--line:#2b3040;--tx:#e9e4d6;--field:#1b2030}
+[data-theme=light]{--bg:#f4efe3;--paper:#fffaf0;--ink:#1c1a17;--mut:#7a745f;--line:#d8cfb8;--tx:#1c1a17;--field:#fffaf0}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx)}
 h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;margin:0}
 h1{font-size:2rem;font-style:italic}
 main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
 header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:18px}
-button,select,input{font:inherit;border-radius:6px;border:1px solid var(--line);background:#1b2030;color:var(--tx);padding:8px 12px}
+button,select,input{font:inherit;border-radius:6px;border:1px solid var(--line);background:var(--field);color:var(--tx);padding:8px 12px}
 button{cursor:pointer}
 button:hover{border-color:var(--amber)}
 button.main{background:var(--amber);color:#1c1a17;border-color:var(--amber);font-weight:600}
@@ -39,6 +40,19 @@ button.main{background:var(--amber);color:#1c1a17;border-color:var(--amber);font
 #pick h2{font-size:1.2rem}
 footer{margin-top:40px;color:var(--mut);font-size:.78rem}
 [hidden]{display:none!important}
+.card{border:1px solid #cfc4a8}
+dialog{background:var(--paper);color:var(--ink);border:0;border-radius:10px;padding:18px;width:min(420px,92vw)}
+dialog::backdrop{background:#000a}
+dialog button{background:transparent;color:var(--ink);border-color:#b9ad8f}
+dialog textarea{width:100%;background:#fff;color:var(--ink);border:1px solid #b9ad8f;border-radius:6px;padding:8px;font:inherit}
+dialog .acts{margin-top:12px;justify-content:flex-end}
+.nums{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.nums button{width:36px;padding:6px 0}
+.nums button.on{background:var(--amber);border-color:var(--amber)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:8px;box-shadow:0 4px 18px #0007;z-index:9}
+.prof{padding-left:18px;max-width:70ch}.prof li{margin:6px 0}
+.hint{color:var(--mut);margin:0 0 14px}
+#profileView h2{margin:18px 0 8px}
 </style>
 </head>
 <body>
@@ -56,12 +70,14 @@ footer{margin-top:40px;color:var(--mut);font-size:.78rem}
 <section id="app" hidden>
   <header>
     <h1>Мои фильмы</h1>
-    <button onclick="sb.auth.signOut()">Выйти</button>
+    <span><button id="th" title="Сменить тему">◐</button> <button onclick="sb.auth.signOut()">Выйти</button></span>
   </header>
   <div class="tabs" id="tabs">
     <button data-t="watchlist" class="on">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
+    <button data-t="picks">Подборка</button>
     <button data-t="search">Найти фильм</button>
+    <button data-t="profile">Профиль</button>
   </div>
 
   <div id="listView">
@@ -79,6 +95,7 @@ footer{margin-top:40px;color:var(--mut);font-size:.78rem}
         <option value="7.5">от 7,5</option>
         <option value="8">от 8</option>
       </select>
+      <select id="fs"><option value="new">Сначала новые</option><option value="my">По моей оценке</option><option value="tm">По рейтингу TMDB</option><option value="yr">По году</option><option value="rt">По длительности</option></select>
       <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
     </div>
     <div id="pick" hidden></div>
@@ -93,6 +110,10 @@ footer{margin-top:40px;color:var(--mut);font-size:.78rem}
     <div class="grid" id="found"></div>
   </div>
 
+  <div id="picksView" hidden></div>
+  <div id="profileView" hidden></div>
+  <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
+  <div id="toast" hidden></div>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
 
@@ -142,7 +163,7 @@ function filtered() {
   return movies.filter(m => m.status === tab
     && (!g || (m.genres || "").split(", ").includes(g))
     && (m.runtime || 0) <= rt
-    && (m.tmdb_rating || 0) >= mr);
+    && (m.tmdb_rating || 0) >= mr).sort(SORTS[$("#fs").value] || SORTS.new);
 }
 
 function card(m) {
@@ -161,6 +182,11 @@ function card(m) {
 }
 
 function render() {
+  const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
+  for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).textContent = `${L[k]} (${movies.filter(m => m.status === k).length})`;
+  if (tab === "picks") return renderPicks();
+  if (tab === "profile") return renderProfile();
+  if (tab === "search") return;
   const cur = $("#fg").value;
   const gs = [...new Set(movies.flatMap(m => (m.genres || "").split(", ").filter(Boolean)))].sort();
   $("#fg").innerHTML = `<option value="">Любой жанр</option>` +
@@ -171,16 +197,16 @@ function render() {
 }
 
 /* ---------- вкладки и фильтры ---------- */
+const VIEWS = { watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 $("#tabs").onclick = e => {
   const t = e.target.dataset.t; if (!t) return;
   tab = t;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
-  $("#listView").hidden = t === "search";
-  $("#searchView").hidden = t !== "search";
+  for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
-  if (t !== "search") render();
+  render();
 };
-["#fg", "#fr", "#fm"].forEach(s => $(s).onchange = render);
+["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
 
 $("#pickBtn").onclick = () => {
   const prev = tab; tab = "watchlist";
@@ -202,9 +228,258 @@ $("#list").onclick = async e => {
     const { error } = await sb.from("movies").delete().eq("id", id);
     if (error) return alert(error.message);
   } else {
-    const r = askRating(m.my_rating); if (r === null) return;
-    const note = prompt("Заметка (можно оставить пустой)", m.note || "");
-    const { error } = await sb.from("movies").update({ status: "watched", my_rating: r, note: note || null }).eq("id", id);
+    const r = await rateDialog(m.title, m.my_rating, m.note); if (!r) return;
+    const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", id);
+    if (error) return alert(error.message);
+  }
+  load();
+};
+
+function askRating(def) {
+  const v = prompt("Ваша оценка от 1 до 10", def || "");
+  if (v === null) return null;
+  const n = Math.round(+String(v).replace(",", "."));
+  if (!(n >= 1 && n <= 10)) { alert("Введите число от 1 до 10."); return null; }
+  return n;
+}
+
+/* ---------- поиск через TMDB ---------- */
+async function doSearch() {
+  const q = $("#q").value.trim(); if (!q) return;
+  $("#found").innerHTML = `<div class="empty">Ищу…</div>`;
+  try {
+    const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=ru-RU&query=${encodeURIComponent(q)}`);
+    const j = await r.json();
+    found = (j.results || []).slice(0, 12);
+  } catch (err) {
+    $("#found").innerHTML = `<div class="empty">Не удалось связаться с TMDB. Проверьте ключ и доступ к сайту.</div>`;
+    return;
+  }
+  $("#found").innerHTML = found.length ? found.map(f => {
+    const have = movies.find(m => m.tmdb_id === f.id);
+    const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+    return `<article class="card">${img}<div class="body">
+      <h2>${esc(f.title)}</h2>
+      <div class="meta">${esc((f.release_date || "").slice(0, 4))}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
+      <div class="meta">${esc((f.overview || "").slice(0, 110))}${(f.overview || "").length > 110 ? "…" : ""}</div>
+      <div class="acts">${have ? `<span class="meta">Уже в списке</span>` :
+        `<button data-s="watchlist" data-id="${f.id}">Хочу посмотреть</button><button data-s="watched" data-id="${f.id}">Уже смотрел</button>`}</div>
+    </div></article>`;
+  }).join("") : `<div class="empty">Ничего не найдено.</div>`;
+}
+$("#qBtn").onclick = doSearch;
+$("#q").onkeydown = e => { if (e.key === "Enter") doSearch(); };
+
+async function addMovie(tid, status) {
+  let my = null, note = null;
+  if (status === "watched") {
+    const r = await rateDialog("Ваша оценка"); if (!r) return false;
+    my = r.rating; note = r.note;
+  }
+  let d;
+  try { d = await (await fetch(`https://api.themoviedb.org/3/movie/${tid}?api_key=${TMDB_KEY}&language=ru-RU`)).json(); }
+  catch (err) { toast("Не удалось получить данные о фильме."); return false; }
+  const row = {
+    tmdb_id: tid, title: d.title, year: (d.release_date || "").slice(0, 4), poster: d.poster_path,
+    tmdb_rating: d.vote_average ? +d.vote_average.toFixed(1) : null, runtime: d.runtime || null,
+    genres: (d.genres || []).map(x => x.name).join(", "), status, my_rating: my, note
+  };
+  const { error } = await sb.from("movies").upsert(row, { onConflict: "user_id,tmdb_id" });
+  if (error) { toast(error.message); return false; }
+  await load(); toast("Добавлено: " + d.title); return true;
+}
+$("#found").onclick = async e => { const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s)) doSearch(); };
+
+function rateDialog(title, rating, note) {
+  return new Promise(res => {
+    const d = $("#dlg"), nums = $("#dNums"); let val = rating || 0;
+    $("#dTitle").textContent = title; $("#dNote").value = note || "";
+    nums.innerHTML = Array.from({ length: 10 }, (_, i) => `<button type="button">${i + 1}</button>`).join("");
+    const paint = () => nums.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.textContent === val));
+    nums.onclick = e => { if (e.target.tagName === "BUTTON") { val = +e.target.textContent; paint(); } };
+    paint();
+    d.onclose = () => res(d.returnValue === "ok" && val ? { rating: val, note: $("#dNote").value.trim() || null } : null);
+    d.returnValue = ""; d.showModal();
+  });
+}
+function toast(t) { const x = $("#toast"); x.textContent = t; x.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => x.hidden = true, 2600); }
+
+const SORTS = {
+  new: () => 0,
+  my: (a, b) => (b.my_rating || 0) - (a.my_rating || 0),
+  tm: (a, b) => (b.tmdb_rating || 0) - (a.tmdb_rating || 0),
+  yr: (a, b) => (+b.year || 0) - (+a.year || 0),
+  rt: (a, b) => (a.runtime || 999) - (b.runtime || 999)
+};
+
+/* ---------- подборка ---------- */
+const PICKS = [["Начало",2010,"Воры проникают в сны, чтобы внедрить идею"],["Мементо",2000,"Герой без кратковременной памяти ищет убийцу"],["Семь",1995,"Два детектива и серийный убийца"],["Престиж",2006,"Дуэль двух фокусников"],["Подозрительные лица",1995,"Эталонный детективный твист"],["Заключённые",2013,"Отец ищет похищенную дочь"],["Исчезнувшая",2014,"Жена пропала, муж под подозрением"],["Отступники",2006,"Полицейский в банде и бандит в полиции"],["Шестое чувство",1999,"Психолог и мальчик, который видит призраков"],["Прибытие",2016,"Контакт с пришельцами и загадка языка"],["12 обезьян",1995,"Путешествие во времени и смертельный вирус"],["Из машины",2014,"Тест на сознание робота"],["Чёрный лебедь",2010,"Балерина на грани безумия"],["Машинист",2004,"Бессонница и странные знаки"],["Идентификация",2003,"Десять незнакомцев в мотеле во время бури"]];
+const picked = new Set();
+function renderPicks() {
+  $("#picksView").innerHTML = `<p class="hint">Подборка под ваш вкус. Нажмите «Хочу посмотреть»: фильм найдётся в TMDB и попадёт в список.</p><div class="grid">` +
+    PICKS.map(([t, y, d], i) => {
+      const have = picked.has(i) || movies.some(m => m.title.toLowerCase() === t.toLowerCase());
+      return `<article class="card"><div class="body" style="border:0"><h2>${esc(t)} (${y})</h2><div class="meta">${esc(d)}</div><div class="acts">${have ? `<span class="meta">Уже в списке</span>` : `<button data-i="${i}">Хочу посмотреть</button>`}</div></div></article>`;
+    }).join("") + `</div>`;
+}
+$("#picksView").onclick = async e => {
+  const i = e.target.dataset.i; if (i === undefined) return;
+  const [t, y] = PICKS[i]; e.target.disabled = true;
+  try {
+    const q = u => fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=ru-RU&query=${encodeURIComponent(t)}${u}`).then(r => r.json());
+    let j = await q("&year=" + y);
+    if (!(j.results || []).length) j = await q("");
+    const f = (j.results || [])[0];
+    if (!f) { toast("Не нашёл «" + t + "» в TMDB."); renderPicks(); return; }
+    if (await addMovie(f.id, "watchlist")) picked.add(+i);
+  } catch (err) { toast("Не удалось связаться с TMDB."); }
+  renderPicks();
+};
+
+/* ---------- профиль ---------- */
+const PROFILE = [
+  "Любит психологические триллеры, детективы, мистику и фантастику с ломающим мозг сюжетом (Остров проклятых, Бойцовский клуб)",
+  "Нужен крючок в первые 10-15 минут и герой, за которого переживаешь",
+  "Темп: напряжение нарастает постепенно, но без длинных диалогов, судов и политики",
+  "Финал: неожиданный твист, после которого хочется пересмотреть",
+  "Не заходит: сухие биографии (Оппенгеймер), боевики, романтика, слишком старое кино",
+  "Длительность 2-3 часа, годы 2000+ (классика 90-х допустима), Голливуд и Европа, рейтинг IMDb от 7,5"
+];
+function renderProfile() {
+  const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
+  const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "нет оценок";
+  const gc = {}; w.forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
+  const top = Object.entries(gc).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([g, n]) => `${g} (${n})`).join(", ") || "пока нет данных";
+  const fav = r.filter(m => m.my_rating >= 9).map(m => m.title).join(", ") || "пока нет";
+  $("#profileView").innerHTML = `<h2>Мой вкус</h2><ul class="prof">${PROFILE.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <h2>Статистика</h2><ul class="prof"><li>Просмотрено: ${w.length}, в списке «Хочу»: ${movies.length - w.length}</li><li>Средняя оценка: ${avg}</li><li>Любимые жанры: ${esc(top)}</li><li>Оценки 9-10: ${esc(fav)}</li></ul>
+    <button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button>`;
+  $("#copyPrompt").onclick = copyPrompt;
+}
+function copyPrompt() {
+  const w = movies.filter(m => m.status === "watched").map(m => `${m.title} (${m.year}) - ${m.my_rating}/10${m.note ? ", " + m.note : ""}`).join("\n") || "пока нет";
+  const l = movies.filter(m => m.status === "watchlist").map(m => m.title).join(", ") || "пока нет";
+  const t = `Ты опытный кинокритик. Подбери мне фильмы.\n\nМОЙ ВКУС:\n${PROFILE.map(x => "- " + x).join("\n")}\n\nУЖЕ СМОТРЕЛ (с моими оценками):\n${w}\n\nУЖЕ В СПИСКЕ «ХОЧУ ПОСМОТРЕТЬ»: ${l}\n\nЗАДАЧА: предложи 8 фильмов, которых нет в списках выше, с рейтингом IMDb от 7,5. К каждому: год, длительность, 1-2 предложения, почему подойдёт, без спойлеров. Добавь 2 скрытые жемчужины и отметь фильмы для просмотра с друзьями. В конце задай 2 уточняющих вопроса.`;
+  navigator.clipboard.writeText(t).then(() => toast("Промт скопирован"), () => toast("Не удалось скопировать"));
+}
+
+/* ---------- тема ---------- */
+try { document.documentElement.dataset.theme = localStorage.getItem("th") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"); } catch (e) {}
+$("#th").onclick = () => {
+  const r = document.documentElement; r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
+  try { localStorage.setItem("th", r.dataset.theme); } catch (e) {}
+};
+</script>
+<script>
+/* ===== Вставьте свои ключи ===== */
+const SUPABASE_URL = "https://qthdglmqonzmpiwrqjhr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HejCyEo-h39wfHXEjcrzXA_m4JHNuBq";
+const TMDB_KEY = "5646152e8fba735a975c49162c0d2a88";
+/* ================================ */
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const IMG = "https://image.tmdb.org/t/p/w342";
+let movies = [], found = [], tab = "watchlist";
+
+/* ---------- вход ---------- */
+async function authGo(kind) {
+  const email = $("#em").value.trim(), password = $("#pw").value;
+  const { error } = kind === "in"
+    ? await sb.auth.signInWithPassword({ email, password })
+    : await sb.auth.signUp({ email, password });
+  $("#msg").textContent = error ? error.message
+    : (kind === "up" ? "Готово. Если сайт просит подтвердить почту, подтвердите её и войдите." : "");
+}
+function showSession(s) {
+  $("#auth").hidden = !!s;
+  $("#app").hidden = !s;
+  if (s) load();
+}
+sb.auth.getSession().then(({ data }) => showSession(data.session));
+sb.auth.onAuthStateChange((_, s) => showSession(s));
+
+/* ---------- данные ---------- */
+async function load() {
+  const { data, error } = await sb.from("movies").select("*").order("created_at", { ascending: false });
+  if (error) return alert("Ошибка загрузки: " + error.message);
+  movies = data;
+  render();
+}
+
+function filtered() {
+  const g = $("#fg").value, rt = +$("#fr").value || 9999, mr = +$("#fm").value || 0;
+  return movies.filter(m => m.status === tab
+    && (!g || (m.genres || "").split(", ").includes(g))
+    && (m.runtime || 0) <= rt
+    && (m.tmdb_rating || 0) >= mr).sort(SORTS[$("#fs").value] || SORTS.new);
+}
+
+function card(m) {
+  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  const mine = m.status === "watched" ? `<div class="my">${m.my_rating}/10</div>` : "";
+  const note = m.note ? `<div class="note">${esc(m.note)}</div>` : "";
+  const btns = m.status === "watchlist"
+    ? `<button data-a="seen" data-id="${m.id}">Посмотрел</button>`
+    : `<button data-a="rate" data-id="${m.id}">Изменить оценку</button>`;
+  return `<article class="card">${img}<div class="body">
+    <h2>${esc(m.title)}</h2>
+    <div class="meta">${esc(m.year)}${m.runtime ? ", " + m.runtime + " мин" : ""}${m.tmdb_rating ? ", TMDB " + m.tmdb_rating : ""}</div>
+    <div class="meta">${esc(m.genres)}</div>${mine}${note}
+    <div class="acts">${btns}<button data-a="del" data-id="${m.id}">Удалить</button></div>
+  </div></article>`;
+}
+
+function render() {
+  const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
+  for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).textContent = `${L[k]} (${movies.filter(m => m.status === k).length})`;
+  if (tab === "picks") return renderPicks();
+  if (tab === "profile") return renderProfile();
+  if (tab === "search") return;
+  const cur = $("#fg").value;
+  const gs = [...new Set(movies.flatMap(m => (m.genres || "").split(", ").filter(Boolean)))].sort();
+  $("#fg").innerHTML = `<option value="">Любой жанр</option>` +
+    gs.map(x => `<option ${x === cur ? "selected" : ""}>${esc(x)}</option>`).join("");
+  const l = filtered();
+  $("#list").innerHTML = l.length ? l.map(card).join("")
+    : `<div class="empty">Здесь пусто. Откройте «Найти фильм» и добавьте первый.</div>`;
+}
+
+/* ---------- вкладки и фильтры ---------- */
+const VIEWS = { watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+$("#tabs").onclick = e => {
+  const t = e.target.dataset.t; if (!t) return;
+  tab = t;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
+  $("#pick").hidden = true;
+  render();
+};
+["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
+
+$("#pickBtn").onclick = () => {
+  const prev = tab; tab = "watchlist";
+  const l = filtered(); tab = prev;
+  const p = $("#pick");
+  p.hidden = false;
+  if (tab !== "watchlist") { p.innerHTML = "Выбор делается из списка «Хочу посмотреть»."; return; }
+  if (!l.length) { p.innerHTML = "Нет подходящих фильмов. Измените фильтры или добавьте новые."; return; }
+  const m = l[Math.floor(Math.random() * l.length)];
+  p.innerHTML = `<h2>${esc(m.title)} (${esc(m.year)})</h2><div class="meta">${m.runtime ? m.runtime + " мин, " : ""}${esc(m.genres)}</div>`;
+};
+
+/* ---------- действия над карточками ---------- */
+$("#list").onclick = async e => {
+  const a = e.target.dataset.a, id = +e.target.dataset.id; if (!a) return;
+  const m = movies.find(x => x.id === id); if (!m) return;
+  if (a === "del") {
+    if (!confirm("Удалить «" + m.title + "»?")) return;
+    const { error } = await sb.from("movies").delete().eq("id", id);
+    if (error) return alert(error.message);
+  } else {
+    const r = await rateDialog(m.title, m.my_rating, m.note); if (!r) return;
+    const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", id);
     if (error) return alert(error.message);
   }
   load();
