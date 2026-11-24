@@ -3,15 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Кадр</title>
+<title>Поиск кадров</title>
+<meta name="description" content="Личный список фильмов: что посмотреть и что уже смотрел, с оценками и заметками.">
+<meta name="theme-color" content="#1c1511">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%23e0a867%22/%3E%3Cpath d=%22M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8%22 fill=%22none%22 stroke=%22%232b1a0b%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%224.5%22 fill=%22%232b1a0b%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Картинка для ссылки-приглашения: замените USERNAME и REPO на свои (адрес вашего сайта на GitHub Pages) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Поиск кадров">
+<meta property="og:description" content="Личный список фильмов: что посмотреть и что уже смотрел.">
+<meta property="og:image" content="https://USERNAME.github.io/REPO/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://USERNAME.github.io/REPO/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0c0c0c;--paper:#141414;--mut:#8c8c8c;--line:#242424;--tx:#ededed;--field:#101010;--glass:#ffffff08;--acc:#ededed;--on-acc:#0c0c0c}
-[data-theme=light]{--bg:#f7f7f5;--paper:#fff;--mut:#6f6f6f;--line:#e2e2de;--tx:#121212;--field:#fff;--glass:#00000005;--acc:#121212;--on-acc:#fff}
+:root{--bg:#1c1511;--paper:#271d17;--mut:#a89580;--line:#3b2d23;--tx:#f4e9d8;--field:#221914;--glass:#f4e9d810;--acc:#e0a867;--on-acc:#2b1a0b}
+[data-theme=light]{--bg:#f5ebdb;--paper:#fffaf0;--mut:#8c7560;--line:#e6d6bd;--tx:#3a291d;--field:#fffaf0;--glass:#3a291d0a;--acc:#b9732f;--on-acc:#fff7ea}
 *{box-sizing:border-box}
-body{margin:0;font:15px/1.55 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+body{margin:0;font:15px/1.55 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(900px 480px at 12% -8%,color-mix(in srgb,var(--acc) 13%,transparent),transparent),var(--bg);background-attachment:fixed;color:var(--tx);-webkit-font-smoothing:antialiased;min-height:100vh}
 h1,h2,h3{font-weight:700;letter-spacing:-.02em;margin:0}
 main{max-width:1180px;margin:0 auto;padding:20px 20px 60px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
@@ -126,13 +139,76 @@ dialog h2{text-align:center;font-size:1.1rem}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 [hidden]{display:none!important}
 @media(max-width:640px){.pv{flex-direction:column;margin-top:-30px}.pv>img{width:140px;height:210px}}
+
+/* ===== тёплый уют ===== */
+button,select,input,textarea{border-radius:12px}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+:focus-visible{outline-color:var(--acc)}
+button.main{border-radius:999px;padding:9px 20px;box-shadow:0 4px 16px color-mix(in srgb,var(--acc) 28%,transparent)}
+button:hover{border-color:color-mix(in srgb,var(--acc) 60%,var(--line))}
+.logo{display:flex;align-items:center;gap:10px}
+.logo b{font-size:1.3rem;letter-spacing:-.01em;text-transform:none;font-weight:800}
+.mk{width:30px;height:30px;flex:none}
+.mk rect{fill:var(--acc)}.mk path{fill:none;stroke:var(--on-acc);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.mk circle{fill:var(--on-acc)}
+#auth .logo{justify-content:center}#auth .logo b{font-size:1.9rem}#auth .logo .mk{width:40px;height:40px}
+.tag2{text-align:center;color:var(--mut);margin:-6px 0 6px}
+#meBtn{background-size:cover;background-position:center;overflow:hidden;border-color:color-mix(in srgb,var(--acc) 50%,var(--line))}
+#meMenu{border-radius:16px}
+.top{padding:14px 20px 4px}
+.tabs{width:max-content;max-width:100%;background:var(--glass);border:1px solid var(--line);padding:4px;border-radius:999px;margin-bottom:12px}
+.tabs button{border:0;border-radius:999px;padding:8px 16px}
+.tabs button:hover{color:var(--tx);background:var(--glass);border-bottom-color:transparent}
+.tabs button.on{background:var(--acc);color:var(--on-acc)}
+.tabs .on .cnt{color:inherit;opacity:.75}
+.tile{border-radius:14px}.card{border-radius:16px}#pick{border-radius:18px}
+.tile .bd b{color:#f3c98b}.star{color:var(--acc)}
+.empty{padding:70px 0}
+dialog{border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 9%,var(--paper)),var(--paper) 140px)}
+dialog input{width:100%}
+.lbl{display:block;color:var(--mut);font-size:.85rem;margin:14px 0 4px}
+.nums button{color:color-mix(in srgb,var(--mut) 35%,transparent)}
+.nums button.on{color:var(--acc);text-shadow:0 0 18px color-mix(in srgb,var(--acc) 45%,transparent)}
+.dval b{color:var(--acc);font-size:2.4rem}
+#mv{border-radius:24px}.pv>img{border-radius:14px;box-shadow:0 16px 40px #0008}
+.pv h2{font-size:1.7rem}
+
+/* профиль */
+.pf-banner{height:210px;border-radius:22px;border:1px solid var(--line);position:relative;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 50%,var(--paper)),color-mix(in srgb,var(--acc) 8%,var(--paper))) center/cover}
+.pf-banner button{position:absolute;right:12px;top:12px;background:#000a;color:#fff;border-color:#ffffff30;padding:6px 14px;font-size:.85rem;border-radius:999px}
+.pf-head{display:flex;gap:18px;align-items:flex-end;padding:0 22px;margin-top:-54px;position:relative;flex-wrap:wrap}
+.pf-av{width:112px;height:112px;padding:0;border-radius:50%;border:4px solid var(--bg);background:var(--paper) center/cover;font-size:2.6rem;font-weight:800;color:var(--acc);position:relative;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center}
+.pf-av span{position:absolute;inset:auto 0 0;background:#000b;color:#fff;font-size:.7rem;font-weight:600;padding:5px 0;opacity:0;transition:opacity .15s}
+.pf-av:hover span,.pf-av:focus-visible span{opacity:1}
+.pf-name{flex:1;min-width:200px;padding-bottom:6px}.pf-name h2{font-size:1.6rem}
+.pf-bio{margin:14px 0 0;max-width:68ch;color:var(--tx)}
+.pf-bio.none{color:var(--mut)}
+.chip2{display:inline-block;background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:4px 13px;font-size:.85rem;margin:8px 6px 0 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:22px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.stat b{display:block;font-size:1.8rem;font-weight:800;color:var(--acc);line-height:1.2}.stat span{color:var(--mut);font-size:.85rem}
+.pf-sec{margin-top:28px}.pf-sec h3{font-size:1.1rem;margin:0 0 12px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px}
+.panel h3{margin-bottom:14px}
+.hist{display:flex;align-items:flex-end;gap:6px;height:130px}
+.hist div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;color:var(--mut);font-size:.72rem}
+.hist i{display:block;width:100%;background:var(--acc);border-radius:7px 7px 2px 2px;min-height:3px;opacity:.9}
+.hist small{font-size:.78rem}
+.gb{display:grid;grid-template-columns:110px 1fr 28px;gap:10px;align-items:center;margin:8px 0;font-size:.88rem}
+.gb i{display:block;height:10px;border-radius:99px;background:var(--acc);min-width:6px}
+.gb span:last-child{color:var(--mut);text-align:right}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px}
+details.taste{margin-top:28px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:6px 18px}
+details.taste summary{cursor:pointer;padding:12px 0;font-weight:700}
+details.taste .main{margin:6px 0 16px}
 </style>
 </head>
 <body>
 <main>
 
 <section id="auth" hidden>
-  <div class="logo"><b>КАДР</b></div>
+  <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
+  <p class="tag2">Личный список фильмов</p>
   <input id="em" type="email" placeholder="Эл. почта" autocomplete="email">
   <input id="pw" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
   <button class="main" onclick="authGo('in')">Войти</button>
@@ -143,7 +219,7 @@ dialog h2{text-align:center;font-size:1.1rem}
 <section id="app" hidden>
   <div class="top">
   <header>
-    <div class="logo"><b>КАДР</b></div>
+    <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
     <div class="me">
       <button id="meBtn" aria-label="Профиль" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
       <div id="meMenu" hidden>
@@ -200,6 +276,7 @@ dialog h2{text-align:center;font-size:1.1rem}
   <div id="profileView" hidden></div>
   <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
+  <dialog id="pfDlg"><form method="dialog"><h2>О себе</h2><label class="lbl" for="pfName">Имя</label><input id="pfName" maxlength="40" placeholder="Как вас называть"><label class="lbl" for="pfBio">Обо мне</label><textarea id="pfBio" rows="4" maxlength="400" placeholder="Пара слов о том, какое кино вы любите" style="width:100%"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
   <div id="toast" hidden></div>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
@@ -219,7 +296,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const IMG = "https://image.tmdb.org/t/p/w342";
 let movies = [], found = [], tab = "watchlist";
-let animNext = false, view = "grid", userEmail = "";
+let animNext = false, view = "grid", userEmail = "", userId = "", profile = {};
 try { view = localStorage.getItem("vw") || "grid"; } catch (e) {}
 const skel = n => Array.from({ length: n }, () => `<div class="sk p"></div>`).join("");
 
@@ -236,7 +313,7 @@ function showSession(s) {
   $("#auth").hidden = !!s;
   $("#app").hidden = !s;
   userEmail = (s && s.user && s.user.email) || "";
-  if (s) { animNext = true; load(); }
+  if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); } else { profile = {}; userId = ""; }
 }
 sb.auth.getSession().then(({ data }) => showSession(data.session));
 sb.auth.onAuthStateChange((_, s) => showSession(s));
@@ -450,15 +527,88 @@ const PROFILE = [
   "Не заходит: сухие биографии (Оппенгеймер), боевики, романтика, слишком старое кино",
   "Длительность 2-3 часа, годы 2000+ (классика 90-х допустима), Голливуд и Европа, рейтинг IMDb от 7,5"
 ];
+/* --- данные профиля (имя, «обо мне», аватар, баннер) --- */
+async function loadProfile() {
+  const { data } = await sb.from("profiles").select("*").eq("user_id", userId).maybeSingle();
+  profile = data || {}; syncMenu(); if (tab === "profile") renderProfile();
+}
+async function saveProfile(patch) {
+  const row = { user_id: userId, display_name: profile.display_name || null, bio: profile.bio || null,
+    avatar_url: profile.avatar_url || null, banner_url: profile.banner_url || null, ...patch, updated_at: new Date().toISOString() };
+  const { error } = await sb.from("profiles").upsert(row, { onConflict: "user_id" });
+  if (error) { toast("Не сохранилось: " + error.message + ". Выполнили SQL из migration_profile.sql?"); return false; }
+  profile = row; syncMenu(); return true;
+}
+async function toJpeg(file, w, h) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.max(w / bmp.width, h / bmp.height), dw = bmp.width * k, dh = bmp.height * k;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  c.getContext("2d").drawImage(bmp, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return new Promise(res => c.toBlob(res, "image/jpeg", .86));
+}
+function pickImage(kind) {
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+  inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return; toast("Загружаю…");
+    try {
+      const blob = await toJpeg(f, kind === "avatar" ? 512 : 1600, kind === "avatar" ? 512 : 480);
+      const path = `${userId}/${kind}.jpg`;
+      const { error } = await sb.storage.from("profile-media").upload(path, blob, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" });
+      if (error) throw error;
+      const url = sb.storage.from("profile-media").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+      if (await saveProfile({ [kind + "_url"]: url })) { renderProfile(); toast("Готово"); }
+    } catch (e) { toast("Не получилось: " + (e.message || e) + ". Выполнили SQL из migration_profile.sql?"); }
+  };
+  inp.click();
+}
+function editProfile() {
+  const d = $("#pfDlg"); $("#pfName").value = profile.display_name || ""; $("#pfBio").value = profile.bio || "";
+  d.onclose = async () => {
+    if (d.returnValue !== "ok") return;
+    if (await saveProfile({ display_name: $("#pfName").value.trim() || null, bio: $("#pfBio").value.trim() || null })) renderProfile();
+  };
+  d.returnValue = ""; d.showModal();
+}
+$("#profileView").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid); };
+
 function renderProfile() {
   const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
-  const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "нет оценок";
+  const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
+  const hours = Math.round(w.reduce((a, m) => a + (m.runtime || 0), 0) / 60);
+  const name = profile.display_name || userEmail.split("@")[0] || "Без имени";
+  const hist = Array.from({ length: 10 }, (_, i) => r.filter(m => m.my_rating === i + 1).length), hmax = Math.max(1, ...hist);
   const gc = {}; w.forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
-  const top = Object.entries(gc).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([g, n]) => `${g} (${n})`).join(", ") || "пока нет данных";
-  const fav = r.filter(m => m.my_rating >= 9).map(m => m.title).join(", ") || "пока нет";
-  $("#profileView").innerHTML = `<h2>Мой вкус</h2><ul class="prof">${PROFILE.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
-    <h2>Статистика</h2><ul class="prof"><li>Просмотрено: ${w.length}, в списке «Хочу»: ${movies.length - w.length}</li><li>Средняя оценка: ${avg}</li><li>Любимые жанры: ${esc(top)}</li><li>Оценки 9-10: ${esc(fav)}</li></ul>
-    <button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button>`;
+  const gl = Object.entries(gc).sort((a, b) => b[1] - a[1]), gmax = gl.length ? gl[0][1] : 1;
+  const topF = [...r].sort((a, b) => b.my_rating - a.my_rating).slice(0, 10);
+  const recent = w.slice(0, 8);
+  const strip = (l, ) => `<div class="strip">${l.map((m, i) => tile(m, i)).join("")}</div>`;
+  const bn = profile.banner_url ? `background-image:url('${esc(profile.banner_url)}')` : "";
+  const av = profile.avatar_url ? `background-image:url('${esc(profile.avatar_url)}')` : "";
+  $("#profileView").innerHTML = `
+    <div class="pf-banner" style="${bn}"><button id="pfBn">Сменить баннер</button></div>
+    <div class="pf-head">
+      <button class="pf-av" id="pfAv" style="${av}" aria-label="Сменить аватар">${profile.avatar_url ? "" : esc(name[0].toUpperCase())}<span>Изменить</span></button>
+      <div class="pf-name"><h2>${esc(name)}</h2><div class="meta">${esc(userEmail)}</div></div>
+      <button id="pfEdit">Редактировать</button>
+    </div>
+    <p class="pf-bio ${profile.bio ? "" : "none"}">${profile.bio ? esc(profile.bio) : "Расскажите о себе: нажмите «Редактировать»."}</p>
+    ${gl.length ? `<div>${gl.slice(0, 5).map(([g]) => `<span class="chip2">${esc(g)}</span>`).join("")}</div>` : ""}
+    <div class="stats">
+      <div class="stat"><b>${w.length}</b><span>просмотрено</span></div>
+      <div class="stat"><b>${movies.length - w.length}</b><span>хочу посмотреть</span></div>
+      <div class="stat"><b>${avg}</b><span>средняя оценка</span></div>
+      <div class="stat"><b>${hours}</b><span>часов кино</span></div>
+    </div>
+    <div class="pf-sec cols">
+      <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
+      <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
+    </div>
+    <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
+    <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
+    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${PROFILE.map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button></details>`;
+  $("#pfAv").onclick = () => pickImage("avatar");
+  $("#pfBn").onclick = () => pickImage("banner");
+  $("#pfEdit").onclick = editProfile;
   $("#copyPrompt").onclick = copyPrompt;
 }
 function copyPrompt() {
@@ -481,6 +631,8 @@ const menu = $("#meMenu");
 function syncMenu() {
   $("#meMail").textContent = userEmail;
   $("#mView").textContent = "Вид списка: " + (view === "rows" ? "строки" : "постеры");
+  const mb = $("#meBtn"), has = !!profile.avatar_url;
+  mb.style.backgroundImage = has ? `url("${profile.avatar_url}")` : ""; mb.querySelector("svg").style.display = has ? "none" : "";
   $("#mTheme").textContent = "Тема: " + (document.documentElement.dataset.theme === "light" ? "светлая" : "тёмная");
 }
 function closeMenu() { menu.hidden = true; $("#meBtn").setAttribute("aria-expanded", "false"); }
