@@ -201,6 +201,48 @@ dialog input{width:100%}
 details.taste{margin-top:28px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:6px 18px}
 details.taste summary{cursor:pointer;padding:12px 0;font-weight:700}
 details.taste .main{margin:6px 0 16px}
+
+/* ===== главная и обновлённый интерфейс (24.11.2026) ===== */
+.logo{cursor:pointer}
+.tabs{max-width:100%}
+.tabs button{flex:none}
+.stat,.panel,details.taste{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 6%,var(--paper)),var(--paper) 70%)}
+.tile:hover,.tile:focus-visible{border-color:var(--acc)}
+.greet{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+.greet h2{font-size:1.5rem}
+.hero{position:relative;min-height:340px;border-radius:26px;overflow:hidden;display:flex;align-items:flex-end;color:#fff;border:1px solid var(--line);background:radial-gradient(700px 320px at 80% 10%,color-mix(in srgb,var(--acc) 30%,transparent),transparent),linear-gradient(135deg,#2a1e0c,#101015) center/cover no-repeat}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#08080cf2 0%,#08080ccc 40%,#08080c40 100%),linear-gradient(0deg,#08080cd9,transparent 55%)}
+.hero-in{position:relative;padding:30px 32px;max-width:640px}
+.eyebrow{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
+.hero h1{font-size:2.3rem;line-height:1.1;font-weight:800;letter-spacing:-.025em;margin:0 0 8px;color:#fff}
+.hero .meta{color:#d2d2da}
+.hero p{margin:12px 0 0;color:#e8e8ee;max-width:56ch}
+.hero .acts{margin-top:18px}
+.hero button:not(.main){background:#ffffff1c;color:#fff;border-color:#ffffff40;border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hero.sk{border:0}
+.sec{margin-top:30px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.sec-h h3{font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.sec-h h3::before{content:"";width:4px;height:18px;border-radius:4px;background:var(--acc)}
+.sec-h small{display:block;font-weight:500;color:var(--mut);font-size:.8rem;margin-top:1px}
+.lnk{background:none;border:0;padding:4px 8px;color:var(--mut);font-weight:600;font-size:.88rem}
+.lnk:hover{color:var(--acc)}
+.rail{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.rail .tile{width:148px;flex:none;scroll-snap-align:start}
+.rail .sk{width:148px;flex:none}
+.rail .tile:hover,.rail .tile:focus-visible{transform:translateY(-4px) scale(1.02)}
+.welcome{text-align:center;padding:48px 22px}
+.welcome h1{font-size:2rem;color:#fff}
+.welcome p{margin:10px auto 0;max-width:46ch}
+.welcome .acts{justify-content:center}
+.nudge{background:var(--glass);border:1px dashed var(--line);border-radius:18px;padding:16px 18px;color:var(--mut);margin-top:30px}
+@media(max-width:640px){
+  main{padding:14px 14px 50px}.top{margin:0 -14px 14px;padding:12px 14px 4px}
+  .tabs{width:100%}
+  .hero{min-height:300px;border-radius:20px}.hero-in{padding:22px 20px}.hero h1{font-size:1.7rem}
+  .rail .tile,.rail .sk{width:120px}
+  .greet h2{font-size:1.25rem}
+}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -225,7 +267,7 @@ details.taste .main{margin:6px 0 16px}
 <section id="app" hidden>
   <div class="top">
   <header>
-    <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
+    <div class="logo" id="logoHome" title="На главную" role="link" tabindex="0"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
     <div class="me">
       <button id="meBtn" aria-label="Профиль" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
       <div id="meMenu" hidden>
@@ -240,14 +282,17 @@ details.taste .main{margin:6px 0 16px}
     </div>
   </header>
   <div class="tabs" id="tabs">
-    <button data-t="watchlist" class="on">Хочу посмотреть</button>
+    <button data-t="home" class="on">Главная</button>
+    <button data-t="watchlist">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
     <button data-t="picks">Подборка</button>
     <button data-t="search">Найти фильм</button>
   </div>
   </div>
 
-  <div id="listView">
+  <div id="homeView"></div>
+
+  <div id="listView" hidden>
     <div class="chips" id="chips"></div>
     <div class="bar">
       <input id="fq" placeholder="Поиск по моему списку" style="flex:1;min-width:180px">
@@ -303,7 +348,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const IMG = "https://image.tmdb.org/t/p/w342";
-let movies = [], found = [], tab = "watchlist";
+let movies = [], found = [], tab = "home";
 let animNext = false, view = "grid", userEmail = "", userId = "", profile = {};
 try { view = localStorage.getItem("vw") || "grid"; } catch (e) {}
 const skel = n => Array.from({ length: n }, () => `<div class="sk p"></div>`).join("");
@@ -365,6 +410,7 @@ function tile(m, i) {
 function render() {
   const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
   for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).innerHTML = `${L[k]} <span class="cnt">${movies.filter(m => m.status === k).length}</span>`;
+  if (tab === "home") return renderHome();
   if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
   if (tab === "search") return;
@@ -383,7 +429,7 @@ function render() {
 }
 
 /* ---------- вкладки и фильтры ---------- */
-const VIEWS = { watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+const VIEWS = { home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 function go(t) {
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
@@ -412,6 +458,109 @@ function pickOne() {
   p.innerHTML = `<div class="pk">${img}<div><h2>${esc(m.title)} (${esc(m.year)})</h2><div class="meta">${m.runtime ? m.runtime + " мин, " : ""}${esc(m.genres)}${m.tmdb_rating ? ", TMDB " + m.tmdb_rating : ""}</div><p class="acts" style="margin-top:12px"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть страницу фильма</button><button data-again="1">Другой вариант</button></p></div></div>`;
 }
 $("#pickBtn").onclick = pickOne;
+
+
+/* ---------- главная ---------- */
+const keyOf = m => m.tmdb_id + "-" + (m.media_type || "movie");
+let heroKey = null, homeTok = 0;
+const heroInfo = {}, homeCache = {};
+const BK = "https://image.tmdb.org/t/p/w1280";
+
+function pickHero(force) {
+  const l = movies.filter(m => m.status === "watchlist");
+  if (!l.length) return null;
+  let cur = l.find(m => keyOf(m) === heroKey);
+  if (!cur || force) {
+    const pool = l.length > 1 ? l.filter(m => keyOf(m) !== heroKey) : l;
+    cur = pool[Math.floor(Math.random() * pool.length)]; heroKey = keyOf(cur);
+  }
+  return cur;
+}
+function heroHtml(m) {
+  const inf = heroInfo[keyOf(m)] || {}, tv = m.media_type === "tv";
+  const bg = inf.backdrop ? `style="background-image:url(${BK}${inf.backdrop})"` : "";
+  const meta = [m.year, tv ? "сериал" : "", m.runtime ? m.runtime + (tv ? " мин/серия" : " мин") : "", m.genres, m.tmdb_rating ? "TMDB " + m.tmdb_rating : ""].filter(Boolean).map(esc).join(" · ");
+  const ov = inf.overview ? esc(inf.overview.length > 230 ? inf.overview.slice(0, 227) + "…" : inf.overview) : "";
+  return `<section class="hero" ${bg}><div class="hero-in"><span class="eyebrow">Что посмотреть сегодня</span><h1>${esc(m.title)}</h1><div class="meta">${meta}</div>${ov ? `<p>${ov}</p>` : ""}<div class="acts"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть</button><button data-again="1">Другой вариант</button></div></div></section>`;
+}
+async function fillHero(force) {
+  const m = pickHero(force), box = $("#heroBox"); if (!box) return;
+  if (!m) { box.innerHTML = `<section class="hero welcome"><div class="hero-in"><span class="eyebrow">Добро пожаловать</span><h1>Начните свою коллекцию</h1><p>Добавьте фильмы и сериалы, которые хотите посмотреть, или перенесите список с Кинопоиска. Здесь появятся ваша подборка дня и рекомендации.</p><div class="acts"><button class="main" data-go="search">Найти фильм</button><button data-go="import">Импорт с Кинопоиска</button></div></div></section>`; return; }
+  box.innerHTML = heroHtml(m);
+  const k = keyOf(m);
+  if (!heroInfo[k]) {
+    try {
+      const d = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}`);
+      heroInfo[k] = { backdrop: d.backdrop_path, overview: d.overview || "" };
+      if (heroKey === k && tab === "home" && $("#heroBox")) $("#heroBox").innerHTML = heroHtml(m);
+    } catch (e) { heroInfo[k] = {}; }
+  }
+}
+const tTile = (x, mt, i) => {
+  const t = x.title || x.name || "", y = (x.release_date || x.first_air_date || "").slice(0, 4);
+  return `<button class="tile" data-tid="${x.id}" data-mt="${mt}" style="--i:${i}" title="${esc(t)}"><img src="${IMG}${x.poster_path}" alt="${esc(t)}" loading="lazy"><span class="ov">${esc(t)} <i>${esc(y)}${mt === "tv" ? ", сериал" : ""}</i></span><span class="bd">${x.vote_average ? `<span>${x.vote_average.toFixed(1)}</span>` : ""}</span></button>`;
+};
+const secHtml = (title, sub, inner, go) => `<div class="sec"><div class="sec-h"><h3><span>${title}${sub ? `<small>${sub}</small>` : ""}</span></h3>${go ? `<button class="lnk" data-go="${go}">Все →</button>` : ""}</div><div class="rail">${inner}</div></div>`;
+
+function renderHome() {
+  const tok = ++homeTok;
+  const w = movies.filter(m => m.status === "watched"), want = movies.filter(m => m.status === "watchlist"), r = w.filter(m => m.my_rating);
+  const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
+  const hours = Math.round(w.filter(m => m.media_type !== "tv").reduce((a, m) => a + (m.runtime || 0), 0) / 60);
+  const name = profile.display_name || (userEmail.split("@")[0]) || "";
+  $("#homeView").innerHTML = `
+    <div class="greet"><h2>Привет${name ? ", " + esc(name) : ""}</h2><span class="meta">${movies.length ? "Ваша коллекция: " + movies.length + " " + (movies.length % 10 === 1 && movies.length % 100 !== 11 ? "запись" : "записей") : "Пока пусто, давайте начнём"}</span></div>
+    <div id="heroBox"></div>
+    <div class="stats">
+      <div class="stat"><b>${w.length}</b><span>просмотрено</span></div>
+      <div class="stat"><b>${want.length}</b><span>хочу посмотреть</span></div>
+      <div class="stat"><b>${avg}</b><span>средняя оценка</span></div>
+      <div class="stat"><b>${hours}</b><span>часов кино</span></div>
+    </div>
+    ${want.length ? secHtml("Хочу посмотреть", "Недавно добавленное", want.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watchlist") : ""}
+    ${w.length ? secHtml("Недавно просмотрено", "", w.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watched") : ""}
+    <div id="recBox"></div>
+    <div id="trendBox"></div>`;
+  fillHero(false); loadRecs(tok); loadTrend(tok);
+}
+async function loadRecs(tok) {
+  const watched = movies.filter(m => m.status === "watched" && m.my_rating);
+  let seeds = watched.filter(m => m.my_rating >= 9);
+  if (!seeds.length) seeds = watched.filter(m => m.my_rating >= 8);
+  seeds = seeds.sort((a, b) => b.my_rating - a.my_rating).slice(0, 4);
+  const box = $("#recBox"); if (!box) return;
+  if (!seeds.length) { box.innerHTML = `<div class="nudge">Поставьте оценку 9–10 любимым фильмам, и здесь появится ряд «Похожее на ваши любимые».</div>`; return; }
+  box.innerHTML = secHtml("Похожее на ваши любимые", "", Array.from({ length: 8 }, () => `<div class="sk p"></div>`).join(""));
+  const results = await Promise.all(seeds.map(async m => {
+    const k = keyOf(m);
+    if (!homeCache[k]) { try { homeCache[k] = (await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}/recommendations`)).results || []; } catch (e) { return []; } }
+    return homeCache[k].map(x => ({ ...x, _mt: m.media_type || "movie" }));
+  }));
+  if (tok !== homeTok || !$("#recBox")) return;
+  const have = new Set(movies.map(keyOf)), score = new Map();
+  results.flat().forEach(x => {
+    if (!x.poster_path || have.has(x.id + "-" + x._mt) || (x.vote_average || 0) < 6.5) return;
+    const k = x.id + "-" + x._mt, e = score.get(k) || { x, n: 0 }; e.n++; score.set(k, e);
+  });
+  const list = [...score.values()].sort((a, b) => b.n - a.n || (b.x.vote_average || 0) - (a.x.vote_average || 0)).slice(0, 16);
+  $("#recBox").innerHTML = list.length ? secHtml("Похожее на ваши любимые", "По мотивам: " + seeds.slice(0, 3).map(m => esc(m.title)).join(", "), list.map((e, i) => tTile(e.x, e.x._mt, i)).join("")) : "";
+}
+async function loadTrend(tok) {
+  if (!$("#trendBox")) return;
+  if (!homeCache.trend) { try { homeCache.trend = (await tmdbGet("trending/all/week")).results || []; } catch (e) { homeCache.trend = null; $("#trendBox").innerHTML = `<div class="nudge">Не удалось загрузить новинки с TMDB. Проверьте VPN.</div>`; return; } }
+  if (tok !== homeTok || !$("#trendBox")) return;
+  const have = new Set(movies.map(keyOf));
+  const l = homeCache.trend.filter(x => (x.media_type === "movie" || x.media_type === "tv") && x.poster_path && !have.has(x.id + "-" + x.media_type)).slice(0, 16);
+  $("#trendBox").innerHTML = l.length ? secHtml("Сейчас в тренде", "Популярное за неделю", l.map((x, i) => tTile(x, x.media_type, i)).join("")) : "";
+}
+$("#homeView").onclick = e => {
+  const g = e.target.closest("[data-go]");
+  if (g) { return g.dataset.go === "import" ? openImport() : go(g.dataset.go); }
+  if (e.target.closest("[data-again]")) return fillHero(true);
+  const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt);
+};
+$("#logoHome").onclick = () => go("home");
+$("#logoHome").onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("home"); } };
 
 /* ---------- действия над карточками ---------- */
 $("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
@@ -602,6 +751,8 @@ function renderProfile() {
       <div class="stat"><b>${movies.length - w.length}</b><span>хочу посмотреть</span></div>
       <div class="stat"><b>${avg}</b><span>средняя оценка</span></div>
       <div class="stat"><b>${hours}</b><span>часов кино</span></div>
+      <div class="stat"><b>${r.filter(m => m.my_rating >= 9).length}</b><span>оценок 9–10</span></div>
+      <div class="stat"><b>${w.filter(m => m.media_type === "tv").length}</b><span>сериалов</span></div>
     </div>
     <div class="pf-sec cols">
       <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
