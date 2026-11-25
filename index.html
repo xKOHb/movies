@@ -6,7 +6,7 @@
 <title>Поиск кадров</title>
 <meta name="description" content="Личный список фильмов: что посмотреть и что уже смотрел, с оценками и заметками.">
 <meta name="theme-color" content="#0b0b0f">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%23f5b041%22/%3E%3Cpath d=%22M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8%22 fill=%22none%22 stroke=%22%232b1a0b%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%224.5%22 fill=%22%232b1a0b%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23141218%22/%3E%3Cpath d=%22M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5%22 fill=%22none%22 stroke=%22%23f5b041%22 stroke-width=%224.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z%22 fill=%22%23f5b041%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- Картинка для ссылки-приглашения: адрес сайта на GitHub Pages -->
@@ -151,7 +151,7 @@ button:hover{border-color:color-mix(in srgb,var(--acc) 60%,var(--line))}
 .logo{display:flex;align-items:center;gap:10px}
 .logo b{font-size:1.3rem;letter-spacing:-.01em;text-transform:none;font-weight:800}
 .mk{width:30px;height:30px;flex:none}
-.mk rect{fill:var(--acc)}.mk path{fill:none;stroke:var(--on-acc);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.mk circle{fill:var(--on-acc)}
+.mk rect{fill:#141218}.mk path{fill:none;stroke:#f5b041;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}.mk path.pl{fill:#f5b041;stroke:none}.mk{border-radius:28%;box-shadow:0 0 0 1px color-mix(in srgb,#f5b041 30%,transparent)}
 #auth .logo{justify-content:center}#auth .logo b{font-size:1.9rem}#auth .logo .mk{width:40px;height:40px}
 .tag2{text-align:center;color:var(--mut);margin:-6px 0 6px}
 #meBtn{background-size:cover;background-position:center;overflow:hidden;border-color:color-mix(in srgb,var(--acc) 50%,var(--line))}
@@ -304,12 +304,6 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 
 /* моментальный поиск */
 .hr{display:flex;align-items:center;gap:10px}
-#gsBtn{width:40px;height:40px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--glass)}
-#gsBtn svg,.gs-box svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
-#gs{position:fixed;inset:0;z-index:60;background:#000a;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:11vh 12px 0}
-.gs-box{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:6px 8px 6px 16px;box-shadow:0 20px 60px #000a}
-.gs-box input{flex:1;min-width:0;border:0;background:none;font-size:1.05rem;padding:10px 0;outline:none}
-.gs-box button{border:0;background:none;font-size:1.5rem;padding:0 12px;color:var(--mut)}
 #sg{position:fixed;z-index:70;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px #0009;overflow:auto;padding:6px}
 #sg .sgh{padding:8px 10px 2px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
 #sg .sgi{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:10px;color:var(--tx)}
@@ -357,13 +351,29 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 .ai-g{margin:10px 0 4px}.ai-l{font-size:.8rem;color:var(--mut);margin-bottom:4px}
 #aiDlg .chips{margin-bottom:6px}
 #aiDlg textarea{font-size:.82rem;line-height:1.45;min-height:200px}
+/* ===== 25.11.2026 (поздно): поиск снова отдельной страницей ===== */
+.tabs .t-find{display:inline-flex;align-items:center;gap:7px}
+.tabs .t-find svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.find-hd h2{font-family:var(--disp);font-weight:600;font-size:1.9rem;letter-spacing:.012em;margin:4px 0 2px}
+.find-hd p{color:var(--mut);margin:0 0 14px;font-size:.92rem}
+.find-box{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:7px 7px 7px 18px;margin-bottom:20px;transition:border-color .15s,box-shadow .15s}
+.find-box:focus-within{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 16%,transparent)}
+.find-box>svg{width:22px;height:22px;fill:none;stroke:var(--mut);stroke-width:1.8;stroke-linecap:round;flex:none}
+.find-box input{flex:1;min-width:0;border:0;background:none;font-size:1.1rem;padding:10px 0;outline:none;box-shadow:none}
+.find-box #qX{border:0;background:none;color:var(--mut);font-size:1.5rem;line-height:1;padding:0 8px}
+.find-box #qX:hover{color:var(--tx)}
+.find-box .main{padding:10px 22px}
+.find-sub{font-family:var(--disp);font-weight:600;font-size:1.2rem;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.find-sub:empty{display:none}
+.find-sub::before{content:"";width:4px;height:18px;border-radius:4px;background:var(--acc)}
+@media(max-width:640px){.find-hd h2{font-size:1.5rem}.find-box{padding-left:14px}.find-box .main{padding:9px 14px}#bnav button span{font-size:.62rem}}
 </style>
 </head>
 <body>
 <main>
 
 <section id="auth" hidden>
-  <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
+  <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5"/><path class="pl" d="M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z"/></svg><b>Поиск кадров</b></div>
   <p class="tag2">Личный список фильмов</p>
   <input id="em" type="email" placeholder="Эл. почта" autocomplete="email">
   <input id="pw" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
@@ -375,8 +385,8 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 <section id="app" hidden>
   <div class="top">
   <header>
-    <div class="logo" id="logoHome" title="На главную" role="link" tabindex="0"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
-    <div class="hr"><button id="gsBtn" aria-label="Поиск (клавиша /)" title="Поиск ( / или Ctrl+K )"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button>
+    <div class="logo" id="logoHome" title="На главную" role="link" tabindex="0"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5"/><path class="pl" d="M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z"/></svg><b>Поиск кадров</b></div>
+    <div class="hr">
     <div class="me">
       <button id="meBtn" aria-label="Профиль" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
       <div id="meMenu" hidden>
@@ -399,6 +409,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
     <button data-t="watched">Просмотрено</button>
     <button data-t="recs">Рекомендации</button>
     <button data-t="colls">Коллекции</button>
+    <button data-t="search" class="t-find" title="Поиск ( / или Ctrl+K )"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>Найти фильм</button>
   </div>
   </div>
 
@@ -430,10 +441,9 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   </div>
 
   <div id="searchView" hidden>
-    <div class="bar">
-      <input id="q" placeholder="Название фильма" style="flex:1;min-width:200px">
-      <button class="main" id="qBtn">Искать</button>
-    </div>
+    <div class="find-hd"><h2>Найти фильм</h2><p>Фильмы и сериалы из TMDB. Подсказки появляются по мере набора, Enter показывает все результаты.</p></div>
+    <div class="find-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><input id="q" placeholder="Название фильма или сериала" autocomplete="off" spellcheck="false"><button id="qX" type="button" aria-label="Очистить" hidden>×</button><button class="main" id="qBtn">Искать</button></div>
+    <div class="find-sub" id="foundH"></div>
     <div class="grid" id="found"></div>
   </div>
 
@@ -448,13 +458,12 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
   <div id="selBar" hidden><b id="selN">0</b> выбрано <button data-a="rate">Оценить по очереди</button><button data-a="seen" id="selSeen">В «Просмотрено»</button><button data-a="want" id="selWant">В «Хочу»</button><button data-a="del">Удалить</button><button data-a="x">Отмена</button></div>
   <div id="toast" hidden></div>
-  <nav id="bnav" aria-label="Разделы"><button data-t="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button><button data-t="watchlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v17l-5-4-5 4z"/></svg><span>Хочу</span></button><button data-t="watched"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg><span>Смотрел</span></button><button data-t="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4L12 16.2 7.2 18.9l1-5.4-4-3.8 5.4-.7z"/></svg><span>Для вас</span></button><button data-t="colls"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Коллекции</span></button></nav>
+  <nav id="bnav" aria-label="Разделы"><button data-t="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button><button data-t="watchlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v17l-5-4-5 4z"/></svg><span>Хочу</span></button><button data-t="watched"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg><span>Смотрел</span></button><button data-t="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4L12 16.2 7.2 18.9l1-5.4-4-3.8 5.4-.7z"/></svg><span>Для вас</span></button><button data-t="colls"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Коллекции</span></button><button data-t="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><span>Поиск</span></button></nav>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
 
 </main>
 
-<div id="gs" hidden><div class="gs-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><input id="gq" placeholder="Найти фильм или сериал" autocomplete="off" spellcheck="false"><button id="gsX" type="button" aria-label="Закрыть">×</button></div></div>
 <div id="sg" hidden role="listbox"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -537,7 +546,7 @@ function render() {
   if (tab === "colls") return renderColls();
   if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
-  if (tab === "search") return;
+  if (tab === "search") return searchIdle();
   const cur = $("#fg").value;
   const gs = [...new Set(movies.filter(m => m.status === tab).flatMap(m => (m.genres || "").split(", ").filter(Boolean)))].sort();
   $("#fg").innerHTML = `<option value="">Любой жанр</option>` +
@@ -1204,13 +1213,11 @@ function sgPick(i) {
   if (ctx === "global") gsClose();
   openMovie(it.id, it.mt);
 }
-function gsOpen() { const g = $("#gs"); g.hidden = false; $("#gq").value = ""; $("#gq").focus(); }
-function gsClose() { $("#gs").hidden = true; sgHide(); }
-function gsGo() { const q = $("#gq").value.trim(); gsClose(); if (!q) return; go("search"); $("#q").value = q; doSearch(); }
+/* поиск теперь отдельная страница: лупа, / и Ctrl+K открывают вкладку «Найти фильм» */
+function gsOpen() { if (tab !== "search") go("search"); const q = $("#q"); setTimeout(() => { q.focus(); q.select(); }, 30); }
+function gsClose() { sgHide(); }
+function gsGo() { sgHide(); doSearch(); }
 SG.el = $("#sg");
-$("#gsBtn").onclick = gsOpen;
-$("#gsX").onclick = gsClose;
-$("#gs").addEventListener("pointerdown", e => { if (e.target.id === "gs") gsClose(); });
 SG.el.addEventListener("mousedown", e => e.preventDefault());
 SG.el.addEventListener("click", e => { const b = e.target.closest(".sgi"); if (b) sgPick(+b.dataset.i); });
 document.addEventListener("input", e => { const t = e.target; if (t.id === "q" || t.id === "colQ" || t.id === "gq") sgType(t); });
@@ -1219,14 +1226,13 @@ window.addEventListener("scroll", () => { const t = document.querySelector(".top
 window.addEventListener("resize", sgPlace); window.addEventListener("scroll", sgPlace, true);
 document.addEventListener("keydown", e => {
   const t = e.target, isIn = t && (t.id === "q" || t.id === "colQ" || t.id === "gq"), appOn = !$("#app").hidden, dlg = document.querySelector("dialog[open]");
-  if (appOn && !dlg && $("#gs").hidden) {
+  if (appOn && !dlg) {
     const typing = t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || (t && t.isContentEditable);
     if ((e.ctrlKey || e.metaKey) && e.code === "KeyK") { e.preventDefault(); return gsOpen(); }
     if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "/" || (e.code === "Slash" && !e.shiftKey))) { e.preventDefault(); return gsOpen(); }
   }
   if (e.key === "Escape") {
     if (!SG.el.hidden) { e.preventDefault(); e.stopPropagation(); return sgHide(); }
-    if (!$("#gs").hidden) { e.preventDefault(); return gsClose(); }
     return;
   }
   if (!isIn) return;
@@ -1258,7 +1264,12 @@ async function doSearch() {
     $("#found").innerHTML = `<div class="empty">Не удалось получить ответ от TMDB (${esc(err.message)}). Проверьте VPN, блокировщики рекламы и ключ.</div>`;
     return;
   }
-  $("#found").innerHTML = found.length ? found.map(f => {
+  $("#foundH").textContent = found.length ? "Результаты поиска" : "";
+  $("#qX").hidden = false;
+  $("#found").innerHTML = found.length ? foundCards(found) : `<div class="empty">Ничего не найдено. Проверьте название или попробуйте английское.</div>`;
+}
+function foundCards(list) {
+  return list.map(f => {
     const mt = f.media_type, have = movies.find(m => m.tmdb_id === f.id && (m.media_type || "movie") === mt);
     const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
     return `<article class="card" data-tid="${f.id}" data-mt="${mt}">${img}<div class="body">
@@ -1268,8 +1279,23 @@ async function doSearch() {
       <div class="acts">${have ? `<span class="meta">Уже в списке</span>` :
         `<button data-s="watchlist" data-id="${f.id}" data-mt="${mt}">Хочу посмотреть</button><button data-s="watched" data-id="${f.id}" data-mt="${mt}">Уже смотрел</button>`}</div>
     </div></article>`;
-  }).join("") : `<div class="empty">Ничего не найдено.</div>`;
+  }).join("");
 }
+/* пустая страница поиска: «Сейчас в тренде» с кнопками добавления */
+let findTrend = null;
+async function searchIdle() {
+  if ($("#q").value.trim() && found.length) return;
+  $("#foundH").textContent = "Сейчас в тренде";
+  $("#qX").hidden = !$("#q").value;
+  if (!findTrend) {
+    $("#found").innerHTML = Array.from({ length: 6 }, () => `<div class="sk" style="height:138px"></div>`).join("");
+    try { findTrend = ((await tmdbGet("trending/all/week", "")).results || []).filter(x => (x.media_type === "movie" || x.media_type === "tv") && x.poster_path).slice(0, 12); }
+    catch (er) { $("#foundH").textContent = ""; $("#found").innerHTML = `<div class="empty">Введите название фильма или сериала. Если TMDB не отвечает, включите VPN.</div>`; return; }
+  }
+  if (tab === "search" && !(found.length && $("#q").value.trim())) $("#found").innerHTML = foundCards(findTrend);
+}
+$("#qX").onclick = () => { $("#q").value = ""; found = []; sgHide(); searchIdle(); $("#q").focus(); };
+$("#q").addEventListener("input", () => { if (!$("#q").value.trim()) { found = []; searchIdle(); } else $("#qX").hidden = false; });
 $("#qBtn").onclick = doSearch;
 $("#q").onkeydown = e => { if (e.key === "Enter") doSearch(); };
 
@@ -1287,7 +1313,7 @@ async function addMovie(tid, status, mt = "movie") {
   if (error) { toast(error.message + ". Выполнили SQL из migration_series.sql?"); return false; }
   await load(); toast("Добавлено: " + row.title); return true;
 }
-$("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if (c && e.target.closest("img,h2")) return openMovie(+c.dataset.tid, c.dataset.mt); const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s, e.target.dataset.mt)) doSearch(); };
+$("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if (c && e.target.closest("img,h2")) return openMovie(+c.dataset.tid, c.dataset.mt); const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s, e.target.dataset.mt)) { if ($("#q").value.trim() && found.length) doSearch(); else searchIdle(); } };
 
 function rateDialog(title, rating, note, date) {
   return new Promise(res => {
