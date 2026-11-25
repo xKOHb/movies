@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://USERNAME.github.io/REPO/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0b0f;--paper:#16161d;--mut:#8a8a96;--line:#26262f;--tx:#f2f2f4;--field:#121218;--glass:#f2f2f410;--acc:#f5b041;--on-acc:#1a1204}
 [data-theme=light]{--bg:#f2f2f5;--paper:#ffffff;--mut:#6b6b78;--line:#dcdce3;--tx:#1a1a22;--field:#ffffff;--glass:#1a1a220a;--acc:#c27a0e;--on-acc:#ffffff}
@@ -264,6 +264,36 @@ body{overflow-x:clip}
 [hidden]{display:none!important}
 .sel{outline:3px solid var(--acc);outline-offset:-3px}
 #selBar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:8px 14px;box-shadow:0 10px 30px #0008;max-width:calc(100vw - 24px)}
+/* ===== новый вид: типографика и движение (25.11.2026) ===== */
+:root{--disp:Oswald,"Arial Narrow","Franklin Gothic Medium",Impact,sans-serif}
+.hero h1,.welcome h1,.greet h2,.sec-h h3,.logo b,#profileView .pf-name h2{font-family:var(--disp);font-weight:600;letter-spacing:.012em}
+.hero h1{font-size:3.4rem;line-height:1;margin-bottom:12px}
+.greet h2{font-size:1.7rem}.sec-h h3{font-size:1.3rem}.logo b{font-size:1.25rem}
+.hero{min-height:380px}
+.hero-bg{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform-origin:70% 40%;transition:opacity 1s ease}
+.hero-bg.in{opacity:1;animation:kenburns 16s ease-out both}
+.hero::before{z-index:1}.hero-in{z-index:2}
+.hero-in>*{animation:heroIn .7s cubic-bezier(.2,.7,.2,1) both}
+.hero-in>:nth-child(2){animation-delay:.08s}.hero-in>:nth-child(3){animation-delay:.16s}.hero-in>:nth-child(4){animation-delay:.24s}.hero-in>:nth-child(5){animation-delay:.32s}
+.hero-p:empty{display:none}
+.hero .eyebrow{text-transform:none;letter-spacing:.02em;font-size:.95rem;font-weight:600}
+@keyframes kenburns{from{transform:scale(1.14)}to{transform:scale(1)}}
+@keyframes heroIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.tile img{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.tile:hover img,.tile:focus-visible img{transform:scale(1.07)}
+.tabs button{transition:background .2s,color .2s}
+.main:active,.tile:active{transform:scale(.97)}
+dialog[open]{animation:dlgIn .24s cubic-bezier(.2,.7,.2,1)}
+dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
+#toast:not([hidden]){animation:toastIn .26s cubic-bezier(.2,.7,.2,1)}
+.nums button.on{animation:starPop .22s ease}
+@keyframes dlgIn{from{opacity:0;transform:translateY(14px) scale(.97)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,14px)}}
+@keyframes starPop{50%{transform:scale(1.25)}}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(max-width:640px){.hero h1{font-size:2.3rem}.hero{min-height:320px}}
+@media(prefers-reduced-motion:reduce){*,::before,::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -471,6 +501,7 @@ function go(t) {
   if (t === "colls") colls = undefined;
   selMode = false; selSet.clear(); updBar();
   render();
+  const vv = $("#" + VIEWS[t]); if (vv && vv.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) vv.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 240, easing: "cubic-bezier(.2,.7,.2,1)" });
 }
 $("#tabs").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
 ["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
@@ -512,22 +543,25 @@ function pickHero(force) {
   return cur;
 }
 function heroHtml(m, eb = "Что посмотреть сегодня") {
-  const inf = heroInfo[keyOf(m)] || {}, tv = m.media_type === "tv";
-  const bg = inf.backdrop ? `style="background-image:url(${BK}${inf.backdrop})"` : "";
+  const tv = m.media_type === "tv";
   const meta = [m.year, tv ? "сериал" : "", m.runtime ? m.runtime + (tv ? " мин/серия" : " мин") : "", m.genres, m.tmdb_rating ? "TMDB " + m.tmdb_rating : ""].filter(Boolean).map(esc).join(" · ");
-  const ov = inf.overview ? esc(inf.overview.length > 230 ? inf.overview.slice(0, 227) + "…" : inf.overview) : "";
-  return `<section class="hero" ${bg}><div class="hero-in"><span class="eyebrow">${esc(eb)}</span><h1>${esc(m.title)}</h1><div class="meta">${meta}</div>${ov ? `<p>${ov}</p>` : ""}<div class="acts"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть</button><button data-again="1">Другой вариант</button></div></div></section>`;
+  return `<section class="hero"><div class="hero-bg"></div><div class="hero-in"><span class="eyebrow">${esc(eb)}</span><h1>${esc(m.title)}</h1><div class="meta">${meta}</div><p class="hero-p"></p><div class="acts"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть</button><button data-again="1">Другой вариант</button></div></div></section>`;
+}
+function applyHero(sel, k) {
+  const i = heroInfo[k] || {}, bg = $(sel + " .hero-bg"), p = $(sel + " .hero-p");
+  if (bg && i.backdrop) { bg.style.backgroundImage = `url(${BK}${i.backdrop})`; requestAnimationFrame(() => bg.classList.add("in")); }
+  if (p && i.overview) p.textContent = i.overview.length > 230 ? i.overview.slice(0, 227) + "…" : i.overview;
 }
 async function fillHero(force) {
   const m = pickHero(force), box = $("#heroBox"); if (!box) return;
   if (!m) { box.innerHTML = `<section class="hero welcome"><div class="hero-in"><span class="eyebrow">Добро пожаловать</span><h1>Начните свою коллекцию</h1><p>Добавьте фильмы и сериалы, которые хотите посмотреть, или перенесите список с Кинопоиска. Здесь появятся ваша подборка дня и рекомендации.</p><div class="acts"><button class="main" data-go="search">Найти фильм</button><button data-go="import">Импорт с Кинопоиска</button></div></div></section>`; return; }
   box.innerHTML = heroHtml(m);
-  const k = keyOf(m);
+  const k = keyOf(m); applyHero("#heroBox", k);
   if (!heroInfo[k]) {
     try {
       const d = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}`);
       heroInfo[k] = { backdrop: d.backdrop_path, overview: d.overview || "" };
-      if (heroKey === k && tab === "home" && $("#heroBox")) $("#heroBox").innerHTML = heroHtml(m);
+      if (heroKey === k && tab === "home" && $("#heroBox")) applyHero("#heroBox", k);
     } catch (e) { heroInfo[k] = {}; }
   }
 }
@@ -763,9 +797,9 @@ async function pairPick(id, again) {
   let m = again ? null : pool.find(x => keyOf(x) === pairKey);
   if (!m) { const p = pool.length > 1 ? pool.filter(x => keyOf(x) !== pairKey) : pool; m = p[Math.floor(Math.random() * p.length)]; pairKey = keyOf(m); }
   box.innerHTML = heroHtml(m, eb);
-  const k = keyOf(m);
+  const k = keyOf(m); applyHero("#pairBox", k);
   if (!heroInfo[k]) {
-    try { const d = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}`); heroInfo[k] = { backdrop: d.backdrop_path, overview: d.overview || "" }; if (pairKey === k && $("#pairBox")) $("#pairBox").innerHTML = heroHtml(m, eb); }
+    try { const d = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}`); heroInfo[k] = { backdrop: d.backdrop_path, overview: d.overview || "" }; if (pairKey === k && $("#pairBox")) applyHero("#pairBox", k); }
     catch (e) { heroInfo[k] = {}; }
   }
 }
