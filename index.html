@@ -262,6 +262,8 @@ body{overflow-x:clip}
 .top::before{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);z-index:-1;background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .dlg-date{display:flex;align-items:center;gap:10px;margin:12px 0 8px;color:var(--mut);font-size:.9rem}.dlg-date input{flex:1}
 [hidden]{display:none!important}
+.sel{outline:3px solid var(--acc);outline-offset:-3px}
+#selBar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:8px 14px;box-shadow:0 10px 30px #0008;max-width:calc(100vw - 24px)}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -307,6 +309,7 @@ body{overflow-x:clip}
     <button data-t="watchlist">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
     <button data-t="recs">Рекомендации</button>
+    <button data-t="colls">Коллекции</button>
     <button data-t="picks">Подборка</button>
     <button data-t="search">Найти фильм</button>
   </div>
@@ -333,6 +336,7 @@ body{overflow-x:clip}
       </select>
       <select id="fs"><option value="new">Сначала новые</option><option value="my">По моей оценке</option><option value="tm">По рейтингу TMDB</option><option value="yr">По году</option><option value="rt">По длительности</option></select>
       <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
+      <button id="selBtn">Выбрать</button>
     </div>
     <div id="pick" hidden></div>
     <div class="posters" id="list"></div>
@@ -346,6 +350,7 @@ body{overflow-x:clip}
     <div class="grid" id="found"></div>
   </div>
 
+  <div id="collView" hidden></div>
   <div id="recsView" hidden></div>
   <div id="picksView" hidden></div>
   <div id="profileView" hidden></div>
@@ -353,6 +358,7 @@ body{overflow-x:clip}
   <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
   <dialog id="pfDlg"><form method="dialog"><h2>О себе</h2><label class="lbl" for="pfName">Имя</label><input id="pfName" maxlength="40" placeholder="Как вас называть"><label class="lbl" for="pfBio">Обо мне</label><textarea id="pfBio" rows="4" maxlength="400" placeholder="Пара слов о том, какое кино вы любите" style="width:100%"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
+  <div id="selBar" hidden><b id="selN">0</b> выбрано <button data-a="rate">Оценить по очереди</button><button data-a="seen" id="selSeen">В «Просмотрено»</button><button data-a="want" id="selWant">В «Хочу»</button><button data-a="del">Удалить</button><button data-a="x">Отмена</button></div>
   <div id="toast" hidden></div>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
@@ -435,6 +441,7 @@ function render() {
   for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).innerHTML = `${L[k]} <span class="cnt">${movies.filter(m => m.status === k).length}</span>`;
   if (tab === "home") return renderHome();
   if (tab === "recs") return renderRecs();
+  if (tab === "colls") return renderColls();
   if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
   if (tab === "search") return;
@@ -450,16 +457,19 @@ function render() {
   animNext = false;
   box.innerHTML = l.length ? l.map((m, i) => view === "rows" ? row(m, i) : tile(m, i)).join("")
     : `<div class="empty">${movies.some(m => m.status === tab) ? "Ничего не найдено. Измените фильтры." : "Здесь пусто. Откройте «Найти фильм» и добавьте первый."}</div>`;
+  markSel();
 }
 
 /* ---------- вкладки и фильтры ---------- */
-const VIEWS = { recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 function go(t) {
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
   if (t === "profile") friendsLoaded = false;
+  if (t === "colls") colls = undefined;
+  selMode = false; selSet.clear(); updBar();
   render();
 }
 $("#tabs").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
@@ -543,12 +553,13 @@ function renderHome() {
       <div class="stat"><b>${hours}</b><span>часов кино</span></div>
     </div>
     <div id="epBox"></div>
+    <div id="premBox"></div>
     <div id="feedBox"></div>
     ${want.length ? secHtml("Хочу посмотреть", "Недавно добавленное", want.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watchlist") : ""}
     ${w.length ? secHtml("Недавно просмотрено", "", w.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watched") : ""}
     <div id="recBox"></div>
     <div id="trendBox"></div>`;
-  fillHero(false); loadRecs(tok); loadTrend(tok); loadEps(tok); loadFeed(tok);
+  fillHero(false); loadRecs(tok); loadTrend(tok); loadEps(tok); loadPrem(tok); loadFeed(tok);
 }
 async function loadRecs(tok, sel = "#recBox") {
   const watched = movies.filter(m => m.status === "watched" && m.my_rating);
@@ -808,8 +819,109 @@ let deferredInstall = null;
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; const b = $("#mInstall"); if (b) b.hidden = false; });
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
 
+
+/* ---------- выбор в списках, премьеры, режиссёры и актёры, коллекции ---------- */
+let selMode = false; const selSet = new Set();
+function markSel() { document.querySelectorAll("#list [data-tid]").forEach(b => b.classList.toggle("sel", selMode && selSet.has(b.dataset.tid + "-" + (b.dataset.mt || "movie")))); }
+function updBar() {
+  $("#selBar").hidden = !selMode; $("#selN").textContent = selSet.size; $("#selBtn").textContent = selMode ? "Готово" : "Выбрать";
+  $("#selSeen").hidden = tab !== "watchlist"; $("#selWant").hidden = tab !== "watched";
+}
+$("#selBtn").onclick = () => { selMode = !selMode; selSet.clear(); markSel(); updBar(); };
+$("#selBar").onclick = async e => {
+  const a = e.target.dataset.a; if (!a) return;
+  if (a === "x") { selMode = false; selSet.clear(); markSel(); return updBar(); }
+  const ms = movies.filter(m => selSet.has(keyOf(m))); if (!ms.length) return toast("Ничего не выбрано");
+  const ids = ms.map(m => m.id); let err = null;
+  if (a === "del") { if (!confirm("Удалить выбранное (" + ms.length + ")?")) return; err = (await sb.from("movies").delete().in("id", ids)).error; }
+  else if (a === "seen") err = (await sb.from("movies").update({ status: "watched", watched_at: today() }).in("id", ids)).error;
+  else if (a === "want") { if (!confirm("Вернуть в «Хочу»? Оценки и даты просмотра будут сброшены.")) return; err = (await sb.from("movies").update({ status: "watchlist", my_rating: null, watched_at: null }).in("id", ids)).error; }
+  else if (a === "rate") {
+    for (const m of ms) {
+      const r = await rateDialog(m.title, m.my_rating, m.note, m.watched_at || (m.status === "watchlist" ? today() : ""));
+      if (!r) break;
+      const x = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, watched_at: r.date }).eq("id", m.id);
+      if (x.error) { err = x.error; break; }
+    }
+  }
+  if (err) return toast(err.message);
+  selSet.clear(); await load(); updBar();
+};
+const bTile = (m, t, b, i) => `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}"><img src="${IMG}${m.poster}" alt="${esc(m.title)}" loading="lazy"><span class="ov">${esc(m.title)} <i>${esc(t)}</i></span><span class="bd"><span>${esc(b)}</span></span></button>`;
+async function loadPrem(tok) {
+  const w = movies.filter(m => m.status === "watchlist" && m.media_type !== "tv" && m.poster).slice(0, 40); if (!w.length) return;
+  const rs = await Promise.all(w.map(async m => {
+    const k = "m" + m.tmdb_id;
+    if (!(k in homeCache)) { try { homeCache[k] = await tmdbGet("movie/" + m.tmdb_id); } catch (e) { return null; } }
+    return { m, d: homeCache[k].release_date || "" };
+  }));
+  if (tok !== homeTok || !$("#premBox")) return;
+  const t0 = today(), lim = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), fmt = d => new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  const l = rs.filter(r => r && r.d >= lim).map(r => ({ ...r, up: r.d > t0 })).sort((a, b) => a.up !== b.up ? (a.up ? -1 : 1) : a.up ? a.d.localeCompare(b.d) : b.d.localeCompare(a.d));
+  $("#premBox").innerHTML = l.length ? secHtml("Премьеры", "Из «Хочу посмотреть»: скоро выходят и вышли недавно", l.map((r, i) => bTile(r.m, (r.up ? "Выходит " : "Вышел ") + fmt(r.d), fmt(r.d), i)).join("")) : "";
+}
+async function loadPeople() {
+  const box = $("#ppBox"); if (!box) return;
+  const seeds = movies.filter(m => m.status === "watched" && (m.my_rating || 0) >= 8).slice(0, 40);
+  if (seeds.length < 3) { box.innerHTML = `<h3>Режиссёры и актёры</h3><div class="meta">Появятся, когда у вас будет хотя бы 3 фильма с оценкой 8+.</div>`; return; }
+  box.innerHTML = `<h3>Режиссёры и актёры</h3><div class="sk" style="height:90px"></div>`;
+  const cr = await Promise.all(seeds.map(async m => {
+    const k = "c" + keyOf(m);
+    if (!(k in homeCache)) { try { homeCache[k] = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}/credits`); } catch (e) { return null; } }
+    return { m, c: homeCache[k] };
+  }));
+  if (tab !== "profile" || !$("#ppBox")) return;
+  const D = {}, A = {}, add = (o, p) => { const e = o[p.id] || (o[p.id] = { name: p.name, n: 0 }); e.n++; };
+  cr.filter(Boolean).forEach(({ c }) => { (c.crew || []).filter(p => p.job === "Director").forEach(p => add(D, p)); (c.cast || []).slice(0, 5).forEach(p => add(A, p)); });
+  const top = o => Object.values(o).filter(e => e.n >= 2).sort((a, b) => b.n - a.n).slice(0, 5);
+  const li = l => l.length ? l.map(e => `<div class="gb"><span>${esc(e.name)}</span><i style="width:${Math.round(e.n / l[0].n * 100)}%"></i><span>${e.n}</span></div>`).join("") : `<div class="meta">Пока нет повторов: нужны хотя бы 2 фильма.</div>`;
+  $("#ppBox").innerHTML = `<h3>Режиссёры и актёры</h3><div class="meta" style="margin-bottom:8px">По вашим фильмам с оценкой 8+</div><div class="pf-sec cols"><div class="panel"><h3>Режиссёры</h3>${li(top(D))}</div><div class="panel"><h3>Актёры</h3>${li(top(A))}</div></div>`;
+}
+let colls, colOpen = null, colFound = [];
+async function loadColls() {
+  const [c, m, it] = await Promise.all([sb.from("collections").select("*").order("created_at", { ascending: false }), sb.from("collection_members").select("*"), sb.from("collection_items").select("*").order("created_at", { ascending: false })]);
+  if (c.error) { colls = null; return; }
+  colls = c.data.map(x => ({ ...x, members: (m.data || []).filter(y => y.collection_id === x.id), items: (it.data || []).filter(y => y.collection_id === x.id) }));
+}
+const whoName = id => id === userId ? "Вы" : (((friendData[id] || {}).profile || {}).display_name || "Друг");
+async function renderColls(reload) {
+  let v = $("#collView");
+  if (colls === undefined || reload) { v.innerHTML = `<div class="sk" style="height:120px"></div>`; await Promise.all([loadColls(), friendsLoaded ? 0 : loadFriends()]); v = $("#collView"); if (tab !== "colls") return; }
+  if (colls === null) { v.innerHTML = `<div class="empty">Коллекции ещё не подключены. Выполните migration_collections.sql в Supabase и обновите страницу.</div>`; return; }
+  const c = colls.find(x => x.id === colOpen), names = x => esc([x.owner, ...x.members.map(y => y.user_id)].map(whoName).join(", "));
+  if (!c) {
+    colOpen = null;
+    v.innerHTML = `<div class="greet"><h2>Общие коллекции</h2><button class="main" data-c="new">Новая коллекция</button></div>${colls.length ? `<div class="fr-grid">${colls.map(x => `<div class="panel"><h3>${esc(x.name)}</h3><div class="meta">Фильмов: ${x.items.length} · участники: ${names(x)}</div><div class="acts" style="margin-top:10px"><button class="main" data-co="${x.id}">Открыть</button></div></div>`).join("")}</div>` : `<div class="nudge">Коллекций пока нет. Создайте, например, «Фильмы на выходные», и пригласите друга: вы оба сможете добавлять туда фильмы.</div>`}`;
+    return;
+  }
+  const mine = c.owner === userId, inv = (friends || []).filter(f => f.id !== c.owner && !c.members.some(y => y.user_id === f.id));
+  v.innerHTML = `<button class="lnk" data-c="back">← Все коллекции</button><div class="greet"><h2>${esc(c.name)}</h2><span class="meta">Участники: ${names(c)}</span></div>
+    <div class="bar" style="margin:0 0 12px"><input id="colQ" placeholder="Найти фильм и добавить в коллекцию" style="flex:1;min-width:200px"><button class="main" data-c="find">Искать</button></div><div id="colRes"></div>
+    ${c.items.length ? c.items.map(x => `<div class="panel" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;padding:10px">${x.poster ? `<img src="${IMG}${esc(x.poster)}" alt="" style="width:44px;border-radius:6px">` : ""}<div style="flex:1;min-width:0"><button class="lnk" data-tid="${x.tmdb_id}" data-mt="${x.media_type}" style="padding:0;color:var(--tx);font-weight:700;text-align:left">${esc(x.title)}</button> <span class="meta">${esc(x.year || "")}</span><div class="meta">Добавил(а): ${esc(whoName(x.added_by))}</div></div>${mine || x.added_by === userId ? `<button data-ci="${x.id}">Убрать</button>` : ""}</div>`).join("") : `<div class="nudge">Коллекция пуста. Найдите фильм выше и добавьте.</div>`}
+    <div class="panel" style="margin-top:14px">${mine && inv.length ? `<div class="bar" style="margin:0 0 12px"><select id="colFr">${inv.map(f => `<option value="${f.id}">${esc(fName(f))}</option>`).join("")}</select><button data-c="inv">Пригласить друга</button></div>` : ""}${mine ? `<button data-c="del">Удалить коллекцию</button>` : `<button data-c="leave">Выйти из коллекции</button>`}${mine && !friends.length ? `<div class="meta">Чтобы пригласить участников, сначала добавьте друзей в профиле.</div>` : ""}</div>`;
+}
+$("#collView").onclick = async e => {
+  const t = e.target.closest("[data-tid]"); if (t) return openMovie(+t.dataset.tid, t.dataset.mt);
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset, c = colls && colls.find(x => x.id === colOpen), done = async er => { if (er) return toast(er.message); renderColls(true); };
+  if (d.co) { colOpen = +d.co; return renderColls(); }
+  if (d.c === "back") { colOpen = null; return renderColls(); }
+  if (d.c === "new") { const n = (prompt("Название коллекции") || "").trim(); if (!n) return; const { data, error } = await sb.from("collections").insert({ name: n }).select().single(); if (error) return toast(error.message); colOpen = data.id; return renderColls(true); }
+  if (!c) return;
+  if (d.c === "find") {
+    const q = $("#colQ").value.trim(); if (!q) return;
+    try { colFound = ((await tmdbGet("search/multi", `query=${encodeURIComponent(q)}`)).results || []).filter(x => (x.media_type === "movie" || x.media_type === "tv") && x.poster_path).slice(0, 6); } catch (er) { return toast("TMDB не отвечает. Включите VPN."); }
+    $("#colRes").innerHTML = colFound.length ? `<div class="rail">${colFound.map((x, i) => `<button class="tile" data-add="${i}" style="--i:${i}" title="Добавить: ${esc(x.title || x.name)}"><img src="${IMG}${x.poster_path}" alt=""><span class="ov">${esc(x.title || x.name)} <i>+ добавить</i></span></button>`).join("")}</div>` : `<div class="meta">Ничего не нашлось.</div>`; return;
+  }
+  if (d.add !== undefined) { const x = colFound[+d.add]; return done((await sb.from("collection_items").upsert({ collection_id: c.id, tmdb_id: x.id, media_type: x.media_type, title: x.title || x.name, year: (x.release_date || x.first_air_date || "").slice(0, 4), poster: x.poster_path }, { onConflict: "collection_id,tmdb_id,media_type", ignoreDuplicates: true })).error); }
+  if (d.ci) return done((await sb.from("collection_items").delete().eq("id", +d.ci)).error);
+  if (d.c === "inv") return done((await sb.from("collection_members").insert({ collection_id: c.id, user_id: $("#colFr").value })).error);
+  if (d.c === "del") { if (!confirm("Удалить коллекцию для всех участников?")) return; colOpen = null; return done((await sb.from("collections").delete().eq("id", c.id)).error); }
+  if (d.c === "leave") { if (!confirm("Выйти из коллекции?")) return; colOpen = null; return done((await sb.from("collection_members").delete().eq("collection_id", c.id).eq("user_id", userId)).error); }
+};
+
 /* ---------- действия над карточками ---------- */
-$("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
+$("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (!t) return; if (selMode) { const k = t.dataset.tid + "-" + (t.dataset.mt || "movie"); selSet.has(k) ? selSet.delete(k) : selSet.add(k); markSel(); updBar(); return; } openMovie(+t.dataset.tid, t.dataset.mt); };
 
 function askRating(def) {
   const v = prompt("Ваша оценка от 1 до 10", def || "");
@@ -1018,6 +1130,7 @@ function renderProfile() {
       <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
     </div>
     <div class="pf-sec" id="yrBox"></div>
+    <div class="pf-sec" id="ppBox"></div>
     <div class="pf-sec"><h3>Друзья</h3><div id="frBox"></div></div>
     <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
     <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
@@ -1026,7 +1139,7 @@ function renderProfile() {
   $("#pfBn").onclick = () => pickImage("banner");
   $("#pfEdit").onclick = editProfile;
   $("#copyPrompt").onclick = copyPrompt;
-  yearBox(); renderFriends();
+  yearBox(); loadPeople(); renderFriends();
 }
 function copyPrompt() {
   const w = movies.filter(m => m.status === "watched").map(m => `${m.title} (${m.year}) - ${m.my_rating}/10${m.note ? ", " + m.note : ""}`).join("\n") || "пока нет";
