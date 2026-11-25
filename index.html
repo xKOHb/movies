@@ -247,6 +247,19 @@ details.taste .main{margin:6px 0 16px}
 .fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:18px}
 .fr{display:flex;gap:14px}.fr-av{width:56px;height:56px;border-radius:50%;background:var(--paper) center/cover;border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--acc);flex:none}
 .fr .pct{font-size:1.5rem;font-weight:800;color:var(--acc);line-height:1.2}
+/* ===== правки по скриншотам (25.11.2026) ===== */
+:root{color-scheme:dark}[data-theme=light]{color-scheme:light}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mut) 40%,transparent) transparent}
+*::-webkit-scrollbar{height:8px;width:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--mut) 40%,transparent);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--acc);background-clip:content-box}
+*::-webkit-scrollbar-button,*::-webkit-scrollbar-corner{display:none}
+.tabs{scrollbar-width:none}
+body{overflow-x:clip}
+.top{background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.top::before{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);z-index:-1;background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.dlg-date{display:flex;align-items:center;gap:10px;margin:12px 0 8px;color:var(--mut);font-size:.9rem}.dlg-date input{flex:1}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -290,7 +303,6 @@ details.taste .main{margin:6px 0 16px}
     <button data-t="watchlist">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
     <button data-t="recs">Рекомендации</button>
-    <button data-t="friends">Друзья</button>
     <button data-t="picks">Подборка</button>
     <button data-t="search">Найти фильм</button>
   </div>
@@ -331,10 +343,9 @@ details.taste .main{margin:6px 0 16px}
   </div>
 
   <div id="recsView" hidden></div>
-  <div id="friendsView" hidden></div>
   <div id="picksView" hidden></div>
   <div id="profileView" hidden></div>
-  <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
+  <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><label class="dlg-date">Когда смотрели <input type="date" id="dDate"></label><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
   <dialog id="pfDlg"><form method="dialog"><h2>О себе</h2><label class="lbl" for="pfName">Имя</label><input id="pfName" maxlength="40" placeholder="Как вас называть"><label class="lbl" for="pfBio">Обо мне</label><textarea id="pfBio" rows="4" maxlength="400" placeholder="Пара слов о том, какое кино вы любите" style="width:100%"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
@@ -384,7 +395,7 @@ async function load() {
   if (!movies.length) $("#list").innerHTML = skel(12);
   const { data, error } = await sb.from("movies").select("*").eq("user_id", userId).order("created_at", { ascending: false });
   if (error) return alert("Ошибка загрузки: " + error.message);
-  movies = data;
+  movies = data.sort(cmpNew);
   render();
 }
 
@@ -420,7 +431,6 @@ function render() {
   for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).innerHTML = `${L[k]} <span class="cnt">${movies.filter(m => m.status === k).length}</span>`;
   if (tab === "home") return renderHome();
   if (tab === "recs") return renderRecs();
-  if (tab === "friends") return renderFriends();
   if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
   if (tab === "search") return;
@@ -439,13 +449,13 @@ function render() {
 }
 
 /* ---------- вкладки и фильтры ---------- */
-const VIEWS = { recs: "recsView", friends: "friendsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+const VIEWS = { recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 function go(t) {
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
-  if (t === "friends") friendsLoaded = false;
+  if (t === "profile") friendsLoaded = false;
   render();
 }
 $("#tabs").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
@@ -487,12 +497,12 @@ function pickHero(force) {
   }
   return cur;
 }
-function heroHtml(m) {
+function heroHtml(m, eb = "Что посмотреть сегодня") {
   const inf = heroInfo[keyOf(m)] || {}, tv = m.media_type === "tv";
   const bg = inf.backdrop ? `style="background-image:url(${BK}${inf.backdrop})"` : "";
   const meta = [m.year, tv ? "сериал" : "", m.runtime ? m.runtime + (tv ? " мин/серия" : " мин") : "", m.genres, m.tmdb_rating ? "TMDB " + m.tmdb_rating : ""].filter(Boolean).map(esc).join(" · ");
   const ov = inf.overview ? esc(inf.overview.length > 230 ? inf.overview.slice(0, 227) + "…" : inf.overview) : "";
-  return `<section class="hero" ${bg}><div class="hero-in"><span class="eyebrow">Что посмотреть сегодня</span><h1>${esc(m.title)}</h1><div class="meta">${meta}</div>${ov ? `<p>${ov}</p>` : ""}<div class="acts"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть</button><button data-again="1">Другой вариант</button></div></div></section>`;
+  return `<section class="hero" ${bg}><div class="hero-in"><span class="eyebrow">${esc(eb)}</span><h1>${esc(m.title)}</h1><div class="meta">${meta}</div>${ov ? `<p>${ov}</p>` : ""}<div class="acts"><button class="main" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}">Открыть</button><button data-again="1">Другой вариант</button></div></div></section>`;
 }
 async function fillHero(force) {
   const m = pickHero(force), box = $("#heroBox"); if (!box) return;
@@ -528,11 +538,12 @@ function renderHome() {
       <div class="stat"><b>${avg}</b><span>средняя оценка</span></div>
       <div class="stat"><b>${hours}</b><span>часов кино</span></div>
     </div>
+    <div id="epBox"></div>
     ${want.length ? secHtml("Хочу посмотреть", "Недавно добавленное", want.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watchlist") : ""}
     ${w.length ? secHtml("Недавно просмотрено", "", w.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watched") : ""}
     <div id="recBox"></div>
     <div id="trendBox"></div>`;
-  fillHero(false); loadRecs(tok); loadTrend(tok);
+  fillHero(false); loadRecs(tok); loadTrend(tok); loadEps(tok);
 }
 async function loadRecs(tok, sel = "#recBox") {
   const watched = movies.filter(m => m.status === "watched" && m.my_rating);
@@ -604,8 +615,8 @@ const matchText = c => c.match !== null ? `Совпадение вкусов ${c
 const avStyle = f => f.profile.avatar_url ? `style="background-image:url('${esc(f.profile.avatar_url)}')"` : "";
 
 async function renderFriends() {
-  const v = $("#friendsView");
-  if (!friendsLoaded) { v.innerHTML = `<div class="sk" style="height:140px"></div>`; await loadFriends(); if (tab !== "friends") return; }
+  let v = $("#frBox"); if (!v) return;
+  if (!friendsLoaded) { v.innerHTML = `<div class="sk" style="height:140px"></div>`; await loadFriends(); v = $("#frBox"); if (tab !== "profile" || !v) return; }
   if (friends === null) { v.innerHTML = `<div class="empty">Друзья ещё не подключены. Выполните migration_friends.sql в Supabase и обновите страницу.</div>`; return; }
   if (!myCode) { try { myCode = (await sb.rpc("my_invite_code")).data || ""; } catch (e) {} }
   const cards = friends.map(f => {
@@ -621,17 +632,20 @@ async function renderFriends() {
     ${friends.length ? `<div class="fr-grid">${cards}</div>` : `<div class="nudge">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов и «что смотреть вместе».</div>`}`;
 }
 function showFriend(id) {
-  const f = friendData[id], c = compare(f), v = $("#friendsView");
+  const f = friendData[id], c = compare(f), v = $("#frBox");
   const fav = f.movies.filter(x => x.status === "watched" && x.my_rating >= 8).sort((a, b) => b.my_rating - a.my_rating).slice(0, 16);
   const want = f.movies.filter(x => x.status === "watchlist").slice(0, 16);
   const L = l => l.map((x, i) => tile(x, i)).join("");
   v.innerHTML = `<button class="lnk" id="frBack">← Назад к друзьям</button>
     <div class="greet"><h2>${esc(fName(f))}</h2><span class="meta">${matchText(c)}</span></div>
+    <div id="pairBox"></div>
     ${c.together.length ? secHtml("Смотреть вместе", "Фильмы из «Хочу посмотреть» у вас обоих", L(c.together)) : `<div class="nudge">Пока нет фильмов, которые вы оба хотите посмотреть.</div>`}
     ${fav.length ? secHtml("Любимое у друга", "Его оценки 8–10", L(fav)) : ""}
     ${want.length ? secHtml("Хочет посмотреть", "", L(want)) : ""}`;
+  curPair = id; pairPick(id);
 }
-$("#friendsView").onclick = async e => {
+const frClick = async e => {
+  if (e.target.closest("[data-again]")) return pairPick(curPair, true);
   const t = e.target.closest("[data-tid]"); if (t) return openMovie(+t.dataset.tid, t.dataset.mt);
   const b = e.target.closest("button"); if (!b) return;
   if (b.id === "frCopy") return navigator.clipboard.writeText(myCode).then(() => toast("Код скопирован"), () => toast("Не удалось скопировать"));
@@ -675,7 +689,7 @@ async function renderRecs() {
   loadRecs(tok, "#rcSim"); loadGenreRow(tok);
   if (!friendsLoaded) await loadFriends();
   if (tok !== homeTok || !$("#rcFr")) return;
-  if (!friends || !friends.length) { $("#rcFr").innerHTML = `<div class="nudge">Добавьте друзей во вкладке «Друзья»: здесь появятся фильмы, которые они оценили на 9–10.</div>`; return; }
+  if (!friends || !friends.length) { $("#rcFr").innerHTML = `<div class="nudge">Добавьте друзей в профиле, в разделе «Друзья»: здесь появятся фильмы, которые они оценили на 9–10.</div>`; return; }
   const mine = new Set(movies.map(keyOf)), seen = new Map();
   friends.forEach(f => f.movies.forEach(x => {
     if (x.status !== "watched" || (x.my_rating || 0) < 9 || mine.has(keyOf(x))) return;
@@ -685,6 +699,76 @@ async function renderRecs() {
   $("#rcFr").innerHTML = l.length ? secHtml("Друзья советуют", "Оценили на 9–10 (на постере оценка друга)", l.map((e, i) => tile(e.x, i)).join("")) : "";
 }
 $("#recsView").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
+
+
+/* ---------- даты, итоги года, кино на двоих, новые серии (25.11.2026) ---------- */
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+function cmpNew(a, b) {
+  return (b.watched_at ? 1 : 0) - (a.watched_at ? 1 : 0) || (b.watched_at || "").localeCompare(a.watched_at || "") || (b.created_at || "").localeCompare(a.created_at || "");
+}
+const imDate = s => {
+  s = imClean(s); let m = s.match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return m[0];
+  m = s.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/); return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null;
+};
+function yearBox(y) {
+  const box = $("#yrBox"); if (!box) return;
+  const dated = movies.filter(m => m.status === "watched" && m.watched_at);
+  const undated = movies.filter(m => m.status === "watched" && !m.watched_at).length;
+  const years = [...new Set(dated.map(m => m.watched_at.slice(0, 4)))].sort().reverse();
+  const note = undated ? `<p class="hint">Без даты просмотра: ${undated}. Дату можно указать в окне оценки (карточка фильма → «Просмотрено») или повторным импортом файла с датами.</p>` : "";
+  if (!years.length) { box.innerHTML = `<h3>Итоги года</h3><div class="meta">Появятся, когда у просмотренных фильмов будет дата просмотра. Она ставится сама, когда вы отмечаете фильм просмотренным.</div>${note}`; return; }
+  y = y || (years.includes(String(new Date().getFullYear())) ? String(new Date().getFullYear()) : years[0]);
+  const l = dated.filter(m => m.watched_at.startsWith(y)), r = l.filter(m => m.my_rating);
+  const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
+  const hours = Math.round(l.filter(m => m.media_type !== "tv").reduce((a, m) => a + (m.runtime || 0), 0) / 60);
+  const gc = {}; l.forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
+  const tg = Object.entries(gc).sort((a, b) => b[1] - a[1])[0];
+  const mon = Array.from({ length: 12 }, (_, i) => l.filter(m => +m.watched_at.slice(5, 7) === i + 1).length), mx = Math.max(1, ...mon);
+  const best = [...r].sort((a, b) => b.my_rating - a.my_rating).slice(0, 6);
+  box.innerHTML = `<h3>Итоги года <select id="yrSel" style="width:auto;margin-left:10px">${years.map(x => `<option ${x === y ? "selected" : ""}>${x}</option>`).join("")}</select></h3>
+    <div class="stats"><div class="stat"><b>${l.length}</b><span>просмотрено</span></div><div class="stat"><b>${hours}</b><span>часов кино</span></div><div class="stat"><b>${avg}</b><span>средняя оценка</span></div><div class="stat"><b>${tg ? esc(tg[0]) : "–"}</b><span>главный жанр</span></div></div>
+    <div class="panel" style="margin-top:14px"><h3>По месяцам</h3><div class="hist">${mon.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / mx * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div></div>
+    ${best.length ? `<h3 style="margin:18px 0 10px">Лучшее за год</h3><div class="strip">${best.map((m, i) => tile(m, i)).join("")}</div>` : ""}${note}`;
+  $("#yrSel").onchange = e => yearBox(e.target.value);
+}
+let curPair = null, pairKey = null;
+async function pairPick(id, again) {
+  const f = friendData[id], box = $("#pairBox"); if (!f || !box) return;
+  const c = compare(f), seen = (arr, k) => arr.some(x => keyOf(x) === k && x.status === "watched");
+  let pool = c.together, eb = "Кино на двоих";
+  if (!pool.length) {
+    const a = movies.filter(m => m.status === "watchlist" && !seen(f.movies, keyOf(m)));
+    const b = f.movies.filter(x => x.status === "watchlist" && !seen(movies, keyOf(x)));
+    pool = [...new Map([...a, ...b].map(x => [keyOf(x), x])).values()];
+    eb = "Кино на двоих · общих желаний пока нет, берём из ваших списков";
+  }
+  if (!pool.length) { box.innerHTML = `<div class="nudge">Добавьте фильмы в «Хочу посмотреть», и здесь появится вариант на вечер.</div>`; return; }
+  let m = again ? null : pool.find(x => keyOf(x) === pairKey);
+  if (!m) { const p = pool.length > 1 ? pool.filter(x => keyOf(x) !== pairKey) : pool; m = p[Math.floor(Math.random() * p.length)]; pairKey = keyOf(m); }
+  box.innerHTML = heroHtml(m, eb);
+  const k = keyOf(m);
+  if (!heroInfo[k]) {
+    try { const d = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}`); heroInfo[k] = { backdrop: d.backdrop_path, overview: d.overview || "" }; if (pairKey === k && $("#pairBox")) $("#pairBox").innerHTML = heroHtml(m, eb); }
+    catch (e) { heroInfo[k] = {}; }
+  }
+}
+async function loadEps(tok) {
+  const tv = movies.filter(m => m.media_type === "tv").slice(0, 40); if (!tv.length) return;
+  const rs = await Promise.all(tv.map(async m => {
+    const k = "tv" + m.tmdb_id;
+    if (!(k in homeCache)) { try { homeCache[k] = await tmdbGet("tv/" + m.tmdb_id); } catch (e) { return null; } }
+    return { m, d: homeCache[k] };
+  }));
+  if (tok !== homeTok || !$("#epBox")) return;
+  const fmt = d => new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  const l = rs.filter(Boolean).map(({ m, d }) => {
+    const n = d.next_episode_to_air, la = d.last_episode_to_air;
+    if (n && n.air_date) return { m, t: `Скоро: S${n.season_number}E${n.episode_number}, ${fmt(n.air_date)}`, b: `S${n.season_number}E${n.episode_number}`, k: new Date(n.air_date).getTime() };
+    if (la && la.air_date && Date.now() - new Date(la.air_date) < 45 * 864e5) return { m, t: `Вышла S${la.season_number}E${la.episode_number}, ${fmt(la.air_date)}`, b: `S${la.season_number}E${la.episode_number}`, k: new Date(la.air_date).getTime() + 1e13 };
+    return null;
+  }).filter(Boolean).sort((a, b) => a.k - b.k);
+  $("#epBox").innerHTML = l.length ? secHtml("Новые серии", "Сериалы из ваших списков: ближайшие и недавние выходы", l.map((e, i) => `<button class="tile" data-tid="${e.m.tmdb_id}" data-mt="tv" style="--i:${i}" title="${esc(e.m.title)}"><img src="${IMG}${e.m.poster}" alt="${esc(e.m.title)}" loading="lazy"><span class="ov">${esc(e.m.title)} <i>${esc(e.t)}</i></span><span class="bd"><span>${esc(e.b)}</span></span></button>`).join("")) : "";
+}
 
 /* ---------- действия над карточками ---------- */
 $("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
@@ -726,25 +810,25 @@ $("#qBtn").onclick = doSearch;
 $("#q").onkeydown = e => { if (e.key === "Enter") doSearch(); };
 
 async function addMovie(tid, status, mt = "movie") {
-  let my = null, note = null;
+  let my = null, note = null, dt = null;
   if (status === "watched") {
-    const r = await rateDialog("Ваша оценка"); if (!r) return false;
-    my = r.rating; note = r.note;
+    const r = await rateDialog("Ваша оценка", 0, "", today()); if (!r) return false;
+    my = r.rating; note = r.note; dt = r.date;
   }
   let d;
   try { d = await (await fetch(`https://api.themoviedb.org/3/${mt}/${tid}?api_key=${TMDB_KEY}&language=ru-RU`)).json(); }
   catch (err) { toast("Не удалось получить данные о фильме."); return false; }
-  const row = { ...mediaRow(d, tid, mt), status, my_rating: my, note };
+  const row = { ...mediaRow(d, tid, mt), status, my_rating: my, note, watched_at: dt };
   const { error } = await sb.from("movies").upsert(row, { onConflict: "user_id,tmdb_id,media_type" });
   if (error) { toast(error.message + ". Выполнили SQL из migration_series.sql?"); return false; }
   await load(); toast("Добавлено: " + row.title); return true;
 }
 $("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if (c && e.target.closest("img,h2")) return openMovie(+c.dataset.tid, c.dataset.mt); const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s, e.target.dataset.mt)) doSearch(); };
 
-function rateDialog(title, rating, note) {
+function rateDialog(title, rating, note, date) {
   return new Promise(res => {
     const d = $("#dlg"), nums = $("#dNums"); let val = rating || 0;
-    $("#dTitle").textContent = title; $("#dNote").value = note || "";
+    $("#dTitle").textContent = title; $("#dNote").value = note || ""; $("#dDate").value = date || ""; $("#dDate").max = today();
     const LBL = ["", "Ужас", "Очень плохо", "Плохо", "Слабо", "Нормально", "Неплохо", "Хорошо", "Очень хорошо", "Отлично", "Шедевр"];
     nums.innerHTML = Array.from({ length: 10 }, (_, i) => `<button type="button" data-v="${i + 1}" aria-label="${i + 1}">★</button>`).join("");
     const paint = h => {
@@ -757,7 +841,7 @@ function rateDialog(title, rating, note) {
     nums.onmouseleave = () => paint();
     nums.onclick = e => { const b = e.target.closest("[data-v]"); if (b) { val = +b.dataset.v; paint(); } };
     paint();
-    d.onclose = () => res(d.returnValue === "ok" && val ? { rating: val, note: $("#dNote").value.trim() || null } : null);
+    d.onclose = () => res(d.returnValue === "ok" && val ? { rating: val, note: $("#dNote").value.trim() || null, date: $("#dDate").value || null } : null);
     d.returnValue = ""; d.showModal();
   });
 }
@@ -846,8 +930,21 @@ function editProfile() {
   };
   d.returnValue = ""; d.showModal();
 }
-$("#profileView").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
+$("#profileView").onclick = e => { if (e.target.closest("#frBox")) return frClick(e); const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
 
+function tasteLines() {
+  const w = movies.filter(m => m.status === "watched" && m.my_rating), gc = {};
+  w.filter(m => m.my_rating >= 7).forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
+  const g = Object.entries(gc).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
+  const top = [...w].sort((a, b) => b.my_rating - a.my_rating).slice(0, 5).map(m => `${m.title} (${m.my_rating}/10)`);
+  const bad = w.filter(m => m.my_rating <= 4).slice(0, 4).map(m => m.title);
+  const L = [];
+  if (profile.bio) L.push("О себе: " + profile.bio);
+  if (g.length) L.push("Любимые жанры: " + g.join(", "));
+  if (top.length) L.push("Любимые фильмы: " + top.join(", "));
+  if (bad.length) L.push("Не зашло: " + bad.join(", "));
+  return L.length ? L : ["Оцените несколько фильмов, и здесь появится ваш вкус."];
+}
 function renderProfile() {
   const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
   const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
@@ -882,18 +979,21 @@ function renderProfile() {
       <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
       <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
     </div>
+    <div class="pf-sec" id="yrBox"></div>
+    <div class="pf-sec"><h3>Друзья</h3><div id="frBox"></div></div>
     <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
     <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
-    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${PROFILE.map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button></details>`;
+    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button></details>`;
   $("#pfAv").onclick = () => pickImage("avatar");
   $("#pfBn").onclick = () => pickImage("banner");
   $("#pfEdit").onclick = editProfile;
   $("#copyPrompt").onclick = copyPrompt;
+  yearBox(); renderFriends();
 }
 function copyPrompt() {
   const w = movies.filter(m => m.status === "watched").map(m => `${m.title} (${m.year}) - ${m.my_rating}/10${m.note ? ", " + m.note : ""}`).join("\n") || "пока нет";
   const l = movies.filter(m => m.status === "watchlist").map(m => m.title).join(", ") || "пока нет";
-  const t = `Ты опытный кинокритик. Подбери мне фильмы.\n\nМОЙ ВКУС:\n${PROFILE.map(x => "- " + x).join("\n")}\n\nУЖЕ СМОТРЕЛ (с моими оценками):\n${w}\n\nУЖЕ В СПИСКЕ «ХОЧУ ПОСМОТРЕТЬ»: ${l}\n\nЗАДАЧА: предложи 8 фильмов, которых нет в списках выше, с рейтингом IMDb от 7,5. К каждому: год, длительность, 1-2 предложения, почему подойдёт, без спойлеров. Добавь 2 скрытые жемчужины и отметь фильмы для просмотра с друзьями. В конце задай 2 уточняющих вопроса.`;
+  const t = `Ты опытный кинокритик. Подбери мне фильмы.\n\nМОЙ ВКУС:\n${tasteLines().map(x => "- " + x).join("\n")}\n\nУЖЕ СМОТРЕЛ (с моими оценками):\n${w}\n\nУЖЕ В СПИСКЕ «ХОЧУ ПОСМОТРЕТЬ»: ${l}\n\nЗАДАЧА: предложи 8 фильмов, которых нет в списках выше, с рейтингом IMDb от 7,5. К каждому: год, длительность, 1-2 предложения, почему подойдёт, без спойлеров. Добавь 2 скрытые жемчужины и отметь фильмы для просмотра с друзьями. В конце задай 2 уточняющих вопроса.`;
   navigator.clipboard.writeText(t).then(() => toast("Промт скопирован"), () => toast("Не удалось скопировать"));
 }
 
@@ -977,8 +1077,8 @@ async function openMovie(tid, mt = "movie") {
     if (a === "want") await addMovie(tid, "watchlist", mt);
     else if (a === "seen" && !m) await addMovie(tid, "watched", mt);
     else if (a === "seen") {
-      const r = await rateDialog(ftitle, m.my_rating, m.note); if (!r) return;
-      const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note }).eq("id", m.id);
+      const r = await rateDialog(ftitle, m.my_rating, m.note, m.watched_at || (m.status === "watchlist" ? today() : "")); if (!r) return;
+      const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, watched_at: r.date }).eq("id", m.id);
       if (error) return toast(error.message); await load();
     } else if (a === "del") {
       if (!confirm("Удалить «" + ftitle + "» из списка?")) return;
@@ -1040,15 +1140,15 @@ async function findOnTmdb(it) {
 }
 function openImport() { const d = $("#imDlg"); imStart(); if (!d.open) d.showModal(); }
 function imStart() {
-  $("#imBody").innerHTML = `<p class="hint">Выберите CSV-файл с Кинопоиска (колонки name_rus, name_eng, rating). Если TMDB у вас открывается только через VPN, включите его.</p><input type="file" id="imFile" accept=".csv,text/csv,text/plain"><div class="acts"><button id="imX">Закрыть</button></div>`;
+  $("#imBody").innerHTML = `<p class="hint">Выберите CSV-файл с Кинопоиска (колонки name_rus, name_eng, rating; если есть колонка с датой, она тоже учтётся). Если TMDB у вас открывается только через VPN, включите его.</p><input type="file" id="imFile" accept=".csv,text/csv,text/plain"><div class="acts"><button id="imX">Закрыть</button></div>`;
   $("#imX").onclick = () => $("#imDlg").close();
   $("#imFile").onchange = async e => { const f = e.target.files[0]; if (f) imPreview(await f.text()); };
 }
 function imPreview(text) {
   const rows = parseCSV(text), h = (rows[0] || []).map(x => imClean(x).toLowerCase());
   const hasH = h.includes("name_rus"), body = hasH ? rows.slice(1) : rows;
-  const iR = hasH ? h.indexOf("name_rus") : 0, iE = hasH ? h.indexOf("name_eng") : 1, iT = hasH ? h.indexOf("rating") : 2;
-  const items = body.map(r => parseItem(r[iR], r[iE] >= 0 ? "" : r[iE], r[iT])).filter(x => x.title);
+  const iR = hasH ? h.indexOf("name_rus") : 0, iE = hasH ? h.indexOf("name_eng") : 1, iT = hasH ? h.indexOf("rating") : 2, iD = hasH ? h.findIndex(x => /date|дат|watch|смотр/.test(x)) : -1;
+  const items = body.map(r => ({ ...parseItem(r[iR], r[iE] >= 0 ? "" : r[iE], r[iT]), date: iD >= 0 ? imDate(r[iD]) : null })).filter(x => x.title).map((x, i) => ({ ...x, idx: i })), nDated = items.filter(x => x.date).length;
   if (!items.length) { toast("В файле не нашлось фильмов"); return; }
   const nTv = items.filter(x => x.tv).length, nRated = items.filter(x => x.rating).length;
   $("#imBody").innerHTML = `<p>Найдено: <b>${items.length - nTv}</b> фильмов и <b>${nTv}</b> сериалов${nRated ? `, с оценками: <b>${nRated}</b> (они попадут в «Просмотрено» с этой оценкой)` : ". Оценок в файле нет"}.</p>
@@ -1057,20 +1157,25 @@ function imPreview(text) {
     <label class="im-r"><input type="radio" name="imDest" value="watchlist"> Хочу посмотреть</label>
     <div class="lbl">Снимите галочки с лишнего</div>
     <div class="im-list" id="imList">${items.map((x, i) => `<label><input type="checkbox" data-i="${i}" checked> <span>${esc(x.title)} <span class="meta">${esc(x.year)}${x.tv ? ", сериал" : ""}</span></span></label>`).join("")}</div>
+    <div class="lbl">Порядок и даты</div>
+    ${nDated ? `<p class="hint">В файле есть даты (${nDated}), они станут датами просмотра.</p>` : `<label class="im-r"><input type="radio" name="imDir" value="new" checked> В файле сверху самые новые</label><label class="im-r"><input type="radio" name="imDir" value="old"> В файле сверху самые старые</label>`}
+    <label class="im-r"><input type="checkbox" id="imUpd" checked> Обновить порядок и даты у уже добавленных</label>
     <div class="acts"><button id="imBack">Назад</button><button class="main" id="imGo"></button></div>`;
   const upd = () => { const n = document.querySelectorAll("#imList input:checked").length; $("#imGo").textContent = `Импортировать (${n})`; $("#imGo").disabled = !n; };
   $("#imList").onchange = upd; upd();
   $("#imBack").onclick = imStart;
   $("#imGo").onclick = () => {
     const sel = [...document.querySelectorAll("#imList input:checked")].map(x => items[+x.dataset.i]);
-    imRun(sel, document.querySelector("input[name=imDest]:checked").value);
+    imRun(sel, document.querySelector("input[name=imDest]:checked").value, { dir: (document.querySelector("input[name=imDir]:checked") || {}).value || "new", upd: $("#imUpd").checked, n: items.length });
   };
 }
-async function imRun(items, dest) {
+async function imRun(items, dest, o = { dir: "new", upd: false, n: items.length }) {
   const total = items.length;
   $("#imBody").innerHTML = `<p id="imSt">Обработано 0 из ${total}</p><progress id="imPr" max="${total}" value="0"></progress><p class="hint">Не закрывайте страницу, это займёт минуту-две.</p>`;
   const have = new Set(movies.map(m => (m.media_type || "movie") + ":" + m.tmdb_id));
-  const out = [], miss = [], fail = []; let done = 0, skipped = 0;
+  const out = [], miss = [], fail = [], upd = []; let done = 0, skipped = 0;
+  const byKey = new Map(movies.map(m => [(m.media_type || "movie") + ":" + m.tmdb_id, m]));
+  const stamp = it => new Date((it.date ? new Date(it.date + "T12:00:00Z").getTime() : Date.now()) - (o.dir === "old" ? o.n - 1 - it.idx : it.idx) * 1000).toISOString();
   const queue = items.slice();
   async function worker() {
     while (queue.length) {
@@ -1080,11 +1185,12 @@ async function imRun(items, dest) {
         if (!id) miss.push(it);
         else {
           const mt = it.tv ? "tv" : "movie", key = mt + ":" + id;
-          if (have.has(key)) skipped++;
+          if (have.has(key)) { skipped++; const ex = byKey.get(key); if (ex && o.upd) { const { id: _i, ...r } = ex; upd.push({ ...r, created_at: stamp(it), watched_at: it.date || r.watched_at || null }); } }
           else {
             have.add(key);
             const det = await tmdbGet(`${mt}/${id}`);
-            out.push({ ...mediaRow(det, id, mt), status: it.rating || dest === "watched" ? "watched" : "watchlist", my_rating: it.rating, note: null });
+            const st = it.rating || dest === "watched" ? "watched" : "watchlist";
+            out.push({ ...mediaRow(det, id, mt), status: st, my_rating: it.rating, note: null, created_at: stamp(it), watched_at: st === "watched" ? it.date : null });
           }
         }
       } catch (e) { fail.push(it); }
@@ -1098,10 +1204,14 @@ async function imRun(items, dest) {
     const { error } = await sb.from("movies").upsert(out.slice(i, i + 50), { onConflict: "user_id,tmdb_id,media_type", ignoreDuplicates: true });
     if (error) err = error.message;
   }
+  for (let i = 0; i < upd.length && !err; i += 50) {
+    const { error } = await sb.from("movies").upsert(upd.slice(i, i + 50), { onConflict: "user_id,tmdb_id,media_type" });
+    if (error) err = error.message;
+  }
   await load();
   const li = l => `<ul class="miss">${l.map(x => `<li>${esc(x.title)} ${esc(x.year)}${x.tv ? " (сериал)" : ""}</li>`).join("")}</ul>`;
   $("#imBody").innerHTML = err ? `<p><b>Не удалось сохранить:</b> ${esc(err)}</p><p class="hint">Проверьте, что выполнили SQL из migration_series.sql.</p>`
-    : `<p>Добавлено: <b>${out.length}</b>. Уже были в списке, пропущено: <b>${skipped}</b>.</p>
+    : `<p>Добавлено: <b>${out.length}</b>. Уже были в списке: <b>${skipped}</b>${upd.length ? `, у ${upd.length} обновлены порядок и даты` : ""}.</p>
       ${miss.length ? `<p>Не нашлось в TMDB (${miss.length}), добавьте через «Найти фильм»:</p>${li(miss)}` : ""}
       ${fail.length ? `<p>Не удалось обработать (${fail.length}). Скорее всего, TMDB не отвечал: включите VPN и запустите импорт ещё раз, добавленное повторно не задвоится:</p>${li(fail)}` : ""}`;
   $("#imBody").insertAdjacentHTML("beforeend", `<div class="acts"><button class="main" id="imX">Готово</button></div>`);
