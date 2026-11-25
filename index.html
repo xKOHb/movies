@@ -354,6 +354,9 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   #selBar{bottom:80px}
   #toast{bottom:86px}
 }
+.ai-g{margin:10px 0 4px}.ai-l{font-size:.8rem;color:var(--mut);margin-bottom:4px}
+#aiDlg .chips{margin-bottom:6px}
+#aiDlg textarea{font-size:.82rem;line-height:1.45;min-height:200px}
 </style>
 </head>
 <body>
@@ -441,6 +444,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><label class="dlg-date">Когда смотрели <input type="date" id="dDate"></label><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
   <dialog id="pfDlg"><form method="dialog"><h2>О себе</h2><label class="lbl" for="pfName">Имя</label><input id="pfName" maxlength="40" placeholder="Как вас называть"><label class="lbl" for="pfBio">Обо мне</label><textarea id="pfBio" rows="4" maxlength="400" placeholder="Пара слов о том, какое кино вы любите" style="width:100%"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" value="ok">Сохранить</button></div></form></dialog>
+  <dialog id="aiDlg" style="width:min(720px,94vw);max-height:92vh;overflow:auto"><h2>Промт для подбора фильмов</h2><div id="aiBody"></div></dialog>
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
   <div id="selBar" hidden><b id="selN">0</b> выбрано <button data-a="rate">Оценить по очереди</button><button data-a="seen" id="selSeen">В «Просмотрено»</button><button data-a="want" id="selWant">В «Хочу»</button><button data-a="del">Удалить</button><button data-a="x">Отмена</button></div>
   <div id="toast" hidden></div>
@@ -1392,18 +1396,112 @@ function editProfile() {
 }
 $("#profileView").onclick = e => { if (e.target.closest("#frBox")) return frClick(e); const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
 
+const fmtN = x => x.toFixed(1).replace(".", ",");
+// разбор вкуса по вашим оценкам
+function tasteData() {
+  const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
+  const avg = r.length ? r.reduce((a, m) => a + m.my_rating, 0) / r.length : 0, gs = {};
+  r.forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => { const e = gs[g] || (gs[g] = { g, n: 0, s: 0 }); e.n++; e.s += m.my_rating; }));
+  const gl = Object.values(gs).map(e => ({ g: e.g, n: e.n, a: e.s / e.n }));
+  const love = gl.filter(x => x.n >= 3 && x.a >= avg + 0.3).sort((a, b) => b.a - a.a || b.n - a.n).slice(0, 5);
+  const meh = gl.filter(x => x.n >= 3 && x.a <= avg - 0.8).sort((a, b) => a.a - b.a).slice(0, 4);
+  const often = [...gl].sort((a, b) => b.n - a.n).slice(0, 4);
+  const liked = r.filter(m => m.my_rating >= 8);
+  const rts = liked.filter(m => m.media_type !== "tv" && m.runtime).map(m => m.runtime).sort((a, b) => a - b);
+  const med = rts.length >= 5 ? rts[Math.floor(rts.length / 2)] : 0;
+  const yrs = liked.filter(m => +m.year);
+  const modern = yrs.length >= 5 ? Math.round(yrs.filter(m => +m.year >= 2000).length / yrs.length * 100) : null;
+  const tv = w.length ? Math.round(w.filter(m => m.media_type === "tv").length / w.length * 100) : 0;
+  const D = {}, A = {};
+  liked.slice(0, 40).forEach(m => {
+    const c = homeCache["c" + keyOf(m)]; if (!c) return;
+    (c.crew || []).filter(p => p.job === "Director").forEach(p => D[p.name] = (D[p.name] || 0) + 1);
+    (c.cast || []).slice(0, 5).forEach(p => A[p.name] = (A[p.name] || 0) + 1);
+  });
+  const rep = o => Object.entries(o).filter(e => e[1] >= 2).sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
+  return { w, r, avg, love, meh, often, med, modern, tv, dirs: rep(D), acts: rep(A) };
+}
 function tasteLines() {
-  const w = movies.filter(m => m.status === "watched" && m.my_rating), gc = {};
-  w.filter(m => m.my_rating >= 7).forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
-  const g = Object.entries(gc).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
-  const top = [...w].sort((a, b) => b.my_rating - a.my_rating).slice(0, 5).map(m => `${m.title} (${m.my_rating}/10)`);
-  const bad = w.filter(m => m.my_rating <= 4).slice(0, 4).map(m => m.title);
-  const L = [];
+  const t = tasteData(), r = t.r, L = [];
   if (profile.bio) L.push("О себе: " + profile.bio);
-  if (g.length) L.push("Любимые жанры: " + g.join(", "));
+  if (r.length) L.push(`Оценок: ${r.length}, средняя ${fmtN(t.avg)}`);
+  if (t.love.length) L.push("Жанры, которые заходят лучше всего: " + t.love.map(x => `${x.g} (ср. ${fmtN(x.a)}, ${x.n})`).join(", "));
+  else if (t.often.length) L.push("Чаще всего смотрите: " + t.often.map(x => x.g).join(", "));
+  if (t.meh.length) L.push("Заходят хуже: " + t.meh.map(x => `${x.g} (ср. ${fmtN(x.a)})`).join(", "));
+  const top = [...r].sort((a, b) => b.my_rating - a.my_rating).slice(0, 5).map(m => `${m.title} (${m.my_rating}/10)`);
+  const bad = r.filter(m => m.my_rating <= 4).slice(0, 4).map(m => m.title);
   if (top.length) L.push("Любимые фильмы: " + top.join(", "));
   if (bad.length) L.push("Не зашло: " + bad.join(", "));
+  if (t.dirs.length) L.push("Режиссёры, которые повторяются в лучших фильмах: " + t.dirs.join(", "));
+  if (t.acts.length) L.push("Актёры, которые повторяются: " + t.acts.join(", "));
+  if (t.med) L.push(`Лучшие фильмы обычно идут около ${t.med} мин`);
+  if (t.modern !== null) L.push(`${t.modern}% лучших фильмов вышли в 2000 году или позже`);
   return L.length ? L : ["Оцените несколько фильмов, и здесь появится ваш вкус."];
+}
+
+/* ---------- промт для подбора фильмов, подстраивается под вкус и запрос ---------- */
+const AI_OPT = { mood: ["Любое", "Напряжённое", "Мозголомное, с твистом", "Лёгкое", "Мрачное", "Уютное"], kind: ["Фильмы", "Сериалы", "Всё равно"], time: ["Неважно", "До 100 минут", "До 2 часов"], who: ["Один", "С друзьями", "С парой"], from: ["Любой год", "С 2000", "С 2015"], n: ["5", "8", "12"] };
+const AI_LBL = { mood: "Настроение", kind: "Что ищу", time: "Время", who: "С кем смотрю", from: "Годы выхода", n: "Сколько вариантов" };
+function aiLoad() {
+  let o = {}; try { o = JSON.parse(localStorage.getItem("aiOpt") || "{}") || {}; } catch (e) {}
+  const d = { mood: 0, kind: 0, time: 0, who: 0, from: 0, n: 1, free: "" };
+  for (const k in d) if (!(k in o) || (k !== "free" && !(o[k] >= 0 && o[k] < AI_OPT[k].length))) o[k] = d[k];
+  return o;
+}
+function buildPrompt(o) {
+  const t = tasteData(), r = t.r, S = [];
+  const line = m => `${m.title} (${m.year || "?"}) ${m.my_rating}/10${m.note ? " — «" + m.note.replace(/\s+/g, " ").slice(0, 120) + "»" : ""}`;
+  S.push("Ты опытный кинокритик и подбираешь кино лично под меня. Отвечай по-русски.");
+  if (profile.bio) S.push("О СЕБЕ: " + profile.bio);
+  const vk = [];
+  if (r.length) {
+    vk.push(t.avg >= 7.8 ? `Я оцениваю щедро (средняя ${fmtN(t.avg)} по ${r.length} оценкам): моя «7» значит «средне», а «9-10» бывает редко.` : t.avg <= 6.5 ? `Я оцениваю строго (средняя ${fmtN(t.avg)} по ${r.length} оценкам): моя «8» уже очень высокая оценка.` : `Моя средняя оценка ${fmtN(t.avg)} (по ${r.length} оценкам): выше неё значит «понравилось».`);
+    if (t.love.length) vk.push("Жанры, которые заходят лучше всего: " + t.love.map(x => `${x.g} (ср. ${fmtN(x.a)}, фильмов: ${x.n})`).join(", ") + ".");
+    if (t.often.length) vk.push("Чаще всего смотрю: " + t.often.map(x => x.g).join(", ") + ".");
+    if (t.meh.length) vk.push("Заходят хуже: " + t.meh.map(x => `${x.g} (ср. ${fmtN(x.a)})`).join(", ") + ".");
+    if (t.dirs.length) vk.push("Режиссёры, которые повторяются в моих лучших фильмах: " + t.dirs.join(", ") + ".");
+    if (t.acts.length) vk.push("Актёры, которые повторяются: " + t.acts.join(", ") + ".");
+    if (t.med) vk.push(`Мои лучшие фильмы обычно идут около ${t.med} минут.`);
+    if (t.modern !== null) vk.push(`${t.modern}% моих лучших фильмов вышли в 2000 году или позже.`);
+    if (t.tv >= 10) vk.push(`Сериалы составляют около ${t.tv}% моего списка.`);
+    if (r.length < 8) vk.push("Оценок пока мало: опирайся на то, что есть, и задай мне вопросы.");
+    S.push("МОЙ ВКУС:\n" + vk.map(x => "- " + x).join("\n"));
+    const best = [...r].filter(m => m.my_rating >= 8).sort((a, b) => b.my_rating - a.my_rating).slice(0, 12);
+    if (best.length) S.push("ЧТО МНЕ ЗАШЛО БОЛЬШЕ ВСЕГО (в скобках год, затем моя оценка и заметка):\n" + best.map(m => "- " + line(m)).join("\n"));
+    const bad = [...r].filter(m => m.my_rating <= 5).sort((a, b) => a.my_rating - b.my_rating).slice(0, 8);
+    if (bad.length) S.push("ЧТО НЕ ЗАШЛО (избегай похожего):\n" + bad.map(m => "- " + line(m)).join("\n"));
+    const rec = [...t.w].sort((a, b) => String(b.watched_at || b.created_at || "").localeCompare(String(a.watched_at || a.created_at || ""))).slice(0, 5);
+    if (rec.length) S.push("НЕДАВНО СМОТРЕЛ: " + rec.map(m => `${m.title}${m.my_rating ? " " + m.my_rating + "/10" : ""}`).join(", ") + ".");
+  } else S.push("Я пока не поставил оценок, поэтому сначала задай мне несколько вопросов о вкусе.");
+  const q = [];
+  if (o.mood) q.push("настроение: " + AI_OPT.mood[o.mood].toLowerCase());
+  if (o.kind === 0) q.push("только фильмы"); else if (o.kind === 1) q.push("только сериалы (укажи число сезонов)");
+  if (o.time) q.push("длительность: " + AI_OPT.time[o.time].toLowerCase());
+  if (o.who) q.push("смотрю: " + AI_OPT.who[o.who].toLowerCase());
+  if (o.from) q.push("вышли " + AI_OPT.from[o.from].toLowerCase());
+  if (o.free && o.free.trim()) q.push(o.free.trim());
+  S.push("МОЙ ЗАПРОС СЕЙЧАС: " + (q.length ? q.join("; ") : "без особых пожеланий") + ".");
+  const all = movies.map(m => `${m.title} (${m.year || "?"})`);
+  S.push("НЕ ПРЕДЛАГАЙ (уже смотрел или уже в моём списке «Хочу посмотреть»), всего " + all.length + ":\n" + (all.join(", ") || "пока ничего"));
+  const n = +AI_OPT.n[o.n], kind = o.kind === 1 ? "сериалов" : o.kind === 2 ? "фильмов или сериалов" : "фильмов";
+  S.push(`ЗАДАЧА: предложи ${n} ${kind}, которых нет в списке выше. Подбирай под мой вкус и запрос, а не просто самое популярное. Рейтинг IMDb от 7,5. К каждому: название (русское и оригинальное), год, ${o.kind === 1 ? "число сезонов" : "длительность"}, жанр, 1-2 предложения, почему подойдёт именно мне (сошлись на мои любимые фильмы или оценки), и честно: чем может не подойти. Без спойлеров. Добавь ${n >= 8 ? "2 менее известные «скрытые жемчужины»" : "1 менее известную «скрытую жемчужину»"}.${o.who === 1 ? " Выбирай то, что понравится компании." : ""} Если не уверен, что он существует, не включай его. В конце задай мне 2 уточняющих вопроса, чтобы следующая подборка была точнее.`);
+  return S.join("\n\n");
+}
+function openAi() {
+  const d = $("#aiDlg"), body = $("#aiBody"), o = aiLoad();
+  body.innerHTML = Object.keys(AI_OPT).map(k => `<div class="ai-g"><div class="ai-l">${AI_LBL[k]}</div><div class="chips">${AI_OPT[k].map((x, i) => `<button type="button" class="${o[k] === i ? "on" : ""}" data-k="${k}" data-i="${i}">${esc(x)}</button>`).join("")}</div></div>`).join("")
+    + `<input id="aiFree" maxlength="200" placeholder="Своё пожелание (например: про космос или без субтитров)" value="${esc(o.free)}" style="margin:10px 0 8px"><textarea id="aiTxt" rows="12" style="width:100%"></textarea><div class="acts"><button type="button" id="aiX">Закрыть</button><button type="button" class="main" id="aiCopy">Скопировать промт</button></div>`;
+  const refresh = () => { try { localStorage.setItem("aiOpt", JSON.stringify(o)); } catch (e) {} $("#aiTxt").value = buildPrompt(o); };
+  body.onclick = e => {
+    const b = e.target.closest("[data-k]"); if (!b) return;
+    o[b.dataset.k] = +b.dataset.i;
+    b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    refresh();
+  };
+  $("#aiFree").oninput = e => { o.free = e.target.value; refresh(); };
+  $("#aiX").onclick = () => d.close();
+  $("#aiCopy").onclick = () => navigator.clipboard.writeText($("#aiTxt").value).then(() => toast("Промт скопирован"), () => { $("#aiTxt").select(); toast("Выделил текст, скопируйте вручную"); });
+  refresh(); d.showModal();
 }
 function renderProfile() {
   const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
@@ -1444,18 +1542,12 @@ function renderProfile() {
     <div class="pf-sec"><h3>Друзья</h3><div id="frBox"></div></div>
     <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
     <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
-    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Скопировать промт для подбора фильмов</button></details>`;
+    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button></details>`;
   $("#pfAv").onclick = () => pickImage("avatar");
   $("#pfBn").onclick = () => pickImage("banner");
   $("#pfEdit").onclick = editProfile;
-  $("#copyPrompt").onclick = copyPrompt;
+  $("#copyPrompt").onclick = openAi;
   yearBox(); loadPeople(); renderFriends();
-}
-function copyPrompt() {
-  const w = movies.filter(m => m.status === "watched").map(m => `${m.title} (${m.year}) - ${m.my_rating}/10${m.note ? ", " + m.note : ""}`).join("\n") || "пока нет";
-  const l = movies.filter(m => m.status === "watchlist").map(m => m.title).join(", ") || "пока нет";
-  const t = `Ты опытный кинокритик. Подбери мне фильмы.\n\nМОЙ ВКУС:\n${tasteLines().map(x => "- " + x).join("\n")}\n\nУЖЕ СМОТРЕЛ (с моими оценками):\n${w}\n\nУЖЕ В СПИСКЕ «ХОЧУ ПОСМОТРЕТЬ»: ${l}\n\nЗАДАЧА: предложи 8 фильмов, которых нет в списках выше, с рейтингом IMDb от 7,5. К каждому: год, длительность, 1-2 предложения, почему подойдёт, без спойлеров. Добавь 2 скрытые жемчужины и отметь фильмы для просмотра с друзьями. В конце задай 2 уточняющих вопроса.`;
-  navigator.clipboard.writeText(t).then(() => toast("Промт скопирован"), () => toast("Не удалось скопировать"));
 }
 
 /* ---------- тема ---------- */
