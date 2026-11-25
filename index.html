@@ -300,6 +300,27 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 .im-list label,.im-r{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
 #imDlg progress{width:100%;accent-color:var(--acc)}
 #imDlg .miss{max-height:180px;overflow:auto;font-size:.88rem;color:var(--mut);margin:6px 0 0;padding-left:18px}
+
+/* моментальный поиск */
+.hr{display:flex;align-items:center;gap:10px}
+#gsBtn{width:40px;height:40px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--glass)}
+#gsBtn svg,.gs-box svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#gs{position:fixed;inset:0;z-index:60;background:#000a;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);padding:11vh 12px 0}
+.gs-box{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:6px 8px 6px 16px;box-shadow:0 20px 60px #000a}
+.gs-box input{flex:1;min-width:0;border:0;background:none;font-size:1.05rem;padding:10px 0;outline:none}
+.gs-box button{border:0;background:none;font-size:1.5rem;padding:0 12px;color:var(--mut)}
+#sg{position:fixed;z-index:70;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px #0009;overflow:auto;padding:6px}
+#sg .sgh{padding:8px 10px 2px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+#sg .sgi{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:10px;color:var(--tx)}
+#sg .sgi:hover,#sg .sgi.on{background:var(--glass)}
+#sg .sgi.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 55%,transparent)}
+#sg img,#sg .sgn{width:34px;height:50px;border-radius:6px;object-fit:cover;flex:none;background:var(--field)}
+#sg .sgx{flex:1;min-width:0;display:flex;flex-direction:column}
+#sg .sgt{font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sg .sgm{font-size:.8rem;color:var(--mut)}
+#sg .sgg{flex:none;font-size:.72rem;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);border-radius:999px;padding:1px 8px}
+#sg .sgs{padding:10px;text-align:center}
+#sg mark{background:none;color:var(--acc);font-weight:800}
 </style>
 </head>
 <body>
@@ -319,6 +340,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   <div class="top">
   <header>
     <div class="logo" id="logoHome" title="На главную" role="link" tabindex="0"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8"/><circle cx="32" cy="32" r="4.5"/></svg><b>Поиск кадров</b></div>
+    <div class="hr"><button id="gsBtn" aria-label="Поиск (клавиша /)" title="Поиск ( / или Ctrl+K )"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg></button>
     <div class="me">
       <button id="meBtn" aria-label="Профиль" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
       <div id="meMenu" hidden>
@@ -332,7 +354,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
         <hr>
         <button data-m="out">Выйти</button>
       </div>
-    </div>
+    </div></div>
   </header>
   <div class="tabs" id="tabs">
     <button data-t="home" class="on">Главная</button>
@@ -395,6 +417,9 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 
 </main>
 
+<div id="gs" hidden><div class="gs-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><input id="gq" placeholder="Найти фильм или сериал" autocomplete="off" spellcheck="false"><button id="gsX" type="button" aria-label="Закрыть">×</button></div></div>
+<div id="sg" hidden role="listbox"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== Вставьте свои ключи ===== */
@@ -443,7 +468,7 @@ function filtered() {
   const g = $("#fg").value, rt = +$("#fr").value || 9999, mr = +$("#fm").value || 0;
   const q = ($("#fq").value || "").trim().toLowerCase();
   return movies.filter(m => m.status === tab
-    && (!q || (m.title || "").toLowerCase().includes(q))
+    && (!q || (m.title || "").toLowerCase().includes(q) || fuzzyHit(q, m.title))
     && (!g || (m.genres || "").split(", ").includes(g))
     && (m.runtime || 0) <= rt
     && (m.tmdb_rating || 0) >= mr).sort(SORTS[$("#fs").value] || SORTS.new);
@@ -493,6 +518,7 @@ function render() {
 /* ---------- вкладки и фильтры ---------- */
 const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 function go(t) {
+  sgHide();
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
@@ -964,6 +990,221 @@ function askRating(def) {
   if (!(n >= 1 && n <= 10)) { alert("Введите число от 1 до 10."); return null; }
   return n;
 }
+
+/* ---------- моментальный поиск: подсказки, опечатки, раскладка ---------- */
+var SG_EN = "qwertyuiop[]asdfghjkl;'zxcvbnm,./`", SG_RU = "йцукенгшщзхъфывапролджэячсмитьбю.ё";
+var SG = { el: null, input: null, ctx: "", items: [], idx: -1, seq: 0, ctl: null, timer: 0, cache: new Map() };
+function normQ(s) { return String(s || "").toLowerCase().replace(/ё/g, "е").replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim(); }
+// текст набран не в той раскладке: «Yfxfkj» -> «начало»
+function swapLayout(s) {
+  const t = String(s || "").toLowerCase(), lat = /[a-z]/.test(t), cyr = /[а-яё]/.test(t);
+  if (lat === cyr) return s;
+  const from = lat ? SG_EN : SG_RU, to = lat ? SG_RU : SG_EN;
+  return [...t].map(c => { const i = from.indexOf(c); return i < 0 ? c : to[i]; }).join("");
+}
+// расстояние Левенштейна с ограничением
+function lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let p = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const c = [i]; let mn = i;
+    for (let j = 1; j <= b.length; j++) { const v = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); c[j] = v; if (v < mn) mn = v; }
+    if (mn > max) return max + 1;
+    p = c;
+  }
+  return p[b.length];
+}
+function tokCost(t, words) {
+  let best = Infinity;
+  for (const w of words) {
+    let c = Infinity;
+    if (w.startsWith(t)) c = 0;
+    else if (t.length >= 3 && w.includes(t)) c = 1;
+    else if (t.length >= 4) {
+      const max = t.length >= 8 ? 2 : 1, d = Math.min(lev(t, w.slice(0, t.length), max), lev(t, w, max));
+      if (d <= max) c = 2 + d;
+    }
+    if (c < best) best = c;
+  }
+  return best;
+}
+// насколько название подходит запросу (0 = идеально, Infinity = не подходит)
+function titleCost(q, title) {
+  const toks = normQ(q).split(" ").filter(Boolean), words = normQ(title).split(" ").filter(Boolean);
+  if (!toks.length || !words.length) return Infinity;
+  let sum = 0;
+  for (const t of toks) { const c = tokCost(t, words); if (c === Infinity) return Infinity; sum += c; }
+  return sum;
+}
+function fuzzyHit(q, title) { const s = swapLayout(q); return titleCost(q, title) < Infinity || (s !== q && titleCost(s, title) < Infinity); }
+function sgHl(text, qs) {
+  const t = String(text || ""), low = t.toLowerCase().replace(/ё/g, "е");
+  if (low.length !== t.length) return esc(t);
+  const mk = new Array(t.length).fill(false), words = [...low.matchAll(/[\p{L}\p{N}]+/gu)];
+  for (const q of qs) for (const tok of normQ(q).split(" ").filter(Boolean)) {
+    let best = null;
+    for (const w of words) {
+      const wl = w[0]; let n = 0;
+      while (n < tok.length && n < wl.length && wl[n] === tok[n]) n++;
+      if (n >= Math.min(tok.length, 3) && (!best || n > best.n)) best = { n, i: w.index };
+    }
+    if (best) for (let k = 0; k < best.n; k++) mk[best.i + k] = true;
+    else if (tok.length >= 3) { const p = low.indexOf(tok); if (p >= 0) mk.fill(true, p, p + tok.length); }
+  }
+  let out = "", open = false;
+  for (let k = 0; k < t.length; k++) { if (mk[k] !== open) { out += open ? "</mark>" : "<mark>"; open = mk[k]; } out += esc(t[k]); }
+  return out + (open ? "</mark>" : "");
+}
+const sgStat = m => m.status === "watched" ? (m.my_rating ? "★ " + m.my_rating : "Просмотрено") : "Хочу посмотреть";
+function sgLocal(q, lim) {
+  const s = swapLayout(q), out = [];
+  for (const m of movies) {
+    const c = Math.min(titleCost(q, m.title), s !== q ? titleCost(s, m.title) + 1 : Infinity);
+    if (c < Infinity) out.push({ c, m });
+  }
+  out.sort((a, b) => a.c - b.c || (a.m.title || "").localeCompare(b.m.title || "", "ru"));
+  return out.slice(0, lim).map(({ m }) => { const mt = m.media_type || "movie"; return { id: m.tmdb_id, mt, title: m.title, year: m.year || "", poster: m.poster || null, sub: (mt === "tv" ? "Сериал" : "Фильм") + (m.year ? " · " + m.year : ""), tag: sgStat(m) }; });
+}
+function sgVariants(q) {
+  const t = q.trim(), v = [], s = swapLayout(t);
+  if (s !== t) v.push(s);
+  for (let cut = 1; cut <= 3; cut++) if (t.length - cut >= 3) v.push(t.slice(0, -cut));
+  const w = t.split(/\s+/).filter(x => x.length >= 3);
+  if (w.length > 1) { v.push(w.slice(0, -1).join(" ")); v.push([...w].sort((a, b) => b.length - a.length)[0]); }
+  return [...new Set(v.map(x => x.trim()))].filter(x => x && x !== t).slice(0, 5);
+}
+async function sgTmdb(q, sig) {
+  const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&language=ru-RU&include_adult=false&query=${encodeURIComponent(q)}`, { signal: sig });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return ((await r.json()).results || []).filter(x => x.media_type === "movie" || x.media_type === "tv");
+}
+async function sgSearch(q, sig) {
+  const first = await sgTmdb(q, sig);
+  if (first.length) return first;
+  // ничего не нашлось: пробуем другую раскладку, укороченный запрос, отдельные слова
+  const s = swapLayout(q);
+  const lists = await Promise.all(sgVariants(q).map(v => sgTmdb(v, sig).catch(e => { if (e.name === "AbortError") throw e; return []; })));
+  const seen = new Set(), all = [];
+  for (const x of lists.flat()) { const k = x.media_type + x.id; if (!seen.has(k)) { seen.add(k); all.push(x); } }
+  const cost = x => Math.min(...[x.title, x.name, x.original_title, x.original_name].filter(Boolean).flatMap(n => [titleCost(q, n), s !== q ? titleCost(s, n) : Infinity]), Infinity);
+  const ranked = all.map(x => ({ x, c: cost(x) })).sort((a, b) => a.c - b.c), good = ranked.filter(r => r.c < Infinity);
+  return (good.length ? good : ranked).map(r => r.x);
+}
+function sgPlace() {
+  const el = SG.el, i = SG.input;
+  if (!el || el.hidden) return;
+  if (!i || !document.body.contains(i)) return sgHide();
+  const r = i.getBoundingClientRect(), w = Math.min(Math.max(r.width, 300), innerWidth - 16);
+  el.style.width = w + "px"; el.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + "px";
+  el.style.top = (r.bottom + 6) + "px"; el.style.maxHeight = Math.max(160, innerHeight - r.bottom - 20) + "px";
+}
+function sgHide() {
+  SG.seq++; clearTimeout(SG.timer); if (SG.ctl) SG.ctl.abort();
+  const el = document.getElementById("sg"); if (el) el.hidden = true;
+  SG.items = []; SG.idx = -1;
+}
+function sgMark() {
+  SG.el.querySelectorAll(".sgi").forEach(b => b.classList.toggle("on", +b.dataset.i === SG.idx));
+  const b = SG.el.querySelector(".sgi.on"); if (b) b.scrollIntoView({ block: "nearest" });
+}
+function sgRender(local, remote, q, err) {
+  const inp = SG.input;
+  if (!inp || !document.body.contains(inp) || inp.value.trim() !== q) return;
+  const ctx = SG.ctx, qs = [q, swapLayout(q)], coll = ctx === "coll", cur = coll && colls && colls.find(x => x.id === colOpen);
+  const prev = SG.items[SG.idx], prevKey = prev && prev.mt + prev.id;
+  const mark = it => { if (cur && cur.items.some(x => x.tmdb_id === it.id && x.media_type === it.mt)) it.tag = "Уже в коллекции"; return it; };
+  let mine = local.map(mark), rem = [];
+  const shown = new Set(mine.map(i => i.mt + i.id));
+  if (remote) rem = remote.filter(x => !shown.has(x.media_type + x.id)).slice(0, 7).map(x => {
+    const mt = x.media_type, yr = (x.release_date || x.first_air_date || "").slice(0, 4), m = movies.find(y => y.tmdb_id === x.id && (y.media_type || "movie") === mt);
+    return mark({ id: x.id, mt, title: x.title || x.name, year: yr, poster: x.poster_path || null, sub: (mt === "tv" ? "Сериал" : "Фильм") + (yr ? " · " + yr : "") + (x.vote_average ? " · TMDB " + x.vote_average.toFixed(1) : ""), tag: m ? sgStat(m) : "" });
+  });
+  if (coll) { mine = mine.filter(i => i.poster); rem = rem.filter(i => i.poster); }
+  SG.items = [...mine, ...rem];
+  let n = 0;
+  const row = it => `<button type="button" class="sgi" role="option" data-i="${n++}">${it.poster ? `<img src="https://image.tmdb.org/t/p/w92${esc(it.poster)}" alt="">` : `<span class="sgn"></span>`}<span class="sgx"><span class="sgt">${sgHl(it.title, qs)}</span><span class="sgm">${esc(it.sub)}</span></span>${it.tag ? `<span class="sgg">${esc(it.tag)}</span>` : ""}</button>`;
+  let html = "";
+  if (mine.length) html += `<div class="sgh">Мои фильмы</div>` + mine.map(row).join("");
+  if (rem.length) html += `<div class="sgh">${mine.length ? "Найдено в TMDB" : "Найдено"}</div>` + rem.map(row).join("");
+  if (!remote) html += `<div class="sgm sgs">Ищу…</div>`;
+  else if (err) html += `<div class="sgm sgs">TMDB не отвечает. Включите VPN.</div>`;
+  else if (!SG.items.length) html += `<div class="sgm sgs">Ничего не нашлось. Проверьте название.</div>`;
+  SG.el.innerHTML = html;
+  SG.idx = prevKey ? SG.items.findIndex(i => i.mt + i.id === prevKey) : -1;
+  SG.el.hidden = false; sgPlace(); if (SG.idx >= 0) sgMark();
+}
+async function sgRemote(q, my) {
+  SG.ctl = new AbortController();
+  let list = [], err = false;
+  try { list = await sgSearch(q, SG.ctl.signal); }
+  catch (e) { if (e.name === "AbortError") return; err = true; }
+  if (my !== SG.seq) return;
+  if (!err) { SG.cache.set(q, { list }); if (SG.cache.size > 60) SG.cache.delete(SG.cache.keys().next().value); }
+  sgRender(sgLocal(q, 3), list, q, err);
+}
+function sgType(inp) {
+  clearTimeout(SG.timer); if (SG.ctl) SG.ctl.abort();
+  SG.input = inp; SG.ctx = inp.id === "q" ? "search" : inp.id === "gq" ? "global" : "coll";
+  const q = inp.value.trim(), my = ++SG.seq;
+  if (q.length < 2) { sgHide(); return; }
+  const local = sgLocal(q, 3), hit = SG.cache.get(q);
+  if (hit) { sgRender(local, hit.list, q, false); return; }
+  sgRender(local, null, q, false);
+  SG.timer = setTimeout(() => sgRemote(q, my), 220);
+}
+async function collAdd(it) {
+  const c = colls && colls.find(x => x.id === colOpen); if (!c) return;
+  if (c.items.some(x => x.tmdb_id === it.id && x.media_type === it.mt)) return toast("Уже в коллекции: " + it.title);
+  const { error } = await sb.from("collection_items").upsert({ collection_id: c.id, tmdb_id: it.id, media_type: it.mt, title: it.title, year: it.year || "", poster: it.poster }, { onConflict: "collection_id,tmdb_id,media_type", ignoreDuplicates: true });
+  if (error) return toast(error.message);
+  toast("Добавлено в коллекцию: " + it.title); renderColls(true);
+}
+function sgPick(i) {
+  const it = SG.items[i], ctx = SG.ctx; if (!it) return;
+  sgHide();
+  if (ctx === "coll") return collAdd(it);
+  if (ctx === "global") gsClose();
+  openMovie(it.id, it.mt);
+}
+function gsOpen() { const g = $("#gs"); g.hidden = false; $("#gq").value = ""; $("#gq").focus(); }
+function gsClose() { $("#gs").hidden = true; sgHide(); }
+function gsGo() { const q = $("#gq").value.trim(); gsClose(); if (!q) return; go("search"); $("#q").value = q; doSearch(); }
+SG.el = $("#sg");
+$("#gsBtn").onclick = gsOpen;
+$("#gsX").onclick = gsClose;
+$("#gs").addEventListener("pointerdown", e => { if (e.target.id === "gs") gsClose(); });
+SG.el.addEventListener("mousedown", e => e.preventDefault());
+SG.el.addEventListener("click", e => { const b = e.target.closest(".sgi"); if (b) sgPick(+b.dataset.i); });
+document.addEventListener("input", e => { const t = e.target; if (t.id === "q" || t.id === "colQ" || t.id === "gq") sgType(t); });
+document.addEventListener("pointerdown", e => { if (!SG.el.hidden && !SG.el.contains(e.target) && e.target !== SG.input) sgHide(); });
+window.addEventListener("resize", sgPlace); window.addEventListener("scroll", sgPlace, true);
+document.addEventListener("keydown", e => {
+  const t = e.target, isIn = t && (t.id === "q" || t.id === "colQ" || t.id === "gq"), appOn = !$("#app").hidden, dlg = document.querySelector("dialog[open]");
+  if (appOn && !dlg && $("#gs").hidden) {
+    const typing = t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || (t && t.isContentEditable);
+    if ((e.ctrlKey || e.metaKey) && e.code === "KeyK") { e.preventDefault(); return gsOpen(); }
+    if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "/" || (e.code === "Slash" && !e.shiftKey))) { e.preventDefault(); return gsOpen(); }
+  }
+  if (e.key === "Escape") {
+    if (!SG.el.hidden) { e.preventDefault(); e.stopPropagation(); return sgHide(); }
+    if (!$("#gs").hidden) { e.preventDefault(); return gsClose(); }
+    return;
+  }
+  if (!isIn) return;
+  const open = !SG.el.hidden && SG.input === t, n = SG.items.length;
+  if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !open && t.value.trim().length >= 2) { e.preventDefault(); return sgType(t); }
+  if (!open) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); if (!n) return;
+    SG.idx = e.key === "ArrowDown" ? (SG.idx + 1) % n : (SG.idx <= 0 ? n - 1 : SG.idx - 1); return sgMark();
+  }
+  if (e.key === "Enter") {
+    if (SG.idx >= 0) { e.preventDefault(); e.stopPropagation(); return sgPick(SG.idx); }
+    if (t.id === "gq") { e.preventDefault(); e.stopPropagation(); return gsGo(); }
+    if (t.id === "colQ") { e.preventDefault(); sgHide(); const b = document.querySelector("#collView [data-c=find]"); return b && b.click(); }
+    sgHide();
+  }
+}, true);
 
 /* ---------- поиск через TMDB ---------- */
 async function doSearch() {
