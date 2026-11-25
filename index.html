@@ -243,6 +243,10 @@ details.taste .main{margin:6px 0 16px}
   .rail .tile,.rail .sk{width:120px}
   .greet h2{font-size:1.25rem}
 }
+.code{font-size:1.4rem;font-weight:800;letter-spacing:.14em;background:var(--glass);border:1px dashed var(--acc);border-radius:12px;padding:6px 16px}
+.fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:18px}
+.fr{display:flex;gap:14px}.fr-av{width:56px;height:56px;border-radius:50%;background:var(--paper) center/cover;border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--acc);flex:none}
+.fr .pct{font-size:1.5rem;font-weight:800;color:var(--acc);line-height:1.2}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -285,6 +289,8 @@ details.taste .main{margin:6px 0 16px}
     <button data-t="home" class="on">Главная</button>
     <button data-t="watchlist">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
+    <button data-t="recs">Рекомендации</button>
+    <button data-t="friends">Друзья</button>
     <button data-t="picks">Подборка</button>
     <button data-t="search">Найти фильм</button>
   </div>
@@ -324,6 +330,8 @@ details.taste .main{margin:6px 0 16px}
     <div class="grid" id="found"></div>
   </div>
 
+  <div id="recsView" hidden></div>
+  <div id="friendsView" hidden></div>
   <div id="picksView" hidden></div>
   <div id="profileView" hidden></div>
   <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
@@ -374,7 +382,7 @@ sb.auth.onAuthStateChange((_, s) => showSession(s));
 /* ---------- данные ---------- */
 async function load() {
   if (!movies.length) $("#list").innerHTML = skel(12);
-  const { data, error } = await sb.from("movies").select("*").order("created_at", { ascending: false });
+  const { data, error } = await sb.from("movies").select("*").eq("user_id", userId).order("created_at", { ascending: false });
   if (error) return alert("Ошибка загрузки: " + error.message);
   movies = data;
   render();
@@ -411,6 +419,8 @@ function render() {
   const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
   for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).innerHTML = `${L[k]} <span class="cnt">${movies.filter(m => m.status === k).length}</span>`;
   if (tab === "home") return renderHome();
+  if (tab === "recs") return renderRecs();
+  if (tab === "friends") return renderFriends();
   if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
   if (tab === "search") return;
@@ -429,12 +439,13 @@ function render() {
 }
 
 /* ---------- вкладки и фильтры ---------- */
-const VIEWS = { home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+const VIEWS = { recs: "recsView", friends: "friendsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
 function go(t) {
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
+  if (t === "friends") friendsLoaded = false;
   render();
 }
 $("#tabs").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
@@ -523,12 +534,12 @@ function renderHome() {
     <div id="trendBox"></div>`;
   fillHero(false); loadRecs(tok); loadTrend(tok);
 }
-async function loadRecs(tok) {
+async function loadRecs(tok, sel = "#recBox") {
   const watched = movies.filter(m => m.status === "watched" && m.my_rating);
   let seeds = watched.filter(m => m.my_rating >= 9);
   if (!seeds.length) seeds = watched.filter(m => m.my_rating >= 8);
   seeds = seeds.sort((a, b) => b.my_rating - a.my_rating).slice(0, 4);
-  const box = $("#recBox"); if (!box) return;
+  const box = $(sel); if (!box) return;
   if (!seeds.length) { box.innerHTML = `<div class="nudge">Поставьте оценку 9–10 любимым фильмам, и здесь появится ряд «Похожее на ваши любимые».</div>`; return; }
   box.innerHTML = secHtml("Похожее на ваши любимые", "", Array.from({ length: 8 }, () => `<div class="sk p"></div>`).join(""));
   const results = await Promise.all(seeds.map(async m => {
@@ -536,14 +547,14 @@ async function loadRecs(tok) {
     if (!homeCache[k]) { try { homeCache[k] = (await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}/recommendations`)).results || []; } catch (e) { return []; } }
     return homeCache[k].map(x => ({ ...x, _mt: m.media_type || "movie" }));
   }));
-  if (tok !== homeTok || !$("#recBox")) return;
+  if (tok !== homeTok || !$(sel)) return;
   const have = new Set(movies.map(keyOf)), score = new Map();
   results.flat().forEach(x => {
     if (!x.poster_path || have.has(x.id + "-" + x._mt) || (x.vote_average || 0) < 6.5) return;
     const k = x.id + "-" + x._mt, e = score.get(k) || { x, n: 0 }; e.n++; score.set(k, e);
   });
   const list = [...score.values()].sort((a, b) => b.n - a.n || (b.x.vote_average || 0) - (a.x.vote_average || 0)).slice(0, 16);
-  $("#recBox").innerHTML = list.length ? secHtml("Похожее на ваши любимые", "По мотивам: " + seeds.slice(0, 3).map(m => esc(m.title)).join(", "), list.map((e, i) => tTile(e.x, e.x._mt, i)).join("")) : "";
+  $(sel).innerHTML = list.length ? secHtml("Похожее на ваши любимые", "По мотивам: " + seeds.slice(0, 3).map(m => esc(m.title)).join(", "), list.map((e, i) => tTile(e.x, e.x._mt, i)).join("")) : "";
 }
 async function loadTrend(tok) {
   if (!$("#trendBox")) return;
@@ -561,6 +572,119 @@ $("#homeView").onclick = e => {
 };
 $("#logoHome").onclick = () => go("home");
 $("#logoHome").onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go("home"); } };
+
+
+/* ---------- друзья ---------- */
+let friends = [], friendData = {}, friendsLoaded = false, myCode = "";
+const fName = f => f.profile.display_name || "Друг";
+async function loadFriends() {
+  const { data: fs, error } = await sb.from("friendships").select("*");
+  friendsLoaded = true; friendData = {};
+  if (error) { friends = null; return; }
+  const ids = fs.map(f => f.user_a === userId ? f.user_b : f.user_a);
+  let P = [], M = [];
+  if (ids.length) {
+    const [p, m] = await Promise.all([sb.from("profiles").select("*").in("user_id", ids), sb.from("movies").select("*").in("user_id", ids)]);
+    P = p.data || []; M = m.data || [];
+  }
+  friends = ids.map(id => friendData[id] = { id, profile: P.find(x => x.user_id === id) || {}, movies: M.filter(x => x.user_id === id) });
+}
+function compare(f) {
+  const mine = new Map(movies.map(m => [keyOf(m), m]));
+  let n = 0, diff = 0, both = 0;
+  const together = [];
+  f.movies.forEach(x => {
+    const m = mine.get(keyOf(x)); if (!m) return;
+    if (m.status === "watched" && x.status === "watched") { both++; if (m.my_rating && x.my_rating) { n++; diff += Math.abs(m.my_rating - x.my_rating); } }
+    if (m.status === "watchlist" && x.status === "watchlist") together.push(x);
+  });
+  return { n, both, together, match: n >= 3 ? Math.round(100 * (1 - diff / n / 9)) : null };
+}
+const matchText = c => c.match !== null ? `Совпадение вкусов ${c.match}% (по ${c.n} общим оценкам)` : "Мало общих оценок для сравнения вкусов (нужно хотя бы 3)";
+const avStyle = f => f.profile.avatar_url ? `style="background-image:url('${esc(f.profile.avatar_url)}')"` : "";
+
+async function renderFriends() {
+  const v = $("#friendsView");
+  if (!friendsLoaded) { v.innerHTML = `<div class="sk" style="height:140px"></div>`; await loadFriends(); if (tab !== "friends") return; }
+  if (friends === null) { v.innerHTML = `<div class="empty">Друзья ещё не подключены. Выполните migration_friends.sql в Supabase и обновите страницу.</div>`; return; }
+  if (!myCode) { try { myCode = (await sb.rpc("my_invite_code")).data || ""; } catch (e) {} }
+  const cards = friends.map(f => {
+    const c = compare(f);
+    return `<div class="panel fr"><div class="fr-av" ${avStyle(f)}>${f.profile.avatar_url ? "" : esc(fName(f)[0].toUpperCase())}</div><div style="flex:1;min-width:0"><h3 style="margin:0">${esc(fName(f))}</h3>
+      <div class="pct">${c.match !== null ? c.match + "%" : "–"}</div><div class="meta">${c.match !== null ? "совпадение вкусов" : "мало общих оценок"}</div>
+      <div class="meta">Общих просмотренных: ${c.both} · Хотите вместе: ${c.together.length}</div>
+      <div class="acts" style="margin-top:10px"><button class="main" data-fo="${f.id}">Открыть</button><button data-fd="${f.id}">Удалить</button></div></div></div>`;
+  }).join("");
+  v.innerHTML = `<div class="panel"><h3>Пригласить друга</h3><p class="hint">Отправьте другу этот код. Когда он введёт его у себя, вы увидите списки и оценки друг друга.</p>
+    <div class="acts" style="margin:0"><span class="code">${esc(myCode || "…")}</span><button id="frCopy">Копировать</button></div>
+    <h3 style="margin:20px 0 10px">Добавить по коду друга</h3><div class="bar" style="margin:0"><input id="frIn" placeholder="Код друга" maxlength="20" style="flex:1;min-width:160px"><button class="main" id="frAdd">Добавить</button></div></div>
+    ${friends.length ? `<div class="fr-grid">${cards}</div>` : `<div class="nudge">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов и «что смотреть вместе».</div>`}`;
+}
+function showFriend(id) {
+  const f = friendData[id], c = compare(f), v = $("#friendsView");
+  const fav = f.movies.filter(x => x.status === "watched" && x.my_rating >= 8).sort((a, b) => b.my_rating - a.my_rating).slice(0, 16);
+  const want = f.movies.filter(x => x.status === "watchlist").slice(0, 16);
+  const L = l => l.map((x, i) => tile(x, i)).join("");
+  v.innerHTML = `<button class="lnk" id="frBack">← Назад к друзьям</button>
+    <div class="greet"><h2>${esc(fName(f))}</h2><span class="meta">${matchText(c)}</span></div>
+    ${c.together.length ? secHtml("Смотреть вместе", "Фильмы из «Хочу посмотреть» у вас обоих", L(c.together)) : `<div class="nudge">Пока нет фильмов, которые вы оба хотите посмотреть.</div>`}
+    ${fav.length ? secHtml("Любимое у друга", "Его оценки 8–10", L(fav)) : ""}
+    ${want.length ? secHtml("Хочет посмотреть", "", L(want)) : ""}`;
+}
+$("#friendsView").onclick = async e => {
+  const t = e.target.closest("[data-tid]"); if (t) return openMovie(+t.dataset.tid, t.dataset.mt);
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "frCopy") return navigator.clipboard.writeText(myCode).then(() => toast("Код скопирован"), () => toast("Не удалось скопировать"));
+  if (b.id === "frBack") return renderFriends();
+  if (b.dataset.fo) return showFriend(b.dataset.fo);
+  if (b.id === "frAdd") {
+    const code = $("#frIn").value.trim(); if (!code) return;
+    const { data, error } = await sb.rpc("add_friend", { code });
+    if (error) return toast(error.message);
+    toast("Друг добавлен" + (data ? ": " + data : "")); friendsLoaded = false; return renderFriends();
+  }
+  if (b.dataset.fd) {
+    if (!confirm("Убрать из друзей? Вы перестанете видеть списки друг друга.")) return;
+    const id = b.dataset.fd, { error } = await sb.from("friendships").delete().or(`user_a.eq.${id},user_b.eq.${id}`);
+    if (error) return toast(error.message);
+    friendsLoaded = false; renderFriends();
+  }
+};
+
+/* ---------- рекомендации ---------- */
+async function loadGenreRow(tok) {
+  const gc = {};
+  movies.filter(m => m.status === "watched" && (m.my_rating || 0) >= 7).forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gc[g] = (gc[g] || 0) + 1));
+  const top = Object.entries(gc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => x[0]);
+  if (!top.length || !$("#rcGen")) return;
+  try {
+    if (!homeCache.genres) homeCache.genres = (await tmdbGet("genre/movie/list")).genres || [];
+    const ids = top.map(n => (homeCache.genres.find(g => g.name.toLowerCase() === n.toLowerCase()) || {}).id).filter(Boolean);
+    if (!ids.length) return;
+    const key = "g" + ids.join("|");
+    if (!homeCache[key]) homeCache[key] = (await tmdbGet("discover/movie", `with_genres=${encodeURIComponent(ids.join("|"))}&sort_by=vote_average.desc&vote_count.gte=4000&vote_average.gte=7.4&primary_release_date.gte=2000-01-01`)).results || [];
+    if (tok !== homeTok || !$("#rcGen")) return;
+    const have = new Set(movies.map(keyOf));
+    const l = homeCache[key].filter(x => x.poster_path && !have.has(x.id + "-movie")).slice(0, 16);
+    $("#rcGen").innerHTML = l.length ? secHtml("По вашим любимым жанрам", esc(top.join(", ")) + ", с 2000 года, TMDB от 7,4", l.map((x, i) => tTile(x, "movie", i)).join("")) : "";
+  } catch (e) {}
+}
+async function renderRecs() {
+  const tok = ++homeTok, v = $("#recsView");
+  v.innerHTML = `<p class="hint">Подбор по вашим оценкам, любимым жанрам и оценкам друзей. Уже добавленное в списки не показывается.</p><div id="rcFr"></div><div id="rcSim"></div><div id="rcGen"></div>`;
+  loadRecs(tok, "#rcSim"); loadGenreRow(tok);
+  if (!friendsLoaded) await loadFriends();
+  if (tok !== homeTok || !$("#rcFr")) return;
+  if (!friends || !friends.length) { $("#rcFr").innerHTML = `<div class="nudge">Добавьте друзей во вкладке «Друзья»: здесь появятся фильмы, которые они оценили на 9–10.</div>`; return; }
+  const mine = new Set(movies.map(keyOf)), seen = new Map();
+  friends.forEach(f => f.movies.forEach(x => {
+    if (x.status !== "watched" || (x.my_rating || 0) < 9 || mine.has(keyOf(x))) return;
+    const e = seen.get(keyOf(x)) || { x, by: new Set() }; e.by.add(fName(f)); seen.set(keyOf(x), e);
+  }));
+  const l = [...seen.values()].sort((a, b) => b.by.size - a.by.size).slice(0, 16);
+  $("#rcFr").innerHTML = l.length ? secHtml("Друзья советуют", "Оценили на 9–10 (на постере оценка друга)", l.map((e, i) => tile(e.x, i)).join("")) : "";
+}
+$("#recsView").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
 
 /* ---------- действия над карточками ---------- */
 $("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
