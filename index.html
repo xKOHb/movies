@@ -9,15 +9,16 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%23f5b041%22/%3E%3Cpath d=%22M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8%22 fill=%22none%22 stroke=%22%232b1a0b%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%224.5%22 fill=%22%232b1a0b%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- Картинка для ссылки-приглашения: замените USERNAME и REPO на свои (адрес вашего сайта на GitHub Pages) -->
+<!-- Картинка для ссылки-приглашения: адрес сайта на GitHub Pages -->
+<meta property="og:url" content="https://xkohb.github.io/movies/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Поиск кадров">
 <meta property="og:description" content="Личный список фильмов: что посмотреть и что уже смотрел.">
-<meta property="og:image" content="https://USERNAME.github.io/REPO/og-image.png">
+<meta property="og:image" content="https://xkohb.github.io/movies/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://USERNAME.github.io/REPO/og-image.png">
+<meta name="twitter:image" content="https://xkohb.github.io/movies/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
@@ -321,6 +322,38 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 #sg .sgg{flex:none;font-size:.72rem;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);border-radius:999px;padding:1px 8px}
 #sg .sgs{padding:10px;text-align:center}
 #sg mark{background:none;color:var(--acc);font-weight:800}
+/* шапка: без полосы в покое, стекло только при прокрутке */
+.top::before{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom-color:transparent;transition:background .2s,border-color .2s}
+.top.stuck::before{background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent)}
+
+/* ===== правки 25.11.2026: окно оценки, карточки, телефон ===== */
+.dval{height:5.4em;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:6px}
+.dval b{line-height:1.1;animation:numPop .16s ease}
+@keyframes numPop{from{transform:scale(.82);opacity:.35}}
+.nums{gap:0}
+.nums button{flex:1 1 0;min-width:0;max-width:38px;width:auto}
+.tile{box-shadow:0 6px 18px #0005}
+.tile:hover,.tile:focus-visible{border-color:var(--acc);box-shadow:0 18px 40px #000b,0 0 0 1px color-mix(in srgb,var(--acc) 60%,transparent)}
+.tile .ov{padding:44px 10px 10px;line-height:1.25}
+.tile .ov i{display:block;margin-top:2px}
+.tile .bd .rt{display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:.8rem;padding:3px 9px;border-radius:999px;background:#000b;color:#fff;border:1px solid #ffffff22;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.tile .bd .rt.hi{background:var(--acc);color:var(--on-acc);border-color:transparent}
+.tile .bd .rt.mid{color:#f3c98b}
+.tile .bd .rt.lo{color:#c9c9d2}
+.tile .bd .rt.tm{font-weight:600;font-size:.7rem}
+.tile .tv{position:absolute;top:7px;left:7px;font-size:.68rem;font-weight:700;background:#000b;color:#fff;padding:2px 8px;border-radius:999px;border:1px solid #ffffff22}
+@media(hover:none){.tile .ov{opacity:1;padding-top:30px}}
+#bnav{display:none}
+@media(max-width:640px){
+  .tabs{display:none}
+  main{padding-bottom:92px}
+  #bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  #bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;color:var(--mut);font-size:.68rem;font-weight:600;padding:4px 0;border-radius:12px}
+  #bnav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #bnav button.on{color:var(--acc)}
+  #selBar{bottom:80px}
+  #toast{bottom:86px}
+}
 </style>
 </head>
 <body>
@@ -348,6 +381,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
         <button data-m="profile">Мой профиль</button>
         <button data-m="view" id="mView"></button>
         <button data-m="theme" id="mTheme"></button>
+        <button data-m="picks">Подборка фильмов</button>
         <button data-m="import">Импорт с Кинопоиска</button>
         <button data-m="backup">Скачать мой список (CSV)</button>
         <button data-m="install" id="mInstall" hidden>Установить приложение</button>
@@ -362,8 +396,6 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
     <button data-t="watched">Просмотрено</button>
     <button data-t="recs">Рекомендации</button>
     <button data-t="colls">Коллекции</button>
-    <button data-t="picks">Подборка</button>
-    <button data-t="search">Найти фильм</button>
   </div>
   </div>
 
@@ -412,6 +444,7 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
   <div id="selBar" hidden><b id="selN">0</b> выбрано <button data-a="rate">Оценить по очереди</button><button data-a="seen" id="selSeen">В «Просмотрено»</button><button data-a="want" id="selWant">В «Хочу»</button><button data-a="del">Удалить</button><button data-a="x">Отмена</button></div>
   <div id="toast" hidden></div>
+  <nav id="bnav" aria-label="Разделы"><button data-t="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button><button data-t="watchlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v17l-5-4-5 4z"/></svg><span>Хочу</span></button><button data-t="watched"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg><span>Смотрел</span></button><button data-t="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4L12 16.2 7.2 18.9l1-5.4-4-3.8 5.4-.7z"/></svg><span>Для вас</span></button><button data-t="colls"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Коллекции</span></button></nav>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
 
@@ -487,8 +520,9 @@ function row(m, i) {
 }
 function tile(m, i) {
   const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="${esc(m.title)}" loading="lazy">` : `<div class="noimg">${esc(m.title)}</div>`;
-  const badge = m.status === "watched" ? (m.my_rating ? `<b>★ ${m.my_rating}</b>` : `<b>✓</b>`) : (m.tmdb_rating ? `<span>${m.tmdb_rating}</span>` : "");
-  return `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}">${img}<span class="ov">${esc(m.title)} <i>${esc(m.year)}${m.media_type === "tv" ? ", сериал" : ""}</i></span><span class="bd">${badge}</span></button>`;
+  const r = m.my_rating, tier = r >= 9 ? "hi" : r >= 7 ? "mid" : "lo";
+  const badge = m.status === "watched" ? (r ? `<b class="rt ${tier}">★ ${r}</b>` : `<b class="rt">✓</b>`) : (+m.tmdb_rating ? `<span class="rt tm">TMDB ${(+m.tmdb_rating).toFixed(1)}</span>` : "");
+  return `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}">${img}${m.media_type === "tv" ? `<span class="tv">Сериал</span>` : ""}<span class="ov">${esc(m.title)} <i>${esc(m.year)}</i></span><span class="bd">${badge}</span></button>`;
 }
 
 function render() {
@@ -511,7 +545,7 @@ function render() {
   box.className = "posters" + (view === "rows" ? " rows" : "") + (animNext ? " anim" : "");
   animNext = false;
   box.innerHTML = l.length ? l.map((m, i) => view === "rows" ? row(m, i) : tile(m, i)).join("")
-    : `<div class="empty">${movies.some(m => m.status === tab) ? "Ничего не найдено. Измените фильтры." : "Здесь пусто. Откройте «Найти фильм» и добавьте первый."}</div>`;
+    : `<div class="empty">${movies.some(m => m.status === tab) ? "Ничего не найдено. Измените фильтры." : "Здесь пусто. Нажмите на лупу сверху и добавьте первый."}</div>`;
   markSel();
 }
 
@@ -520,7 +554,7 @@ const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist
 function go(t) {
   sgHide();
   tab = t; animNext = true;
-  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll("#tabs button,#bnav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
   if (t === "profile") friendsLoaded = false;
@@ -529,7 +563,7 @@ function go(t) {
   render();
   const vv = $("#" + VIEWS[t]); if (vv && vv.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) vv.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "none" }], { duration: 240, easing: "cubic-bezier(.2,.7,.2,1)" });
 }
-$("#tabs").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
+$("#tabs").onclick = $("#bnav").onclick = e => { const b = e.target.closest("[data-t]"); if (b) go(b.dataset.t); };
 ["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
 $("#fq").oninput = render;
 $("#chips").onclick = e => { const b = e.target.closest("[data-g]"); if (!b) return; $("#fg").value = b.dataset.g; render(); };
@@ -1177,6 +1211,7 @@ SG.el.addEventListener("mousedown", e => e.preventDefault());
 SG.el.addEventListener("click", e => { const b = e.target.closest(".sgi"); if (b) sgPick(+b.dataset.i); });
 document.addEventListener("input", e => { const t = e.target; if (t.id === "q" || t.id === "colQ" || t.id === "gq") sgType(t); });
 document.addEventListener("pointerdown", e => { if (!SG.el.hidden && !SG.el.contains(e.target) && e.target !== SG.input) sgHide(); });
+window.addEventListener("scroll", () => { const t = document.querySelector(".top"); if (t) t.classList.toggle("stuck", scrollY > 4); }, { passive: true });
 window.addEventListener("resize", sgPlace); window.addEventListener("scroll", sgPlace, true);
 document.addEventListener("keydown", e => {
   const t = e.target, isIn = t && (t.id === "q" || t.id === "colQ" || t.id === "gq"), appOn = !$("#app").hidden, dlg = document.querySelector("dialog[open]");
@@ -1451,7 +1486,7 @@ menu.onclick = e => {
   if (m === "view") return toggleView();
   if (m === "theme") return toggleTheme();
   closeMenu();
-  if (m === "profile") go("profile"); else if (m === "import") openImport(); else if (m === "backup") exportCsv(); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
+  if (m === "profile") go("profile"); else if (m === "picks") go("picks"); else if (m === "import") openImport(); else if (m === "backup") exportCsv(); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
 };
 document.addEventListener("click", e => { if (!menu.hidden && !e.target.closest(".me")) closeMenu(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
