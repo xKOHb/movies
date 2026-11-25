@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0b0b0f">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%23f5b041%22/%3E%3Cpath d=%22M18 26v-8h8M38 18h8v8M46 38v8h-8M26 46h-8v-8%22 fill=%22none%22 stroke=%22%232b1a0b%22 stroke-width=%224%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%224.5%22 fill=%22%232b1a0b%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <!-- Картинка для ссылки-приглашения: замените USERNAME и REPO на свои (адрес вашего сайта на GitHub Pages) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Поиск кадров">
@@ -260,6 +261,7 @@ body{overflow-x:clip}
 .top{background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 .top::before{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);z-index:-1;background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .dlg-date{display:flex;align-items:center;gap:10px;margin:12px 0 8px;color:var(--mut);font-size:.9rem}.dlg-date input{flex:1}
+[hidden]{display:none!important}
 /* импорт */
 #imDlg input[type=checkbox],#imDlg input[type=radio]{width:auto;padding:0;flex:none}
 .im-list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:6px 12px;margin:10px 0}
@@ -293,6 +295,8 @@ body{overflow-x:clip}
         <button data-m="view" id="mView"></button>
         <button data-m="theme" id="mTheme"></button>
         <button data-m="import">Импорт с Кинопоиска</button>
+        <button data-m="backup">Скачать мой список (CSV)</button>
+        <button data-m="install" id="mInstall" hidden>Установить приложение</button>
         <hr>
         <button data-m="out">Выйти</button>
       </div>
@@ -539,11 +543,12 @@ function renderHome() {
       <div class="stat"><b>${hours}</b><span>часов кино</span></div>
     </div>
     <div id="epBox"></div>
+    <div id="feedBox"></div>
     ${want.length ? secHtml("Хочу посмотреть", "Недавно добавленное", want.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watchlist") : ""}
     ${w.length ? secHtml("Недавно просмотрено", "", w.slice(0, 14).map((m, i) => tile(m, i)).join(""), "watched") : ""}
     <div id="recBox"></div>
     <div id="trendBox"></div>`;
-  fillHero(false); loadRecs(tok); loadTrend(tok); loadEps(tok);
+  fillHero(false); loadRecs(tok); loadTrend(tok); loadEps(tok); loadFeed(tok);
 }
 async function loadRecs(tok, sel = "#recBox") {
   const watched = movies.filter(m => m.status === "watched" && m.my_rating);
@@ -639,6 +644,7 @@ function showFriend(id) {
   v.innerHTML = `<button class="lnk" id="frBack">← Назад к друзьям</button>
     <div class="greet"><h2>${esc(fName(f))}</h2><span class="meta">${matchText(c)}</span></div>
     <div id="pairBox"></div>
+    ${diffHtml(f)}
     ${c.together.length ? secHtml("Смотреть вместе", "Фильмы из «Хочу посмотреть» у вас обоих", L(c.together)) : `<div class="nudge">Пока нет фильмов, которые вы оба хотите посмотреть.</div>`}
     ${fav.length ? secHtml("Любимое у друга", "Его оценки 8–10", L(fav)) : ""}
     ${want.length ? secHtml("Хочет посмотреть", "", L(want)) : ""}`;
@@ -769,6 +775,38 @@ async function loadEps(tok) {
   }).filter(Boolean).sort((a, b) => a.k - b.k);
   $("#epBox").innerHTML = l.length ? secHtml("Новые серии", "Сериалы из ваших списков: ближайшие и недавние выходы", l.map((e, i) => `<button class="tile" data-tid="${e.m.tmdb_id}" data-mt="tv" style="--i:${i}" title="${esc(e.m.title)}"><img src="${IMG}${e.m.poster}" alt="${esc(e.m.title)}" loading="lazy"><span class="ov">${esc(e.m.title)} <i>${esc(e.t)}</i></span><span class="bd"><span>${esc(e.b)}</span></span></button>`).join("")) : "";
 }
+
+
+/* ---------- лента друзей, сравнение вкусов, резервная копия, установка ---------- */
+async function loadFeed(tok) {
+  if (!friendsLoaded) await loadFriends();
+  if (tok !== homeTok || !$("#feedBox") || !friends || !friends.length) return;
+  const dt = x => x.watched_at || (x.created_at || "").slice(0, 10);
+  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
+  $("#feedBox").innerHTML = ev.length ? secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join("")) : "";
+}
+function diffHtml(f) {
+  const mine = new Map(movies.filter(m => m.status === "watched" && m.my_rating).map(m => [keyOf(m), m]));
+  const both = f.movies.filter(x => x.status === "watched" && x.my_rating && mine.has(keyOf(x))).map(x => ({ x, m: mine.get(keyOf(x)) }));
+  if (!both.length) return "";
+  const love = both.filter(e => e.x.my_rating >= 9 && e.m.my_rating >= 9).slice(0, 8);
+  const diff = both.map(e => ({ ...e, d: Math.abs(e.x.my_rating - e.m.my_rating) })).filter(e => e.d >= 3).sort((a, b) => b.d - a.d).slice(0, 8);
+  const row = e => `<button class="lnk" data-tid="${e.x.tmdb_id}" data-mt="${e.x.media_type || "movie"}" style="display:block;text-align:left;padding:3px 0;color:var(--tx)">${esc(e.x.title)} <span class="meta">вы ${e.m.my_rating} · ${esc(fName(f))} ${e.x.my_rating}</span></button>`;
+  return `<div class="pf-sec cols"><div class="panel"><h3>Оба в восторге</h3>${love.length ? love.map(row).join("") : `<div class="meta">Пока нет общих фильмов с оценкой 9–10.</div>`}</div><div class="panel"><h3>Больше всего разошлись</h3>${diff.length ? diff.map(row).join("") : `<div class="meta">Оценки близки, разногласий нет.</div>`}</div></div>`;
+}
+function exportCsv() {
+  if (!movies.length) return toast("Список пока пуст");
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["name_rus", "name_eng", "rating", "date", "status", "type", "tmdb_id", "tmdb_rating", "runtime", "genres", "note"];
+  const rows = movies.map(m => [`${m.title} (${m.media_type === "tv" ? "сериал, " : ""}${m.year || ""})`, "", m.my_rating, m.watched_at, m.status, m.media_type || "movie", m.tmdb_id, m.tmdb_rating, m.runtime, m.genres, m.note].map(q).join(","));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + [head.join(","), ...rows].join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = `poisk-kadrov-${today()}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast("Список скачан (" + movies.length + ")");
+}
+let deferredInstall = null;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; const b = $("#mInstall"); if (b) b.hidden = false; });
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 /* ---------- действия над карточками ---------- */
 $("#list").onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
@@ -1025,7 +1063,7 @@ menu.onclick = e => {
   if (m === "view") return toggleView();
   if (m === "theme") return toggleTheme();
   closeMenu();
-  if (m === "profile") go("profile"); else if (m === "import") openImport(); else if (m === "out") sb.auth.signOut();
+  if (m === "profile") go("profile"); else if (m === "import") openImport(); else if (m === "backup") exportCsv(); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
 };
 document.addEventListener("click", e => { if (!menu.hidden && !e.target.closest(".me")) closeMenu(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
