@@ -6,6 +6,7 @@
 <title>Поиск кадров</title>
 <meta name="description" content="Личный список фильмов: что посмотреть и что уже смотрел, с оценками и заметками.">
 <meta name="theme-color" content="#0b0b0f">
+<script>try{var _t=localStorage.getItem("th");document.documentElement.dataset.theme=_t==="light"||_t==="dark"?_t:(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");if(document.documentElement.dataset.theme==="light")document.querySelector('meta[name="theme-color"]').content="#f2f2f5"}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23141218%22/%3E%3Cpath d=%22M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5%22 fill=%22none%22 stroke=%22%23f5b041%22 stroke-width=%224.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z%22 fill=%22%23f5b041%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -19,12 +20,15 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://xkohb.github.io/movies/og-image.png">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="preconnect" href="https://api.themoviedb.org">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0b0f;--paper:#16161d;--mut:#8a8a96;--line:#26262f;--tx:#f2f2f4;--field:#121218;--glass:#f2f2f410;--acc:#f5b041;--on-acc:#1a1204}
-[data-theme=light]{--bg:#f2f2f5;--paper:#ffffff;--mut:#6b6b78;--line:#dcdce3;--tx:#1a1a22;--field:#ffffff;--glass:#1a1a220a;--acc:#c27a0e;--on-acc:#ffffff}
+[data-theme=light]{--bg:#f2f2f5;--paper:#ffffff;--mut:#6b6b78;--line:#dcdce3;--tx:#1a1a22;--field:#ffffff;--glass:#1a1a220a;--acc:#9a5d08;--on-acc:#ffffff}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.55 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(900px 480px at 12% -8%,color-mix(in srgb,var(--acc) 7%,transparent),transparent),var(--bg);background-attachment:fixed;color:var(--tx);-webkit-font-smoothing:antialiased;min-height:100vh}
 h1,h2,h3{font-weight:700;letter-spacing:-.02em;margin:0}
@@ -404,6 +408,65 @@ details.fold .main{margin-top:6px}
 .fr-add .hint{margin:8px 0 10px;font-size:.88rem}
 .fr-add .code{font-size:1.1rem;padding:4px 12px}
 @media(max-width:640px){.fr-row .mt span{display:none}}
+
+/* ===== вкладки профиля (26.11.2026) ===== */
+.pf-tabs{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--line);overflow-x:auto}
+.pf-tabs button{flex:none;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;font-weight:700;color:var(--mut);margin-bottom:-1px}
+.pf-tabs button:hover{color:var(--tx)}
+.pf-tabs button.on{color:var(--acc);border-bottom-color:var(--acc)}
+.pf-tabs .cnt{margin-left:6px;font-size:.78rem;background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--mut)}
+#pfBody{padding-top:4px}
+
+/* ===== быстрая оценка, плашка премьер, мобильная версия (26.11.2026) ===== */
+.tile,.card{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#qrate{position:fixed;inset:0;z-index:90;background:#000a;display:flex;align-items:center;justify-content:center;animation:fadeIn .18s ease}
+.qr-b{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;width:min(380px,calc(100vw - 24px));box-shadow:0 30px 80px #000a}
+.qr-t{font-weight:800;margin-bottom:12px;line-height:1.25}
+.qr-t span{display:block;font-weight:500;color:var(--mut);font-size:.82rem;margin-top:2px}
+.qr-n{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.qr-n button{min-height:48px;font-size:1.1rem;font-weight:800;border-radius:12px}
+.qr-n button:hover,.qr-n button.on{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
+.qr-a{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+.soon{display:flex;align-items:flex-start;gap:12px;background:linear-gradient(90deg,color-mix(in srgb,var(--acc) 16%,var(--paper)),var(--paper));border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:14px;padding:10px 12px 10px 16px;margin:0 0 14px}
+.soon-t{flex:1;min-width:0}.soon-t>b{display:block;font-size:.95rem}
+.soon-l{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.soon-c{display:inline-flex;align-items:baseline;gap:7px;background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:.88rem;font-weight:600;color:var(--tx)}
+.soon-c i{font-style:normal;color:var(--acc);font-size:.8rem;font-weight:700}
+.soon-c:hover{border-color:var(--acc)}
+.soon-x{flex:none;background:none;border:0;color:var(--mut);font-size:1rem;padding:4px 8px}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.top,#bnav{transition:transform .25s ease}
+@media(max-width:640px){
+  .qr-b{align-self:flex-end;width:100%;border-radius:22px 22px 0 0;border-bottom:0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+  #qrate{align-items:flex-end}
+  dialog{margin:auto 0 0;width:100%!important;max-width:100%;border-radius:22px 22px 0 0;max-height:92dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));border-bottom:0}
+  dialog[open]{animation:sheetUp .26s cubic-bezier(.2,.7,.2,1)}
+  .top{padding:8px 14px 2px;margin-bottom:10px}
+  .top.hid{transform:translateY(-110%)}
+  #bnav{padding:3px 6px calc(3px + env(safe-area-inset-bottom,0px))}
+  #bnav.hid{transform:translateY(110%)}
+  #bnav svg{width:21px;height:21px}
+  main{padding-bottom:76px}
+  .acts button,.bar button,.chips button,dialog .acts button{min-height:42px}
+  .card .acts button{min-height:38px}
+  .lnk{padding:10px}
+  .fr-row{padding:10px 12px}.fr-x{min-height:42px;min-width:42px}
+  .pf-tabs button{padding:12px 16px}
+  .mstats span{padding:7px 14px}
+  .soon-c{padding:7px 13px}
+}
+
+/* ===== светлая тема: мягкие тени, читаемость (26.11.2026) ===== */
+[data-theme=light] .tile{box-shadow:0 4px 14px #1a1a2220}
+[data-theme=light] .tile:hover,[data-theme=light] .tile:focus-visible{box-shadow:0 14px 30px #1a1a2236,0 0 0 1px color-mix(in srgb,var(--acc) 60%,transparent)}
+[data-theme=light] dialog,[data-theme=light] .qr-b{box-shadow:0 24px 60px #1a1a222e}
+[data-theme=light] #meMenu,[data-theme=light] #sg,[data-theme=light] #selBar,[data-theme=light] #toast{box-shadow:0 10px 30px #1a1a2229}
+[data-theme=light] dialog::backdrop,[data-theme=light] #qrate{background:#1a1a2288}
+[data-theme=light] .pv>img{box-shadow:0 12px 30px #1a1a2233}
+[data-theme=light] .stat,[data-theme=light] .panel,[data-theme=light] details.fold,[data-theme=light] .soon{box-shadow:0 1px 2px #1a1a220d}
+[data-theme=light] .fr-row,[data-theme=light] .soon-c{background:var(--bg)}
+[data-theme=light] #bnav{background:color-mix(in srgb,var(--paper) 92%,transparent)}
+html{transition:background-color .2s ease}
 </style>
 </head>
 <body>
@@ -558,7 +621,7 @@ function filtered() {
 }
 
 function row(m, i) {
-  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="" loading="lazy" decoding="async">` : `<div class="noimg"></div>`;
   const info = [m.media_type === "tv" ? "сериал" : "", m.runtime ? m.runtime + (m.media_type === "tv" ? " мин/серия" : " мин") : "", esc(m.genres)].filter(Boolean).join(", ");
   return `<article class="card" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}">${img}<div class="body">
     <h2>${esc(m.title)} <span class="meta">${esc(m.year)}</span></h2>
@@ -569,7 +632,7 @@ function row(m, i) {
   </div></article>`;
 }
 function tile(m, i) {
-  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="${esc(m.title)}" loading="lazy">` : `<div class="noimg">${esc(m.title)}</div>`;
+  const img = m.poster ? `<img src="${IMG}${esc(m.poster)}" alt="${esc(m.title)}" loading="lazy" decoding="async">` : `<div class="noimg">${esc(m.title)}</div>`;
   const r = m.my_rating, tier = r >= 9 ? "hi" : r >= 7 ? "mid" : "lo";
   const badge = m.status === "watched" ? (r ? `<b class="rt ${tier}">★ ${r}</b>` : `<b class="rt">✓</b>`) : (+m.tmdb_rating ? `<span class="rt tm">TMDB ${(+m.tmdb_rating).toFixed(1)}</span>` : "");
   return `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}">${img}${m.media_type === "tv" ? `<span class="tv">Сериал</span>` : ""}<span class="ov">${esc(m.title)} <i>${esc(m.year)}</i></span><span class="bd">${badge}</span></button>`;
@@ -677,7 +740,7 @@ async function fillHero(force) {
 }
 const tTile = (x, mt, i) => {
   const t = x.title || x.name || "", y = (x.release_date || x.first_air_date || "").slice(0, 4);
-  return `<button class="tile" data-tid="${x.id}" data-mt="${mt}" style="--i:${i}" title="${esc(t)}"><img src="${IMG}${x.poster_path}" alt="${esc(t)}" loading="lazy"><span class="ov">${esc(t)} <i>${esc(y)}${mt === "tv" ? ", сериал" : ""}</i></span><span class="bd">${x.vote_average ? `<span>${x.vote_average.toFixed(1)}</span>` : ""}</span></button>`;
+  return `<button class="tile" data-tid="${x.id}" data-mt="${mt}" style="--i:${i}" title="${esc(t)}"><img src="${IMG}${x.poster_path}" alt="${esc(t)}" loading="lazy" decoding="async"><span class="ov">${esc(t)} <i>${esc(y)}${mt === "tv" ? ", сериал" : ""}</i></span><span class="bd">${x.vote_average ? `<span>${x.vote_average.toFixed(1)}</span>` : ""}</span></button>`;
 };
 const secHtml = (title, sub, inner, go) => `<div class="sec"><div class="sec-h"><h3><span>${title}${sub ? `<small>${sub}</small>` : ""}</span></h3>${go ? `<button class="lnk" data-go="${go}">Все →</button>` : ""}</div><div class="rail">${inner}</div></div>`;
 
@@ -689,6 +752,7 @@ function renderHome() {
   const name = profile.display_name || (userEmail.split("@")[0]) || "";
   $("#homeView").innerHTML = `
     <div class="greet"><h2>Привет${name ? ", " + esc(name) : ""}</h2><span class="meta">${movies.length ? "Ваша коллекция: " + movies.length + " " + (movies.length % 10 === 1 && movies.length % 100 !== 11 ? "запись" : "записей") : "Пока пусто, давайте начнём"}</span></div>
+    <div id="soonBox"></div>
     <div id="heroBox"></div>
     <div class="stats">
       <div class="stat"><b>${w.length}</b><span>просмотрено</span></div>
@@ -786,12 +850,18 @@ async function renderFriends() {
   }).join("");
   const best = friends.map(f => ({ f, c: compare(f) })).filter(x => x.c.match !== null).sort((a, b) => b.c.match - a.c.match)[0];
   const fs = $("#frSub"); if (fs) fs.textContent = friends.length ? plr(friends.length) + (best ? " · лучше всего совпадаете с " + fName(best.f) + " (" + best.c.match + "%)" : "") : "пока нет";
-  v.innerHTML = `${friends.length ? `<div class="fr-list">${rows}</div>` : `<div class="meta">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов и «что смотреть вместе».</div>`}
+  v.innerHTML = `${friends.length ? `<div class="fr-list">${rows}</div><div id="frFeed"></div>` : ""}<div id="frColl"></div>${friends.length ? "" : `<div class="meta" style="margin-bottom:10px">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов, лента и «что смотреть вместе».</div>`}
     <details class="fr-add" ${friends.length ? "" : "open"}><summary>＋ Добавить друга / мой код</summary>
       <p class="hint">Отправьте другу свой код. Когда он введёт его у себя, вы увидите списки и оценки друг друга.</p>
       <div class="acts" style="margin:0 0 12px"><span class="code">${esc(myCode || "…")}</span><button id="frCopy">Копировать</button></div>
       <div class="bar" style="margin:0"><input id="frIn" placeholder="Код друга" maxlength="20" style="flex:1;min-width:160px"><button class="main" id="frAdd">Добавить</button></div>
     </details>`;
+  const dt = x => x.watched_at || (x.created_at || "").slice(0, 10);
+  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
+  if ($("#frFeed") && ev.length) $("#frFeed").innerHTML = secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy" decoding="async"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join(""));
+  try { if (colls === undefined) await loadColls(); } catch (e) {}
+  const cl = $("#frColl");
+  if (cl && colls) cl.innerHTML = `<div class="sec"><div class="sec-h"><h3><span>Общие коллекции<small>Подборки, куда фильмы добавляете вы с друзьями</small></span></h3><button class="lnk" data-go="colls">Все →</button></div>${colls.length ? `<div class="fr-list">${colls.slice(0, 6).map(x => `<div class="frw"><button class="fr-row" data-go="colls" data-cx="${x.id}"><span class="nm">${esc(x.name)}</span><span class="mt">фильмов: ${x.items.length} · участников: ${x.members.length + 1}</span></button></div>`).join("")}</div>` : `<div class="meta">Коллекций пока нет. Создайте первую на вкладке «Коллекции».</div>`}</div>`;
 }
 function showFriend(id) {
   const f = friendData[id], c = compare(f), v = $("#frBox");
@@ -808,6 +878,7 @@ function showFriend(id) {
   curPair = id; pairPick(id);
 }
 const frClick = async e => {
+  const g = e.target.closest("[data-go]"); if (g) { if (g.dataset.cx) colOpen = +g.dataset.cx; return go(g.dataset.go); }
   if (e.target.closest("[data-again]")) return pairPick(curPair, true);
   const t = e.target.closest("[data-tid]"); if (t) return openMovie(+t.dataset.tid, t.dataset.mt);
   const b = e.target.closest("button"); if (!b) return;
@@ -931,7 +1002,7 @@ async function loadEps(tok) {
     if (la && la.air_date && Date.now() - new Date(la.air_date) < 45 * 864e5) return { m, t: `Вышла S${la.season_number}E${la.episode_number}, ${fmt(la.air_date)}`, b: `S${la.season_number}E${la.episode_number}`, k: new Date(la.air_date).getTime() + 1e13 };
     return null;
   }).filter(Boolean).sort((a, b) => a.k - b.k);
-  $("#epBox").innerHTML = l.length ? secHtml("Новые серии", "Сериалы из ваших списков: ближайшие и недавние выходы", l.map((e, i) => `<button class="tile" data-tid="${e.m.tmdb_id}" data-mt="tv" style="--i:${i}" title="${esc(e.m.title)}"><img src="${IMG}${e.m.poster}" alt="${esc(e.m.title)}" loading="lazy"><span class="ov">${esc(e.m.title)} <i>${esc(e.t)}</i></span><span class="bd"><span>${esc(e.b)}</span></span></button>`).join("")) : "";
+  $("#epBox").innerHTML = l.length ? secHtml("Новые серии", "Сериалы из ваших списков: ближайшие и недавние выходы", l.map((e, i) => `<button class="tile" data-tid="${e.m.tmdb_id}" data-mt="tv" style="--i:${i}" title="${esc(e.m.title)}"><img src="${IMG}${e.m.poster}" alt="${esc(e.m.title)}" loading="lazy" decoding="async"><span class="ov">${esc(e.m.title)} <i>${esc(e.t)}</i></span><span class="bd"><span>${esc(e.b)}</span></span></button>`).join("")) : "";
 }
 
 
@@ -941,7 +1012,7 @@ async function loadFeed(tok) {
   if (tok !== homeTok || !$("#feedBox") || !friends || !friends.length) return;
   const dt = x => x.watched_at || (x.created_at || "").slice(0, 10);
   const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
-  $("#feedBox").innerHTML = ev.length ? secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join("")) : "";
+  $("#feedBox").innerHTML = ev.length ? secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy" decoding="async"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join("")) : "";
 }
 function diffHtml(f) {
   const mine = new Map(movies.filter(m => m.status === "watched" && m.my_rating).map(m => [keyOf(m), m]));
@@ -994,7 +1065,7 @@ $("#selBar").onclick = async e => {
   if (err) return toast(err.message);
   selSet.clear(); await load(); updBar();
 };
-const bTile = (m, t, b, i) => `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}"><img src="${IMG}${m.poster}" alt="${esc(m.title)}" loading="lazy"><span class="ov">${esc(m.title)} <i>${esc(t)}</i></span><span class="bd"><span>${esc(b)}</span></span></button>`;
+const bTile = (m, t, b, i) => `<button class="tile" data-tid="${m.tmdb_id}" data-mt="${m.media_type || "movie"}" style="--i:${i}" title="${esc(m.title)}"><img src="${IMG}${m.poster}" alt="${esc(m.title)}" loading="lazy" decoding="async"><span class="ov">${esc(m.title)} <i>${esc(t)}</i></span><span class="bd"><span>${esc(b)}</span></span></button>`;
 async function loadPrem(tok) {
   const w = movies.filter(m => m.status === "watchlist" && m.media_type !== "tv" && m.poster).slice(0, 40); if (!w.length) return;
   const rs = await Promise.all(w.map(async m => {
@@ -1004,6 +1075,13 @@ async function loadPrem(tok) {
   }));
   if (tok !== homeTok || !$("#premBox")) return;
   const t0 = today(), lim = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), fmt = d => new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  const wk = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4 + 7 * 864e5).toISOString().slice(0, 10), tm = new Date(Date.now() - new Date().getTimezoneOffset() * 6e4 + 864e5).toISOString().slice(0, 10);
+  let hidden = false; try { hidden = localStorage.getItem("soonHide") === t0; } catch (e) {}
+  const soon = rs.filter(r => r && r.d >= t0 && r.d <= wk).sort((a, b) => a.d.localeCompare(b.d));
+  if ($("#soonBox")) {
+    $("#soonBox").innerHTML = soon.length && !hidden ? `<div class="soon"><div class="soon-t"><b>Выходит на этой неделе</b><div class="soon-l">${soon.map(r => `<button class="soon-c" data-tid="${r.m.tmdb_id}" data-mt="movie"><span>${esc(r.m.title)}</span><i>${r.d === t0 ? "сегодня" : r.d === tm ? "завтра" : new Date(r.d + "T12:00").toLocaleDateString("ru-RU", { weekday: "short", day: "numeric", month: "short" })}</i></button>`).join("")}</div></div><button class="soon-x" id="soonX" aria-label="Скрыть до завтра" title="Скрыть до завтра">✕</button></div>` : "";
+    const sx = $("#soonX"); if (sx) sx.onclick = () => { try { localStorage.setItem("soonHide", t0); } catch (e) {} $("#soonBox").innerHTML = ""; };
+  }
   const l = rs.filter(r => r && r.d >= lim).map(r => ({ ...r, up: r.d > t0 })).sort((a, b) => a.up !== b.up ? (a.up ? -1 : 1) : a.up ? a.d.localeCompare(b.d) : b.d.localeCompare(a.d));
   $("#premBox").innerHTML = l.length ? secHtml("Премьеры", "Из «Хочу посмотреть»: скоро выходят и вышли недавно", l.map((r, i) => bTile(r.m, (r.up ? "Выходит " : "Вышел ") + fmt(r.d), fmt(r.d), i)).join("")) : "";
 }
@@ -1311,7 +1389,7 @@ async function doSearch() {
 function foundCards(list) {
   return list.map(f => {
     const mt = f.media_type, have = movies.find(m => m.tmdb_id === f.id && (m.media_type || "movie") === mt);
-    const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+    const img = f.poster_path ? `<img src="${IMG}${f.poster_path}" alt="" loading="lazy" decoding="async">` : `<div class="noimg"></div>`;
     return `<article class="card" data-tid="${f.id}" data-mt="${mt}">${img}<div class="body">
       <h2>${esc(f.title || f.name)}</h2>
       <div class="meta">${mt === "tv" ? "Сериал, " : ""}${esc((f.release_date || f.first_air_date || "").slice(0, 4))}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
@@ -1460,7 +1538,7 @@ function editProfile() {
   };
   d.returnValue = ""; d.showModal();
 }
-$("#profileView").onclick = e => { if (e.target.closest("#frBox")) return frClick(e); const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
+$("#profileView").onclick = e => { if (e.target.closest("#frBox")) return frClick(e); const g = e.target.closest("[data-go]"); if (g) return go(g.dataset.go); const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
 
 const fmtN = x => x.toFixed(1).replace(".", ",");
 // разбор вкуса по вашим оценкам
@@ -1576,8 +1654,8 @@ const fold = (k, title, sub, body, d) => `<details class="fold" data-k="${k}" ${
 $("#profileView").addEventListener("toggle", e => {
   const d = e.target; if (!d.matches || !d.matches("details.fold")) return;
   try { const s = foldSt(); s[d.dataset.k] = d.open; localStorage.setItem("pfFold", JSON.stringify(s)); } catch (x) {}
-  if (d.dataset.k === "pp" && d.open) loadPeople();
 }, true);
+let pfTab = (() => { try { return localStorage.getItem("pfTab") || "overview"; } catch (e) { return "overview"; } })();
 function renderProfile() {
   const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
   const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
@@ -1608,34 +1686,99 @@ function renderProfile() {
       <span><b>${r.filter(m => m.my_rating >= 9).length}</b>оценок 9–10</span>
       <span><b>${w.filter(m => m.media_type === "tv").length}</b>сериалов</span>
     </div>
-    <div class="fold-bar"><button class="lnk" id="pfFoldAll">Свернуть всё</button></div>
-    ${fold("rt", "Оценки и жанры", r.length ? "средняя " + avg + (gl.length ? " · " + esc(gl[0][0]) : "") : "пока нет оценок", `<div class="cols">
-      <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
-      <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
-    </div>`)}
-    ${fold("yr", "Итоги года", "", `<div class="sk" style="height:60px"></div>`)}
-    ${fold("pp", "Режиссёры и актёры", "по фильмам с оценкой 8+", "")}
-    ${fold("fr", "Друзья", "", `<div class="sk" style="height:60px"></div>`)}
-    ${fold("top", "Любимые фильмы", topF.length ? esc(topF[0].title) + (topF.length > 1 ? " и ещё " + (topF.length - 1) : "") : "пока нет", topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`)}
-    ${fold("rec", "Недавно просмотренные", recent.length ? recent.length + " шт." : "пока ничего", recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`)}
-    ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`;
+    <div class="pf-tabs" id="pfTabs"><button data-pt="overview">Обзор</button><button data-pt="stats">Статистика</button><button data-pt="friends">Друзья<span class="cnt" id="pfFrCnt" hidden></span></button></div>
+    <div id="pfBody"></div>`;
+  const body = {
+    overview: () => `
+      <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
+      <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
+      ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`,
+    stats: () => `
+      <div class="cols pf-sec">
+        <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
+        <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
+      </div>
+      <div class="pf-sec"><h3>Итоги года</h3><div id="yrBox"></div></div>
+      <div class="pf-sec"><h3>Режиссёры и актёры</h3><div class="meta" style="margin-bottom:8px">По вашим фильмам с оценкой 8+</div><div id="ppBox"></div></div>`,
+    friends: () => `<div class="pf-sec" style="margin-top:16px"><div id="frBox"><div class="sk" style="height:60px"></div></div></div>`
+  };
+  const show = k => {
+    pfTab = k; try { localStorage.setItem("pfTab", k); } catch (e) {}
+    document.querySelectorAll("#pfTabs button").forEach(b => b.classList.toggle("on", b.dataset.pt === k));
+    $("#pfBody").innerHTML = body[k]();
+    if (k === "overview") $("#copyPrompt").onclick = openAi;
+    if (k === "stats") { yearBox(); loadPeople(); }
+    if (k === "friends") renderFriends();
+  };
+  $("#pfTabs").onclick = e => { const b = e.target.closest("[data-pt]"); if (b) show(b.dataset.pt); };
   $("#pfAv").onclick = () => pickImage("avatar");
   $("#pfBn").onclick = () => pickImage("banner");
   $("#pfEdit").onclick = editProfile;
-  $("#copyPrompt").onclick = openAi;
-  $("#pfFoldAll").onclick = e => {
-    const ds = [...document.querySelectorAll("#profileView details.fold")], any = ds.some(d => d.open);
-    ds.forEach(d => d.open = !any); e.target.textContent = any ? "Развернуть всё" : "Свернуть всё";
-  };
-  yearBox(); if (foldOpen("pp")) loadPeople(); renderFriends();
+  show(body[pfTab] ? pfTab : "overview");
+  if (!friendsLoaded) loadFriends().then(() => { const c = $("#pfFrCnt"); if (c && friends && friends.length) { c.textContent = friends.length; c.hidden = false; } });
+  else { const c = $("#pfFrCnt"); if (c && friends && friends.length) { c.textContent = friends.length; c.hidden = false; } }
 }
 
+/* ---------- быстрая оценка: долгое нажатие или правый клик по карточке ---------- */
+const qr = document.createElement("div"); qr.id = "qrate"; qr.hidden = true; document.body.appendChild(qr);
+let qrM = null, lpT = null, lpX = 0, lpY = 0, lpFired = false;
+const qrClose = () => { qr.hidden = true; qrM = null; };
+function qrOpen(m) {
+  qrM = m;
+  qr.innerHTML = `<div class="qr-b" role="dialog" aria-label="Быстрая оценка"><div class="qr-t">${esc(m.title)}<span>${m.my_rating ? "сейчас ★ " + m.my_rating : m.status === "watchlist" ? "в «Хочу посмотреть»: оценка перенесёт в «Просмотрено»" : "без оценки"}</span></div><div class="qr-n">${Array.from({ length: 10 }, (_, i) => `<button data-qv="${i + 1}" class="${m.my_rating === i + 1 ? "on" : ""}">${i + 1}</button>`).join("")}</div><div class="qr-a"><button data-qa="open">Открыть</button>${m.status === "watched" && m.my_rating ? `<button data-qa="clear">Убрать оценку</button>` : ""}<button data-qa="x">Отмена</button></div></div>`;
+  qr.hidden = false;
+}
+qr.onclick = async e => {
+  const b = e.target.closest("button"); if (!b) { if (e.target === qr) qrClose(); return; }
+  const m = qrM; if (!m) return;
+  if (b.dataset.qa === "x") return qrClose();
+  if (b.dataset.qa === "open") { qrClose(); return openMovie(m.tmdb_id, m.media_type || "movie"); }
+  const patch = b.dataset.qa === "clear" ? { my_rating: null } : { status: "watched", my_rating: +b.dataset.qv, watched_at: m.watched_at || today() };
+  qrClose();
+  const { error } = await sb.from("movies").update(patch).eq("id", m.id);
+  if (error) return toast(error.message);
+  toast(patch.my_rating ? "Оценка " + patch.my_rating + " сохранена" : "Оценка убрана"); await load();
+};
+const qrFind = el => {
+  const c = el && el.closest && el.closest(".tile[data-tid],.card[data-tid]"); if (!c) return null;
+  const k = c.dataset.tid + "-" + (c.dataset.mt || "movie"); return movies.find(m => keyOf(m) === k) || null;
+};
+document.addEventListener("contextmenu", e => { const m = qrFind(e.target); if (!m) return; e.preventDefault(); qrOpen(m); });
+document.addEventListener("touchstart", e => {
+  if (e.touches.length !== 1) return; const m = qrFind(e.target); if (!m) return;
+  lpFired = false; lpX = e.touches[0].clientX; lpY = e.touches[0].clientY; clearTimeout(lpT);
+  lpT = setTimeout(() => { lpFired = true; if (navigator.vibrate) try { navigator.vibrate(15); } catch (x) {} qrOpen(m); }, 480);
+}, { passive: true });
+document.addEventListener("touchmove", e => { const q = e.touches[0]; if (Math.abs(q.clientX - lpX) > 10 || Math.abs(q.clientY - lpY) > 10) clearTimeout(lpT); }, { passive: true });
+["touchend", "touchcancel"].forEach(n => document.addEventListener(n, () => { clearTimeout(lpT); setTimeout(() => lpFired = false, 400); }, { passive: true }));
+document.addEventListener("click", e => { if (lpFired) { lpFired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !qr.hidden) qrClose(); });
+
+/* ---------- на телефоне шапка и нижнее меню прячутся при прокрутке вниз ---------- */
+let lastY = scrollY;
+window.addEventListener("scroll", () => {
+  if (!matchMedia("(max-width:640px)").matches) return;
+  const y = scrollY, d = y - lastY;
+  if (y > 60 && Math.abs(d) < 8) return;
+  const hide = y > 90 && d > 0;
+  const tp = document.querySelector(".top"), bn = $("#bnav");
+  if (tp) tp.classList.toggle("hid", hide); if (bn) bn.classList.toggle("hid", hide);
+  lastY = y;
+}, { passive: true });
+
 /* ---------- тема ---------- */
-try { document.documentElement.dataset.theme = localStorage.getItem("th") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"); } catch (e) {}
+const themeMode = () => { try { const v = localStorage.getItem("th"); return v === "light" || v === "dark" ? v : "auto"; } catch (e) { return "auto"; } };
+function applyTheme() {
+  const m = themeMode(), r = document.documentElement;
+  r.dataset.theme = m === "auto" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : m;
+  const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.content = r.dataset.theme === "light" ? "#f2f2f5" : "#0b0b0f";
+}
+applyTheme();
+try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (themeMode() === "auto") { applyTheme(); syncMenu(); } }); } catch (e) {}
 function toggleTheme() {
-  const r = document.documentElement; r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
-  try { localStorage.setItem("th", r.dataset.theme); } catch (e) {}
-  syncMenu();
+  const next = { auto: "dark", dark: "light", light: "auto" }[themeMode()];
+  try { next === "auto" ? localStorage.removeItem("th") : localStorage.setItem("th", next); } catch (e) {}
+  applyTheme(); syncMenu();
 }
 
 /* ---------- меню профиля (иконка человечка) ---------- */
@@ -1645,7 +1788,7 @@ function syncMenu() {
   $("#mView").textContent = "Вид списка: " + (view === "rows" ? "строки" : "постеры");
   const mb = $("#meBtn"), has = !!profile.avatar_url;
   mb.style.backgroundImage = has ? `url("${profile.avatar_url}")` : ""; mb.querySelector("svg").style.display = has ? "none" : "";
-  $("#mTheme").textContent = "Тема: " + (document.documentElement.dataset.theme === "light" ? "светлая" : "тёмная");
+  $("#mTheme").textContent = "Тема: " + ({ auto: "как в системе", dark: "тёмная", light: "светлая" })[themeMode()];
 }
 function closeMenu() { menu.hidden = true; $("#meBtn").setAttribute("aria-expanded", "false"); }
 $("#meBtn").onclick = e => {
@@ -1702,7 +1845,7 @@ async function openMovie(tid, mt = "movie") {
       ${dir ? `<p class="meta">${tv ? "Создатели" : "Режиссёр"}: ${esc(dir)}</p>` : ""}${cast ? `<p class="meta">В ролях: ${esc(cast)}</p>` : ""}
       ${mine}<div class="acts" style="margin-top:12px">${acts}${vid ? `<button data-a="tr" data-k="${esc(vid.key)}">Трейлер</button>` : ""}</div>
       <div id="tr"></div></div></div>
-    ${sim.length ? `<h3>Похожие фильмы</h3><div class="sim">${sim.map(x => `<button class="tile" data-sim="${x.id}" title="${esc(x.title || x.name)}"><img src="${IMG}${x.poster_path}" alt="${esc(x.title || x.name)}" loading="lazy"></button>`).join("")}</div>` : ""}`;
+    ${sim.length ? `<h3>Похожие фильмы</h3><div class="sim">${sim.map(x => `<button class="tile" data-sim="${x.id}" title="${esc(x.title || x.name)}"><img src="${IMG}${x.poster_path}" alt="${esc(x.title || x.name)}" loading="lazy" decoding="async"></button>`).join("")}</div>` : ""}`;
   body.onclick = async e => {
     const sm = e.target.closest("[data-sim]"); if (sm) return openMovie(+sm.dataset.sim, mt);
     const a = e.target.dataset.a; if (!a) return;
