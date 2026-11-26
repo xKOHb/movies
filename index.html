@@ -476,11 +476,44 @@ html{transition:background-color .2s ease}
 .vt-n{font-size:.82rem;font-weight:700;line-height:1.2}
 .vt-b{display:flex;gap:6px}.vt-b button{flex:1;padding:7px 4px;font-size:.85rem}
 .vt-b button.on{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
-#tidyDlg .main{margin-bottom:4px}
 @media(max-width:640px){
   #mv .pv .acts{position:sticky;bottom:0;background:var(--paper);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));margin:12px 0 0!important;z-index:2;border-top:1px solid var(--line)}
   .pv>img{width:160px;height:240px}
   #mv{transition:transform .18s ease}
+}
+.ep-l{display:grid;gap:8px;margin:0 0 6px}
+.ep{display:flex;align-items:center;gap:12px;text-align:left;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:6px 12px 6px 6px;color:var(--tx);width:100%}
+.ep:hover{border-color:var(--acc)}
+.ep img{width:40px;height:58px;object-fit:cover;border-radius:8px;flex:none}
+.ep-t{min-width:0;flex:1;display:grid;gap:2px}.ep-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ep-t small{color:var(--mut);font-size:.8rem}
+.ep-b{font-style:normal;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;border:1px solid currentColor}
+.ep-b.up{color:#2f9e6e}.ep-b.dn{color:#d9544a}.ep-b.eq{color:var(--mut)}
+.epbox{margin:10px 0;padding:10px 12px;background:var(--glass);border:1px solid var(--line);border-radius:14px;display:grid;gap:6px;font-size:.9rem}
+.eprow{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+@media (max-width:640px){.ep{flex-wrap:wrap}.ep-t{flex-basis:calc(100% - 60px)}.ep-b{white-space:normal;margin-left:52px}}
+.pbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}.pbar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+/* ===== компактнее (26.11.2026) ===== */
+#vwBtn{white-space:nowrap}
+.sec{margin-top:22px}.sec-h{margin-bottom:8px}.pf-sec{margin-top:20px}.greet{margin:0 0 10px}
+.hero{min-height:300px}.hero h1{font-size:2.7rem;margin-bottom:8px}.hero-in{padding:24px 28px}.hero p{margin-top:8px}.hero .acts{margin-top:14px}
+.hero-p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.stat{padding:12px 14px}.stat b{font-size:1.55rem}.stats{gap:10px;margin-top:16px}
+.rail{gap:12px;padding-bottom:10px}
+@media(max-width:640px){
+  .sec{margin-top:16px}.sec-h{margin-bottom:6px}.sec-h h3{font-size:1.05rem}.sec-h small{font-size:.74rem}
+  .hero{min-height:230px;border-radius:18px}.hero h1{font-size:1.8rem}.hero-in{padding:16px 16px}.hero .meta{font-size:.8rem}.hero p{font-size:.88rem;margin-top:6px}.hero .acts{margin-top:10px}
+  .greet{margin:0 0 6px}.greet h2{font-size:1.2rem}
+  .stats{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.stat{padding:8px 6px;text-align:center;border-radius:14px}.stat b{font-size:1.2rem}.stat span{font-size:.66rem}
+  #chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 8px;padding:0 14px}#chips::-webkit-scrollbar{display:none}
+  #chips button{flex:none;min-height:34px;padding:4px 12px;font-size:.82rem}
+  #listView .bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+  #listView .bar>*{min-width:0;min-height:38px;padding-top:6px;padding-bottom:6px;font-size:.88rem}
+  #fq{grid-column:1/-1}#fr,#fm,#fs{grid-column:span 2}#vwBtn,#selBtn{grid-column:span 2}#pickBtn{grid-column:1/-1}
+  .rail{gap:10px;padding-bottom:6px}
+  .tile .ov{font-size:.74rem;padding-top:26px}
+  .pf-bio{margin-top:8px}.pf-tabs{margin-top:10px}.pf-tabs button{padding:9px 14px}
+  .panel{padding:12px 14px}
+  main{padding-top:10px}
 }
 </style>
 </head>
@@ -507,12 +540,7 @@ html{transition:background-color .2s ease}
       <div id="meMenu" hidden>
         <div class="mail" id="meMail"></div>
         <button data-m="profile">Мой профиль</button>
-        <button data-m="view" id="mView"></button>
         <button data-m="theme" id="mTheme"></button>
-        <button data-m="picks">Подборка фильмов</button>
-        <button data-m="import">Импорт с Кинопоиска</button>
-        <button data-m="backup">Скачать мой список (CSV)</button>
-        <button data-m="dups">Порядок в списке</button>
         <button data-m="install" id="mInstall" hidden>Установить приложение</button>
         <hr>
         <button data-m="out">Выйти</button>
@@ -549,8 +577,9 @@ html{transition:background-color .2s ease}
         <option value="8">от 8</option>
       </select>
       <select id="fs"><option value="new">Сначала новые</option><option value="my">По моей оценке</option><option value="tm">По рейтингу TMDB</option><option value="yr">По году</option><option value="rt">По длительности</option></select>
-      <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
+      <button id="vwBtn" type="button" title="Вид списка: постеры или строки" aria-label="Вид списка"></button>
       <button id="selBtn">Выбрать</button>
+      <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
     </div>
     <div id="pick" hidden></div>
     <div class="posters" id="list"></div>
@@ -565,7 +594,6 @@ html{transition:background-color .2s ease}
 
   <div id="collView" hidden></div>
   <div id="recsView" hidden></div>
-  <div id="picksView" hidden></div>
   <div id="profileView" hidden></div>
   <dialog id="dlg"><form method="dialog"><h2 id="dTitle"></h2><div class="nums" id="dNums"></div><div class="dval" id="dVal"></div><label class="dlg-date">Когда смотрели <input type="date" id="dDate"></label><textarea id="dNote" rows="3" placeholder="Заметка (необязательно)"></textarea><div class="acts"><button value="no">Отмена</button><button class="main" id="dOk" value="ok">Сохранить</button></div></form></dialog>
   <dialog id="mv"><button class="x" id="mvX" aria-label="Закрыть">×</button><div id="mvBody"></div></dialog>
@@ -657,12 +685,12 @@ function tile(m, i) {
 }
 
 function render() {
+  syncView();
   const L = { watchlist: "Хочу посмотреть", watched: "Просмотрено" };
   for (const k in L) document.querySelector(`#tabs [data-t=${k}]`).innerHTML = `${L[k]} <span class="cnt">${movies.filter(m => m.status === k).length}</span>`;
   if (tab === "home") return renderHome();
   if (tab === "recs") return renderRecs();
   if (tab === "colls") return renderColls();
-  if (tab === "picks") return renderPicks();
   if (tab === "profile") return renderProfile();
   if (tab === "search") return searchIdle();
   const cur = $("#fg").value;
@@ -681,7 +709,7 @@ function render() {
 }
 
 /* ---------- вкладки и фильтры ---------- */
-const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", picks: "picksView", profile: "profileView" };
+const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", profile: "profileView" };
 function go(t) {
   sgHide();
   tab = t; animNext = true;
@@ -698,10 +726,12 @@ $("#tabs").onclick = $("#bnav").onclick = e => { const b = e.target.closest("[da
 ["#fg", "#fr", "#fm", "#fs"].forEach(s => $(s).onchange = render);
 $("#fq").oninput = render;
 $("#chips").onclick = e => { const b = e.target.closest("[data-g]"); if (!b) return; $("#fg").value = b.dataset.g; render(); };
+function syncView() { const b = $("#vwBtn"); if (b) b.textContent = view === "rows" ? "▦ Постеры" : "☰ Строки"; }
+$("#vwBtn").onclick = () => toggleView();
 function toggleView() {
   view = view === "rows" ? "grid" : "rows";
   try { localStorage.setItem("vw", view); } catch (e) {}
-  animNext = true; syncMenu(); render();
+  animNext = true; render();
 }
 
 let lastPick = null;
@@ -842,6 +872,7 @@ async function loadFriends() {
     P = p.data || []; M = m.data || [];
   }
   friends = ids.map(id => friendData[id] = { id, profile: P.find(x => x.user_id === id) || {}, movies: M.filter(x => x.user_id === id) });
+  const cb = document.getElementById("contBox"); if (cb && typeof contHtml === "function") cb.innerHTML = contHtml();
 }
 function compare(f) {
   const mine = new Map(movies.map(m => [keyOf(m), m]));
@@ -869,14 +900,15 @@ async function renderFriends() {
   }).join("");
   const best = friends.map(f => ({ f, c: compare(f) })).filter(x => x.c.match !== null).sort((a, b) => b.c.match - a.c.match)[0];
   const fs = $("#frSub"); if (fs) fs.textContent = friends.length ? plr(friends.length) + (best ? " · лучше всего совпадаете с " + fName(best.f) + " (" + best.c.match + "%)" : "") : "пока нет";
-  v.innerHTML = `${friends.length ? `<div class="fr-list">${rows}</div><div id="frFeed"></div>` : ""}<div id="frColl"></div>${friends.length ? "" : `<div class="meta" style="margin-bottom:10px">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов, лента и «что смотреть вместе».</div>`}
+  v.innerHTML = `${friends.length ? `<div class="fr-list">${rows}</div><div id="frTv"></div><div id="frFeed"></div>` : ""}<div id="frColl"></div>${friends.length ? "" : `<div class="meta" style="margin-bottom:10px">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов, лента и «что смотреть вместе».</div>`}
     <details class="fr-add" ${friends.length ? "" : "open"}><summary>＋ Добавить друга / мой код</summary>
       <p class="hint">Отправьте другу свой код. Когда он введёт его у себя, вы увидите списки и оценки друг друга.</p>
       <div class="acts" style="margin:0 0 12px"><span class="code">${esc(myCode || "…")}</span><button id="frCopy">Копировать</button></div>
       <div class="bar" style="margin:0"><input id="frIn" placeholder="Код друга" maxlength="20" style="flex:1;min-width:160px"><button class="main" id="frAdd">Добавить</button></div>
     </details>`;
+  const tvb = $("#frTv"); if (tvb) tvb.innerHTML = tvFriendsHtml();
   const dt = x => x.watched_at || (x.created_at || "").slice(0, 10);
-  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
+  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster && !x.date_guess).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
   if ($("#frFeed") && ev.length) $("#frFeed").innerHTML = secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy" decoding="async"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join(""));
   try { if (colls === undefined) await loadColls(); } catch (e) {}
   const cl = $("#frColl");
@@ -890,6 +922,7 @@ function showFriend(id) {
   v.innerHTML = `<button class="lnk" id="frBack">← Назад к друзьям</button>
     <div class="greet"><h2>${esc(fName(f))}</h2><span class="meta">${matchText(c)}</span></div>
     <div id="pairBox"></div>
+    ${tvVs(f)}
     <div id="voteBox"></div>
     ${diffHtml(f)}
     ${c.together.length ? secHtml("Смотреть вместе", "Фильмы из «Хочу посмотреть» у вас обоих", L(c.together)) : `<div class="nudge">Пока нет фильмов, которые вы оба хотите посмотреть.</div>`}
@@ -971,10 +1004,10 @@ const imDate = s => {
 };
 function yearBox(y) {
   const box = $("#yrBox"); if (!box) return;
-  const dated = movies.filter(m => m.status === "watched" && m.watched_at);
-  const undated = movies.filter(m => m.status === "watched" && !m.watched_at).length;
+  const dated = movies.filter(m => m.status === "watched" && m.watched_at && !m.date_guess);
+  const undated = movies.filter(m => m.status === "watched" && (!m.watched_at || m.date_guess)).length;
   const years = [...new Set(dated.map(m => m.watched_at.slice(0, 4)))].sort().reverse();
-  const note = undated ? `<p class="hint">Без даты просмотра: ${undated}. Дату можно указать в окне оценки (карточка фильма → «Просмотрено») или повторным импортом файла с датами.</p>` : "";
+  const note = undated ? `<p class="hint">Старые фильмы без точной даты: ${undated}. В итоги года они не входят. Новые получают дату сами.</p>` : "";
   if (!years.length) { box.innerHTML = `<div class="meta">Появятся, когда у просмотренных фильмов будет дата просмотра. Она ставится сама, когда вы отмечаете фильм просмотренным.</div>${note}`; return; }
   y = y || (years.includes(String(new Date().getFullYear())) ? String(new Date().getFullYear()) : years[0]);
   const l = dated.filter(m => m.watched_at.startsWith(y)), r = l.filter(m => m.my_rating);
@@ -1040,7 +1073,7 @@ async function loadFeed(tok) {
   if (!friendsLoaded) await loadFriends();
   if (tok !== homeTok || !$("#feedBox") || !friends || !friends.length) return;
   const dt = x => x.watched_at || (x.created_at || "").slice(0, 10);
-  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
+  const ev = friends.flatMap(f => f.movies.filter(x => x.status === "watched" && x.poster && !x.date_guess).map(x => ({ f, x }))).sort((a, b) => dt(b.x).localeCompare(dt(a.x))).slice(0, 14);
   $("#feedBox").innerHTML = ev.length ? secHtml("Лента друзей", "Что недавно посмотрели", ev.map(({ f, x }, i) => `<button class="tile" data-tid="${x.tmdb_id}" data-mt="${x.media_type || "movie"}" style="--i:${i}" title="${esc(x.title)}"><img src="${IMG}${x.poster}" alt="${esc(x.title)}" loading="lazy" decoding="async"><span class="ov">${esc(x.title)} <i>${esc(fName(f))}${x.my_rating ? ": ★ " + x.my_rating : ""}</i></span>${x.my_rating ? `<span class="bd"><span>★ ${x.my_rating}</span></span>` : ""}</button>`).join("")) : "";
 }
 function diffHtml(f) {
@@ -1085,9 +1118,9 @@ $("#selBar").onclick = async e => {
   else if (a === "want") { if (!confirm("Вернуть в «Хочу»? Оценки и даты просмотра будут сброшены.")) return; err = (await sb.from("movies").update({ status: "watchlist", my_rating: null, watched_at: null }).in("id", ids)).error; }
   else if (a === "rate") {
     for (const m of ms) {
-      const r = await rateDialog(m.title, m.my_rating, m.note, m.watched_at || (m.status === "watchlist" ? today() : ""));
+      const r = await rateDialog(m.title, m.my_rating, m.note, (m.date_guess ? "" : m.watched_at) || (m.status === "watchlist" ? today() : ""));
       if (!r) break;
-      const x = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, watched_at: r.date }).eq("id", m.id);
+      const x = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, ...dPatch(m, r) }).eq("id", m.id);
       if (x.error) { err = x.error; break; }
     }
   }
@@ -1450,7 +1483,7 @@ async function addMovie(tid, status, mt = "movie") {
   let my = null, note = null, dt = null;
   if (status === "watched") {
     const r = await rateDialog("Ваша оценка", 0, "", today()); if (!r) return false;
-    my = r.rating; note = r.note; dt = r.date;
+    my = r.rating; note = r.note; dt = r.date || today();
   }
   let d;
   try { d = await (await fetch(`https://api.themoviedb.org/3/${mt}/${tid}?api_key=${TMDB_KEY}&language=ru-RU`)).json(); }
@@ -1462,6 +1495,7 @@ async function addMovie(tid, status, mt = "movie") {
 }
 $("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if (c && e.target.closest("img,h2")) return openMovie(+c.dataset.tid, c.dataset.mt); const s = e.target.dataset.s; if (s && await addMovie(+e.target.dataset.id, s, e.target.dataset.mt)) { if ($("#q").value.trim() && found.length) doSearch(); else searchIdle(); } };
 
+const dPatch = (m, r) => { const p = { watched_at: r.date || (m.status === "watchlist" ? today() : (m.date_guess ? m.watched_at : null)) }; if ("date_guess" in m) p.date_guess = r.date || m.status === "watchlist" ? false : !!m.date_guess; return p; };
 function rateDialog(title, rating, note, date) {
   return new Promise(res => {
     const d = $("#dlg"), nums = $("#dNums"); let val = rating || 0;
@@ -1490,30 +1524,6 @@ const SORTS = {
   tm: (a, b) => (b.tmdb_rating || 0) - (a.tmdb_rating || 0),
   yr: (a, b) => (+b.year || 0) - (+a.year || 0),
   rt: (a, b) => (a.runtime || 999) - (b.runtime || 999)
-};
-
-/* ---------- подборка ---------- */
-const PICKS = [["Начало",2010,"Воры проникают в сны, чтобы внедрить идею"],["Мементо",2000,"Герой без кратковременной памяти ищет убийцу"],["Семь",1995,"Два детектива и серийный убийца"],["Престиж",2006,"Дуэль двух фокусников"],["Подозрительные лица",1995,"Эталонный детективный твист"],["Заключённые",2013,"Отец ищет похищенную дочь"],["Исчезнувшая",2014,"Жена пропала, муж под подозрением"],["Отступники",2006,"Полицейский в банде и бандит в полиции"],["Шестое чувство",1999,"Психолог и мальчик, который видит призраков"],["Прибытие",2016,"Контакт с пришельцами и загадка языка"],["12 обезьян",1995,"Путешествие во времени и смертельный вирус"],["Из машины",2014,"Тест на сознание робота"],["Чёрный лебедь",2010,"Балерина на грани безумия"],["Машинист",2004,"Бессонница и странные знаки"],["Идентификация",2003,"Десять незнакомцев в мотеле во время бури"]];
-const picked = new Set();
-function renderPicks() {
-  $("#picksView").innerHTML = `<p class="hint">Подборка под ваш вкус. Нажмите «Хочу посмотреть»: фильм найдётся в TMDB и попадёт в список.</p><div class="grid">` +
-    PICKS.map(([t, y, d], i) => {
-      const have = picked.has(i) || movies.some(m => m.title.toLowerCase() === t.toLowerCase());
-      return `<article class="card"><div class="body" style="border:0"><h2>${esc(t)} (${y})</h2><div class="meta">${esc(d)}</div><div class="acts">${have ? `<span class="meta">Уже в списке</span>` : `<button data-i="${i}">Хочу посмотреть</button>`}</div></div></article>`;
-    }).join("") + `</div>`;
-}
-$("#picksView").onclick = async e => {
-  const i = e.target.dataset.i; if (i === undefined) return;
-  const [t, y] = PICKS[i]; e.target.disabled = true;
-  try {
-    const q = u => fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&language=ru-RU&query=${encodeURIComponent(t)}${u}`).then(r => r.json());
-    let j = await q("&year=" + y);
-    if (!(j.results || []).length) j = await q("");
-    const f = (j.results || [])[0];
-    if (!f) { toast("Не нашёл «" + t + "» в TMDB."); renderPicks(); return; }
-    if (await addMovie(f.id, "watchlist")) picked.add(+i);
-  } catch (err) { toast("Не удалось связаться с TMDB."); }
-  renderPicks();
 };
 
 /* ---------- профиль ---------- */
@@ -1722,12 +1732,14 @@ function renderProfile() {
       <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
       <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
       ${ignSet().size ? `<p class="hint" style="margin-top:14px">Скрыто из рекомендаций: ${ignSet().size}. <button class="lnk" id="ignClear">Вернуть все</button></p>` : ""}
+      ${fold("data", "Данные: импорт и резервная копия", "", `<div class="acts" style="margin:0"><button id="pfImp">Импорт с Кинопоиска</button><button id="pfBak">Скачать мой список (CSV)</button></div><p class="hint" style="margin-top:8px">Файл CSV можно импортировать обратно.</p>`)}
       ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`,
     stats: () => `
       <div class="cols pf-sec">
         <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
         <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
       </div>
+      <div class="pf-sec"><h3>Горячие мнения</h3><div class="meta" style="margin-bottom:8px">Где ваша оценка сильнее всего расходится с рейтингом TMDB</div><div id="hotBox"></div></div>
       <div class="pf-sec"><h3>Итоги года</h3><div id="yrBox"></div></div>
       <div class="pf-sec"><h3>Режиссёры и актёры</h3><div class="meta" style="margin-bottom:8px">По вашим фильмам с оценкой 8+</div><div id="ppBox"></div></div>`,
     friends: () => `<div class="pf-sec" style="margin-top:16px"><div id="frBox"><div class="sk" style="height:60px"></div></div></div>`
@@ -1736,8 +1748,8 @@ function renderProfile() {
     pfTab = k; try { localStorage.setItem("pfTab", k); } catch (e) {}
     document.querySelectorAll("#pfTabs button").forEach(b => b.classList.toggle("on", b.dataset.pt === k));
     $("#pfBody").innerHTML = body[k]();
-    if (k === "overview") $("#copyPrompt").onclick = openAi;
-    if (k === "stats") { yearBox(); loadPeople(); }
+    if (k === "overview") { $("#copyPrompt").onclick = openAi; $("#pfImp").onclick = openImport; $("#pfBak").onclick = exportCsv; }
+    if (k === "stats") { yearBox(); loadPeople(); hotBox(); }
     if (k === "friends") renderFriends();
   };
   $("#pfTabs").onclick = e => { const b = e.target.closest("[data-pt]"); if (b) show(b.dataset.pt); };
@@ -1801,7 +1813,30 @@ const ignSet = () => { if (ignSet.u !== userId) { ignSet.u = userId; try { ignSe
 const ignSave = () => { try { localStorage.setItem("ign:" + userId, JSON.stringify([...ignSet()])); } catch (e) {} };
 function contHtml() {
   const l = movies.filter(m => m.media_type === "tv" && m.status === "watchlist" && m.episode && m.poster).slice(0, 12);
-  return l.length ? secHtml("Продолжить просмотр", "Сериалы, которые вы смотрите", l.map((m, i) => bTile(m, "сезон " + m.season + ", серия " + m.episode, "S" + m.season + "E" + m.episode, i)).join("")) : "";
+  const fh = m => { if (!friendsLoaded || !friends) return ""; const k = keyOf(m), r = friends.map(f => ({ f, x: f.movies.find(y => keyOf(y) === k) })).find(e => e.x && e.x.status === "watchlist" && e.x.episode); return r ? " · " + fName(r.f) + ": " + epCode(r.x) : ""; };
+  const need = l.filter(m => !tvGet(m.tmdb_id));
+  if (need.length && !contHtml.busy) { contHtml.busy = true; setTimeout(() => contFill(need), 0); }
+  return l.length ? secHtml("Продолжить просмотр", "Сериалы, которые вы смотрите", l.map((m, i) => { const t = tvGet(m.tmdb_id), p = t && tvProg(m, t); return bTile(m, epCode(m) + (p ? " · ещё " + p.left : "") + fh(m), p ? p.pct + "%" : "S" + m.season + "E" + m.episode, i); }).join("")) : "";
+}
+const tvMem = {};
+function tvGet(id) {
+  if (tvMem[id]) return tvMem[id].total === undefined ? null : tvMem[id];
+  try { const v = JSON.parse(localStorage.getItem("tvn:" + id) || "null"); if (v && Date.now() - v.ts < 6048e5) return (tvMem[id] = v); } catch (e) {}
+  return null;
+}
+function tvSave(id, t) { t.ts = Date.now(); tvMem[id] = t; try { localStorage.setItem("tvn:" + id, JSON.stringify(t)); } catch (e) {} }
+async function contFill(list) {
+  try { await Promise.all(list.map(async m => { try { tvSave(m.tmdb_id, tvEps(await tmdbGet("tv/" + m.tmdb_id))); } catch (e) { tvMem[m.tmdb_id] = { ss: [], total: 0, run: 0, ts: Date.now() }; } })); } finally { contHtml.busy = false; }
+  const cb = document.getElementById("contBox"); if (cb) cb.innerHTML = contHtml();
+}
+const tvEps = d => {
+  const ss = (d.seasons || []).filter(x => x.season_number > 0 && x.episode_count > 0).map(x => [x.season_number, x.episode_count]);
+  return { ss, total: ss.reduce((a, x) => a + x[1], 0) || d.number_of_episodes || 0, run: (d.episode_run_time || [])[0] || 0 };
+};
+function tvProg(m, t) {
+  if (!t || !t.total || !m.episode) return null;
+  const s = m.season || 1, before = t.ss.filter(x => x[0] < s).reduce((a, x) => a + x[1], 0), done = Math.min(t.total, before + m.episode), left = t.total - done;
+  return { done, total: t.total, left, pct: Math.round(100 * done / t.total), hrs: t.run ? Math.round(left * t.run / 6) / 10 : 0 };
 }
 async function dirLoad(f, tid, mt, tv) {
   const dp = !tv && (f.credits?.crew || []).find(c => c.job === "Director"); if (!dp) return;
@@ -1828,32 +1863,6 @@ async function pairVote(id) {
     ${both.length ? `<div class="soon" style="margin-bottom:12px"><div class="soon-t"><b>Вам обоим подходит</b><div class="soon-l">${both.map(x => `<button class="soon-c" data-tid="${x.tmdb_id}" data-mt="${mt(x)}"><span>${esc(x.title)}</span></button>`).join("")}</div></div></div>` : ""}
     <div class="vote-g">${cand.map(x => { const k = keyOf(x), v = mv[k], w = fv[k]; return `<div class="vt"><button class="vt-p" data-tid="${x.tmdb_id}" data-mt="${mt(x)}"><img src="${IMG}${esc(x.poster)}" alt="${esc(x.title)}" loading="lazy" decoding="async"></button><div class="vt-n">${esc(x.title)}</div><div class="vt-b"><button data-vk="${k}" data-vv="1" class="${v === 1 ? "on" : ""}">Хочу</button><button data-vk="${k}" data-vv="-1" class="${v === -1 ? "on" : ""}">Пас</button></div><div class="meta">${w === undefined ? "друг ещё не выбрал" : w === 1 ? "друг: хочет" : "друг: пас"}</div></div>`; }).join("")}</div></div>`;
 }
-function openTidy() {
-  let d = $("#tidyDlg"); if (!d) { d = document.createElement("dialog"); d.id = "tidyDlg"; document.body.appendChild(d); }
-  if (d.open) d.close();
-  const g = {}; movies.forEach(m => (g[keyOf(m)] = g[keyOf(m)] || []).push(m));
-  const dups = Object.values(g).filter(a => a.length > 1), und = movies.filter(m => m.status === "watched" && !m.watched_at && m.created_at);
-  d.innerHTML = `<h2>Порядок в списке</h2>
-    <p class="hint">Повторы: ${dups.length ? dups.length + " (" + dups.slice(0, 4).map(a => esc(a[0].title)).join(", ") + (dups.length > 4 ? "…" : "") + ")" : "не найдено"}.</p>${dups.length ? `<button class="main" id="tdDup">Удалить лишние повторы</button>` : ""}
-    <p class="hint" style="margin-top:14px">Просмотрено без даты: ${und.length}. Дату можно взять из даты добавления в список.</p>${und.length ? `<button id="tdDate">Проставить даты</button>` : ""}
-    <div class="acts"><button id="tdX">Закрыть</button></div>`;
-  d.onclick = async e => {
-    const id = e.target.id; if (!id) return;
-    if (id === "tdX") return d.close();
-    const sc = m => (m.status === "watched" ? 4 : 0) + (m.my_rating ? 2 : 0) + (m.note ? 1 : 0);
-    let err = null;
-    if (id === "tdDup") {
-      if (!confirm("Оставить по одной записи (с оценкой и заметкой), остальные удалить?")) return;
-      const del = dups.flatMap(a => a.sort((x, y) => sc(y) - sc(x) || (x.created_at || "").localeCompare(y.created_at || "")).slice(1).map(m => m.id));
-      err = (await sb.from("movies").delete().in("id", del)).error;
-    } else if (id === "tdDate") {
-      for (let i = 0; i < und.length && !err; i += 20) err = (await Promise.all(und.slice(i, i + 20).map(m => sb.from("movies").update({ watched_at: m.created_at.slice(0, 10) }).eq("id", m.id)))).map(x => x.error).find(Boolean) || null;
-    } else return;
-    if (err) return toast(err.message);
-    toast("Готово"); await load(); openTidy();
-  };
-  d.showModal();
-}
 (() => {
   const d = $("#mv"); let y0 = null, dy = 0;
   d.addEventListener("touchstart", e => { y0 = d.scrollTop <= 0 && e.touches.length === 1 ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
@@ -1861,6 +1870,78 @@ function openTidy() {
   d.addEventListener("touchend", () => { d.style.transform = ""; if (y0 !== null && dy > 110) d.close(); y0 = null; });
 })();
 
+/* ---------- v4: сериалы с друзьями: кто на какой серии ---------- */
+const plN = (n, a, b, c) => n + " " + (n % 10 === 1 && n % 100 !== 11 ? a : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? b : c);
+const epCode = m => "S" + (m.season || 1) + "E" + m.episode;
+const epState = m => m.status === "watched" ? "досмотрел(а)" : m.episode ? epCode(m) : "ещё не начал(а)";
+function epVs(a, f, b) { // a: моя запись (или null), b: запись друга
+  const n = fName(f), done = x => x && x.status === "watched", prog = x => x && x.status === "watchlist" && x.episode;
+  if (!a) return { t: n + ": " + epState(b), c: "eq" };
+  if (done(a) && done(b)) return { t: "оба досмотрели", c: "eq" };
+  if (done(a)) return { t: prog(b) ? "вы досмотрели, " + n + " на " + epCode(b) : "вы досмотрели", c: "up" };
+  if (done(b)) return { t: n + " досмотрел(а)", c: "dn" };
+  if (!prog(a) && !prog(b)) return { t: "оба ещё не начали", c: "eq" };
+  if (!prog(b)) return { t: n + " ещё не начал(а)", c: "up" };
+  if (!prog(a)) return { t: "вы ещё не начали", c: "dn" };
+  const sa = a.season || 1, sf = b.season || 1;
+  if (sa !== sf) { const d = sa - sf; return d > 0 ? { t: "вы впереди на " + plN(d, "сезон", "сезона", "сезонов"), c: "up" } : { t: n + " впереди на " + plN(-d, "сезон", "сезона", "сезонов"), c: "dn" }; }
+  const d = a.episode - b.episode;
+  return d === 0 ? { t: "на одной серии", c: "eq" } : d > 0 ? { t: "вы впереди на " + plN(d, "серию", "серии", "серий"), c: "up" } : { t: n + " впереди на " + plN(-d, "серию", "серии", "серий"), c: "dn" };
+}
+const epRowHtml = (x, mine, f, b) => { const v = epVs(mine, f, b); return `<button class="ep" data-tid="${x.tmdb_id}" data-mt="tv">${x.poster ? `<img src="${IMG}${esc(x.poster)}" alt="" loading="lazy" decoding="async">` : ""}<span class="ep-t"><b>${esc(x.title)}</b><small>Вы: ${mine ? esc(epState(mine)) : "нет в списке"} · ${esc(fName(f))}: ${esc(epState(b))}</small></span><em class="ep-b ${v.c}">${esc(v.t)}</em></button>`; };
+const tvSec = (t, sub, inner) => `<div class="sec"><div class="sec-h"><h3><span>${t}<small>${sub}</small></span></h3></div><div class="ep-l">${inner}</div></div>`;
+function tvFriendsHtml() {
+  const mine = new Map(movies.map(m => [keyOf(m), m])), rows = [], now = new Map();
+  (friends || []).forEach(f => f.movies.filter(x => x.media_type === "tv").forEach(x => {
+    const m = mine.get(keyOf(x));
+    if (m) { if ((x.episode || m.episode) && !(x.status === "watched" && m.status === "watched")) rows.push({ x, m, f, w: (x.episode && m.episode ? 0 : 1) }); }
+    else if (x.status === "watchlist" && x.episode && x.poster && !now.has(keyOf(x))) now.set(keyOf(x), { x, f });
+  }));
+  rows.sort((a, b) => a.w - b.w);
+  return (rows.length ? tvSec("Сериалы с друзьями", "Кто на какой серии", rows.slice(0, 8).map(r => epRowHtml(r.x, r.m, r.f, r.x)).join("")) : "")
+    + (now.size ? secHtml("Друзья смотрят сейчас", "Сериалы, которых нет в вашем списке", [...now.values()].slice(0, 12).map((e, i) => bTile(e.x, fName(e.f) + ": " + epCode(e.x), epCode(e.x), i)).join("")) : "");
+}
+function tvVs(f) {
+  const mine = new Map(movies.map(m => [keyOf(m), m])), tvs = f.movies.filter(x => x.media_type === "tv");
+  const sh = tvs.filter(x => mine.has(keyOf(x)) && (x.episode || mine.get(keyOf(x)).episode));
+  const now = tvs.filter(x => !mine.has(keyOf(x)) && x.status === "watchlist" && x.episode && x.poster);
+  return (sh.length ? tvSec("Сериалы: вы и " + esc(fName(f)), "На какой серии каждый", sh.map(x => epRowHtml(x, mine.get(keyOf(x)), f, x)).join("")) : "")
+    + (now.length ? secHtml("Смотрит сейчас", "Сериалы друга, которых нет у вас", now.slice(0, 12).map((x, i) => bTile(x, epCode(x), epCode(x), i)).join("")) : "");
+}
+async function fillFrEp(tid, tv, m) {
+  if (!friendsLoaded) await loadFriends();
+  const mt = tv ? "tv" : "movie", box = $("#frEp"), bd = $("#mvBody"); if (!box || !friends || !bd || bd.dataset.cur !== tid + "-" + mt) return;
+  const k = tid + "-" + mt, l = friends.map(f => ({ f, x: f.movies.find(y => keyOf(y) === k) })).filter(e => e.x);
+  if (!l.length) { box.innerHTML = ""; return; }
+  const rated = l.filter(e => e.x.status === "watched" && e.x.my_rating), avg = rated.length ? rated.reduce((a, e) => a + e.x.my_rating, 0) / rated.length : 0;
+  const row = ({ f, x }) => {
+    const done = x.status === "watched", mineDone = m && m.status === "watched";
+    let txt, bd2 = "";
+    if (done) {
+      txt = x.my_rating ? "★ " + x.my_rating : "смотрел(а), без оценки";
+      if (mineDone && m.my_rating && x.my_rating) { const d = Math.abs(m.my_rating - x.my_rating); bd2 = `<em class="ep-b ${d <= 1 ? "up" : d >= 3 ? "dn" : "eq"}">${d === 0 ? "оценки совпали" : d === 1 ? "почти совпали" : "разница " + d}</em>`; }
+      else if (tv && m && !mineDone) { const v = epVs(m, f, x); bd2 = `<em class="ep-b ${v.c}">${esc(v.t)}</em>`; }
+    } else {
+      txt = tv && x.episode ? epCode(x) : "хочет посмотреть";
+      if (tv && m) { const v = epVs(m, f, x); bd2 = `<em class="ep-b ${v.c}">${esc(v.t)}</em>`; }
+      else if (m && m.status === "watchlist") bd2 = `<em class="ep-b eq">вы оба хотите</em>`;
+      else if (m && mineDone) bd2 = `<em class="ep-b up">можно посоветовать</em>`;
+    }
+    const note = done && x.note ? `<div class="meta" style="width:100%">«${esc(x.note.length > 140 ? x.note.slice(0, 140) + "…" : x.note)}»</div>` : "";
+    return `<div class="eprow"><span>${esc(fName(f))}: <b>${esc(txt)}</b></span>${bd2}${note}</div>`;
+  };
+  box.innerHTML = `<div class="epbox"><b>Друзья${avg ? " · средняя ★ " + avg.toFixed(1).replace(".", ",") : ""}</b>${l.map(row).join("")}</div>`;
+}
+
+function hotBox() {
+  const box = $("#hotBox"); if (!box) return;
+  const l = movies.filter(m => m.status === "watched" && m.my_rating && +m.tmdb_rating > 0).map(m => ({ m, d: m.my_rating - +m.tmdb_rating }));
+  const up = l.filter(e => e.d >= 1.5).sort((a, b) => b.d - a.d).slice(0, 5), dn = l.filter(e => e.d <= -1.5).sort((a, b) => a.d - b.d).slice(0, 5);
+  const rw = e => `<button class="ep" data-tid="${e.m.tmdb_id}" data-mt="${e.m.media_type || "movie"}">${e.m.poster ? `<img src="${IMG}${esc(e.m.poster)}" alt="" loading="lazy" decoding="async">` : ""}<span class="ep-t"><b>${esc(e.m.title)}</b><small>Вы: ${e.m.my_rating} · TMDB ${(+e.m.tmdb_rating).toFixed(1).replace(".", ",")}</small></span><em class="ep-b ${e.d > 0 ? "up" : "dn"}">${e.d > 0 ? "▲ +" : "▼ "}${Math.abs(e.d).toFixed(1).replace(".", ",").replace(/^/, e.d > 0 ? "" : "−")}</em></button>`;
+  const sec = (t, a) => a.length ? `<h4 style="margin:12px 0 8px">${t}</h4><div class="ep-l">${a.map(rw).join("")}</div>` : "";
+  box.innerHTML = up.length || dn.length ? sec("Вам понравилось больше, чем всем", up) + sec("Вы строже толпы", dn) : `<div class="meta">Пока мало оценок, чтобы найти расхождения (нужны фильмы, где ваша оценка отличается от TMDB минимум на 1,5).</div>`;
+  box.onclick = e => { const t = e.target.closest("[data-tid]"); if (t) openMovie(+t.dataset.tid, t.dataset.mt); };
+}
 /* ---------- тема ---------- */
 const themeMode = () => { try { const v = localStorage.getItem("th"); return v === "light" || v === "dark" ? v : "auto"; } catch (e) { return "auto"; } };
 function applyTheme() {
@@ -1880,7 +1961,6 @@ function toggleTheme() {
 const menu = $("#meMenu");
 function syncMenu() {
   $("#meMail").textContent = userEmail;
-  $("#mView").textContent = "Вид списка: " + (view === "rows" ? "строки" : "постеры");
   const mb = $("#meBtn"), has = !!profile.avatar_url;
   mb.style.backgroundImage = has ? `url("${profile.avatar_url}")` : ""; mb.querySelector("svg").style.display = has ? "none" : "";
   $("#mTheme").textContent = "Тема: " + ({ auto: "как в системе", dark: "тёмная", light: "светлая" })[themeMode()];
@@ -1893,10 +1973,9 @@ $("#meBtn").onclick = e => {
 menu.onclick = e => {
   const b = e.target.closest("[data-m]"); if (!b) return;
   const m = b.dataset.m;
-  if (m === "view") return toggleView();
   if (m === "theme") return toggleTheme();
   closeMenu();
-  if (m === "profile") go("profile"); else if (m === "picks") go("picks"); else if (m === "import") openImport(); else if (m === "backup") exportCsv(); else if (m === "dups") openTidy(); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
+  if (m === "profile") go("profile"); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
 };
 document.addEventListener("click", e => { if (!menu.hidden && !e.target.closest(".me")) closeMenu(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
@@ -1928,7 +2007,9 @@ async function openMovie(tid, mt = "movie") {
   const sim = (f.similar?.results || []).filter(x => x.poster_path && !ignSet().has(x.id + "-" + mt)).slice(0, 10);
   const tvp = tv && m && m.status === "watchlist" ? `<button data-a="ep1">Серия +1</button><button data-a="epset">Указать серию</button>` : "";
   const ignB = !m ? (ignSet().has(tid + "-" + mt) ? `<button data-a="unign">Вернуть в рекомендации</button>` : `<button data-a="ign">Не интересует</button>`) : "";
-  const prog = tv && m && m.status === "watchlist" && m.episode ? `<div class="mine"><b class="star">Остановились: сезон ${m.season}, серия ${m.episode}</b></div>` : "";
+  if (tv) tvSave(tid, tvEps(f));
+  const tp = tv && m && m.status === "watchlist" && m.episode ? tvProg(m, tvEps(f)) : null;
+  const prog = tv && m && m.status === "watchlist" && m.episode ? `<div class="mine"><b class="star">Остановились: сезон ${m.season}, серия ${m.episode}</b>${tp ? `<div class="pbar"><i style="width:${tp.pct}%"></i></div><div class="meta">Посмотрено ${tp.done} из ${tp.total} серий (${tp.pct}%)${tp.left ? " · осталось " + plN(tp.left, "серия", "серии", "серий") + (tp.hrs ? ", около " + String(tp.hrs).replace(".", ",") + " ч" : "") : " · это последняя серия"}</div>` : ""}</div>` : "";
   const acts = !m ? `<button class="main" data-a="want">Хочу посмотреть</button><button data-a="seen">Уже смотрел</button>`
     : m.status === "watchlist" ? `<button class="main" data-a="seen">Посмотрел, оценить</button><button data-a="del">Убрать из списка</button>`
     : `<button class="main" data-a="seen">${m.my_rating ? "Изменить оценку" : "Оценить"}</button><button data-a="del">Удалить</button>`;
@@ -1941,10 +2022,10 @@ async function openMovie(tid, mt = "movie") {
       ${f.tagline ? `<p class="tag">${esc(f.tagline)}</p>` : ""}
       <p>${esc(f.overview || "Описания пока нет.")}</p>
       ${dir ? `<p class="meta">${tv ? "Создатели" : "Режиссёр"}: ${esc(dir)}</p>` : ""}${cast ? `<p class="meta">В ролях: ${esc(cast)}</p>` : ""}
-      ${mine}${prog}<div class="acts" style="margin-top:12px">${acts}${tvp}${ignB}${vid ? `<button data-a="tr" data-k="${esc(vid.key)}">Трейлер</button>` : ""}</div>
+      ${mine}${prog}<div id="frEp"></div><div class="acts" style="margin-top:12px">${acts}${tvp}${ignB}${vid ? `<button data-a="tr" data-k="${esc(vid.key)}">Трейлер</button>` : ""}</div>
       <div id="tr"></div></div></div>
     ${sim.length ? `<h3>Похожие фильмы</h3><div class="sim">${sim.map(x => `<button class="tile" data-sim="${x.id}" title="${esc(x.title || x.name)}"><img src="${IMG}${x.poster_path}" alt="${esc(x.title || x.name)}" loading="lazy" decoding="async"></button>`).join("")}</div>` : ""}<div id="dirRow"></div>`;
-  body.dataset.cur = tid + "-" + mt; dirLoad(f, tid, mt, tv);
+  body.dataset.cur = tid + "-" + mt; dirLoad(f, tid, mt, tv); fillFrEp(tid, tv, m);
   body.onclick = async e => {
     const sm = e.target.closest("[data-sim]"); if (sm) return openMovie(+sm.dataset.sim, mt);
     const a = e.target.dataset.a; if (!a) return;
@@ -1959,8 +2040,8 @@ async function openMovie(tid, mt = "movie") {
     else if (a === "want") await addMovie(tid, "watchlist", mt);
     else if (a === "seen" && !m) await addMovie(tid, "watched", mt);
     else if (a === "seen") {
-      const r = await rateDialog(ftitle, m.my_rating, m.note, m.watched_at || (m.status === "watchlist" ? today() : "")); if (!r) return;
-      const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, watched_at: r.date }).eq("id", m.id);
+      const r = await rateDialog(ftitle, m.my_rating, m.note, (m.date_guess ? "" : m.watched_at) || (m.status === "watchlist" ? today() : "")); if (!r) return;
+      const { error } = await sb.from("movies").update({ status: "watched", my_rating: r.rating, note: r.note, ...dPatch(m, r) }).eq("id", m.id);
       if (error) return toast(error.message); await load();
     } else if (a === "del") {
       if (!confirm("Удалить «" + ftitle + "» из списка?")) return;
