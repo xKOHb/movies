@@ -367,6 +367,43 @@ dialog::backdrop{background:#000a;animation:fadeIn .24s ease}
 .find-sub:empty{display:none}
 .find-sub::before{content:"";width:4px;height:18px;border-radius:4px;background:var(--acc)}
 @media(max-width:640px){.find-hd h2{font-size:1.5rem}.find-box{padding-left:14px}.find-box .main{padding:9px 14px}#bnav button span{font-size:.62rem}}
+
+/* ===== компактный профиль и друзья (26.11.2026) ===== */
+.pf-banner{height:130px;border-radius:18px}
+.pf-head{margin-top:-38px;gap:14px;padding:0 16px}
+.pf-av{width:84px;height:84px;font-size:2rem;border-width:3px}
+#profileView .pf-name h2{font-size:1.35rem}
+.pf-name{padding-bottom:2px}
+.pf-bio{margin-top:10px}
+.chip2{padding:3px 11px;font-size:.8rem;margin:6px 6px 0 0}
+.mstats{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.mstats span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:.84rem;color:var(--mut)}
+.mstats b{color:var(--acc);font-size:1rem;margin-right:5px}
+.fold-bar{display:flex;justify-content:flex-end;margin-top:6px}
+details.fold{margin-top:8px;background:var(--paper);border:1px solid var(--line);border-radius:16px}
+details.fold>summary{list-style:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:12px;font-weight:700}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:"";margin-left:auto;flex:none;width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);transition:transform .15s}
+details.fold[open]>summary::after{transform:rotate(-135deg)}
+details.fold .sub{font-weight:500;color:var(--mut);font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+details.fold>.fold-b{padding:2px 16px 16px}
+details.fold .panel{padding:14px}
+details.fold .strip{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+details.fold .main{margin-top:6px}
+.fr-list{display:flex;flex-direction:column;gap:6px}
+.frw{display:flex;align-items:center;gap:6px}
+.fr-row{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:7px 12px;color:var(--tx)}
+.fr-row:hover{border-color:var(--acc)}
+.fr-row .fr-av{width:34px;height:34px;font-size:.9rem;border-width:1.5px}
+.fr-row .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-row .mt{margin-left:auto;color:var(--mut);font-size:.82rem;white-space:nowrap}
+.fr-row .mt b{color:var(--acc);font-size:1rem}
+.fr-x{flex:none;padding:6px 11px;font-size:.85rem;color:var(--mut)}
+.fr-add{margin-top:10px}
+.fr-add>summary{cursor:pointer;color:var(--mut);font-weight:600;font-size:.9rem;padding:6px 2px}
+.fr-add .hint{margin:8px 0 10px;font-size:.88rem}
+.fr-add .code{font-size:1.1rem;padding:4px 12px}
+@media(max-width:640px){.fr-row .mt span{display:none}}
 </style>
 </head>
 <body>
@@ -742,17 +779,19 @@ async function renderFriends() {
   if (!friendsLoaded) { v.innerHTML = `<div class="sk" style="height:140px"></div>`; await loadFriends(); v = $("#frBox"); if (tab !== "profile" || !v) return; }
   if (friends === null) { v.innerHTML = `<div class="empty">Друзья ещё не подключены. Выполните migration_friends.sql в Supabase и обновите страницу.</div>`; return; }
   if (!myCode) { try { myCode = (await sb.rpc("my_invite_code")).data || ""; } catch (e) {} }
-  const cards = friends.map(f => {
+  const plr = n => n + (n % 10 === 1 && n % 100 !== 11 ? " друг" : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? " друга" : " друзей");
+  const rows = friends.map(f => {
     const c = compare(f);
-    return `<div class="panel fr"><div class="fr-av" ${avStyle(f)}>${f.profile.avatar_url ? "" : esc(fName(f)[0].toUpperCase())}</div><div style="flex:1;min-width:0"><h3 style="margin:0">${esc(fName(f))}</h3>
-      <div class="pct">${c.match !== null ? c.match + "%" : "–"}</div><div class="meta">${c.match !== null ? "совпадение вкусов" : "мало общих оценок"}</div>
-      <div class="meta">Общих просмотренных: ${c.both} · Хотите вместе: ${c.together.length}</div>
-      <div class="acts" style="margin-top:10px"><button class="main" data-fo="${f.id}">Открыть</button><button data-fd="${f.id}">Удалить</button></div></div></div>`;
+    return `<div class="frw"><button class="fr-row" data-fo="${f.id}"><span class="fr-av" ${avStyle(f)}>${f.profile.avatar_url ? "" : esc(fName(f)[0].toUpperCase())}</span><span class="nm">${esc(fName(f))}</span><span class="mt">${c.match !== null ? `<b>${c.match}%</b><span> · вместе ${c.together.length}</span>` : `<span>мало общих оценок</span>`}</span></button><button class="fr-x" data-fd="${f.id}" title="Убрать из друзей" aria-label="Убрать из друзей">✕</button></div>`;
   }).join("");
-  v.innerHTML = `<div class="panel"><h3>Пригласить друга</h3><p class="hint">Отправьте другу этот код. Когда он введёт его у себя, вы увидите списки и оценки друг друга.</p>
-    <div class="acts" style="margin:0"><span class="code">${esc(myCode || "…")}</span><button id="frCopy">Копировать</button></div>
-    <h3 style="margin:20px 0 10px">Добавить по коду друга</h3><div class="bar" style="margin:0"><input id="frIn" placeholder="Код друга" maxlength="20" style="flex:1;min-width:160px"><button class="main" id="frAdd">Добавить</button></div></div>
-    ${friends.length ? `<div class="fr-grid">${cards}</div>` : `<div class="nudge">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов и «что смотреть вместе».</div>`}`;
+  const best = friends.map(f => ({ f, c: compare(f) })).filter(x => x.c.match !== null).sort((a, b) => b.c.match - a.c.match)[0];
+  const fs = $("#frSub"); if (fs) fs.textContent = friends.length ? plr(friends.length) + (best ? " · лучше всего совпадаете с " + fName(best.f) + " (" + best.c.match + "%)" : "") : "пока нет";
+  v.innerHTML = `${friends.length ? `<div class="fr-list">${rows}</div>` : `<div class="meta">Друзей пока нет. Обменяйтесь кодами, и здесь появятся сравнение вкусов и «что смотреть вместе».</div>`}
+    <details class="fr-add" ${friends.length ? "" : "open"}><summary>＋ Добавить друга / мой код</summary>
+      <p class="hint">Отправьте другу свой код. Когда он введёт его у себя, вы увидите списки и оценки друг друга.</p>
+      <div class="acts" style="margin:0 0 12px"><span class="code">${esc(myCode || "…")}</span><button id="frCopy">Копировать</button></div>
+      <div class="bar" style="margin:0"><input id="frIn" placeholder="Код друга" maxlength="20" style="flex:1;min-width:160px"><button class="main" id="frAdd">Добавить</button></div>
+    </details>`;
 }
 function showFriend(id) {
   const f = friendData[id], c = compare(f), v = $("#frBox");
@@ -840,7 +879,7 @@ function yearBox(y) {
   const undated = movies.filter(m => m.status === "watched" && !m.watched_at).length;
   const years = [...new Set(dated.map(m => m.watched_at.slice(0, 4)))].sort().reverse();
   const note = undated ? `<p class="hint">Без даты просмотра: ${undated}. Дату можно указать в окне оценки (карточка фильма → «Просмотрено») или повторным импортом файла с датами.</p>` : "";
-  if (!years.length) { box.innerHTML = `<h3>Итоги года</h3><div class="meta">Появятся, когда у просмотренных фильмов будет дата просмотра. Она ставится сама, когда вы отмечаете фильм просмотренным.</div>${note}`; return; }
+  if (!years.length) { box.innerHTML = `<div class="meta">Появятся, когда у просмотренных фильмов будет дата просмотра. Она ставится сама, когда вы отмечаете фильм просмотренным.</div>${note}`; return; }
   y = y || (years.includes(String(new Date().getFullYear())) ? String(new Date().getFullYear()) : years[0]);
   const l = dated.filter(m => m.watched_at.startsWith(y)), r = l.filter(m => m.my_rating);
   const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
@@ -849,11 +888,12 @@ function yearBox(y) {
   const tg = Object.entries(gc).sort((a, b) => b[1] - a[1])[0];
   const mon = Array.from({ length: 12 }, (_, i) => l.filter(m => +m.watched_at.slice(5, 7) === i + 1).length), mx = Math.max(1, ...mon);
   const best = [...r].sort((a, b) => b.my_rating - a.my_rating).slice(0, 6);
-  box.innerHTML = `<h3>Итоги года <select id="yrSel" style="width:auto;margin-left:10px">${years.map(x => `<option ${x === y ? "selected" : ""}>${x}</option>`).join("")}</select></h3>
-    <div class="stats"><div class="stat"><b>${l.length}</b><span>просмотрено</span></div><div class="stat"><b>${hours}</b><span>часов кино</span></div><div class="stat"><b>${avg}</b><span>средняя оценка</span></div><div class="stat"><b>${tg ? esc(tg[0]) : "–"}</b><span>главный жанр</span></div></div>
+  box.innerHTML = `<div style="margin:0 0 12px"><select id="yrSel" style="width:auto">${years.map(x => `<option ${x === y ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+    <div class="stats" style="margin-top:0"><div class="stat"><b>${l.length}</b><span>просмотрено</span></div><div class="stat"><b>${hours}</b><span>часов кино</span></div><div class="stat"><b>${avg}</b><span>средняя оценка</span></div><div class="stat"><b>${tg ? esc(tg[0]) : "–"}</b><span>главный жанр</span></div></div>
     <div class="panel" style="margin-top:14px"><h3>По месяцам</h3><div class="hist">${mon.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / mx * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div></div>
     ${best.length ? `<h3 style="margin:18px 0 10px">Лучшее за год</h3><div class="strip">${best.map((m, i) => tile(m, i)).join("")}</div>` : ""}${note}`;
   $("#yrSel").onchange = e => yearBox(e.target.value);
+  const ys = $("#yrSub"); if (ys) ys.textContent = y + " · " + l.length + " просмотрено · " + hours + " ч";
 }
 let curPair = null, pairKey = null;
 async function pairPick(id, again) {
@@ -968,10 +1008,10 @@ async function loadPrem(tok) {
   $("#premBox").innerHTML = l.length ? secHtml("Премьеры", "Из «Хочу посмотреть»: скоро выходят и вышли недавно", l.map((r, i) => bTile(r.m, (r.up ? "Выходит " : "Вышел ") + fmt(r.d), fmt(r.d), i)).join("")) : "";
 }
 async function loadPeople() {
-  const box = $("#ppBox"); if (!box) return;
+  const box = $("#ppBox"); if (!box || box.dataset.ld) return; box.dataset.ld = "1";
   const seeds = movies.filter(m => m.status === "watched" && (m.my_rating || 0) >= 8).slice(0, 40);
-  if (seeds.length < 3) { box.innerHTML = `<h3>Режиссёры и актёры</h3><div class="meta">Появятся, когда у вас будет хотя бы 3 фильма с оценкой 8+.</div>`; return; }
-  box.innerHTML = `<h3>Режиссёры и актёры</h3><div class="sk" style="height:90px"></div>`;
+  if (seeds.length < 3) { box.innerHTML = `<div class="meta">Появятся, когда у вас будет хотя бы 3 фильма с оценкой 8+.</div>`; return; }
+  box.innerHTML = `<div class="sk" style="height:90px"></div>`;
   const cr = await Promise.all(seeds.map(async m => {
     const k = "c" + keyOf(m);
     if (!(k in homeCache)) { try { homeCache[k] = await tmdbGet(`${m.media_type || "movie"}/${m.tmdb_id}/credits`); } catch (e) { return null; } }
@@ -982,7 +1022,7 @@ async function loadPeople() {
   cr.filter(Boolean).forEach(({ c }) => { (c.crew || []).filter(p => p.job === "Director").forEach(p => add(D, p)); (c.cast || []).slice(0, 5).forEach(p => add(A, p)); });
   const top = o => Object.values(o).filter(e => e.n >= 2).sort((a, b) => b.n - a.n).slice(0, 5);
   const li = l => l.length ? l.map(e => `<div class="gb"><span>${esc(e.name)}</span><i style="width:${Math.round(e.n / l[0].n * 100)}%"></i><span>${e.n}</span></div>`).join("") : `<div class="meta">Пока нет повторов: нужны хотя бы 2 фильма.</div>`;
-  $("#ppBox").innerHTML = `<h3>Режиссёры и актёры</h3><div class="meta" style="margin-bottom:8px">По вашим фильмам с оценкой 8+</div><div class="pf-sec cols"><div class="panel"><h3>Режиссёры</h3>${li(top(D))}</div><div class="panel"><h3>Актёры</h3>${li(top(A))}</div></div>`;
+  $("#ppBox").innerHTML = `<div class="cols"><div class="panel"><h3>Режиссёры</h3>${li(top(D))}</div><div class="panel"><h3>Актёры</h3>${li(top(A))}</div></div>`;
 }
 let colls, colOpen = null, colFound = [];
 async function loadColls() {
@@ -1529,6 +1569,15 @@ function openAi() {
   $("#aiCopy").onclick = () => navigator.clipboard.writeText($("#aiTxt").value).then(() => toast("Промт скопирован"), () => { $("#aiTxt").select(); toast("Выделил текст, скопируйте вручную"); });
   refresh(); d.showModal();
 }
+/* ---------- сворачиваемые секции профиля ---------- */
+const foldSt = () => { try { return JSON.parse(localStorage.getItem("pfFold") || "{}"); } catch (e) { return {}; } };
+const foldOpen = (k, d) => { const s = foldSt(); return k in s ? !!s[k] : !!d; };
+const fold = (k, title, sub, body, d) => `<details class="fold" data-k="${k}" ${foldOpen(k, d) ? "open" : ""}><summary>${title}<span class="sub" id="${k}Sub">${sub || ""}</span></summary><div class="fold-b" id="${k}Box">${body || ""}</div></details>`;
+$("#profileView").addEventListener("toggle", e => {
+  const d = e.target; if (!d.matches || !d.matches("details.fold")) return;
+  try { const s = foldSt(); s[d.dataset.k] = d.open; localStorage.setItem("pfFold", JSON.stringify(s)); } catch (x) {}
+  if (d.dataset.k === "pp" && d.open) loadPeople();
+}, true);
 function renderProfile() {
   const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
   const avg = r.length ? (r.reduce((a, m) => a + m.my_rating, 0) / r.length).toFixed(1).replace(".", ",") : "–";
@@ -1551,29 +1600,34 @@ function renderProfile() {
     </div>
     <p class="pf-bio ${profile.bio ? "" : "none"}">${profile.bio ? esc(profile.bio) : "Расскажите о себе: нажмите «Редактировать»."}</p>
     ${gl.length ? `<div>${gl.slice(0, 5).map(([g]) => `<span class="chip2">${esc(g)}</span>`).join("")}</div>` : ""}
-    <div class="stats">
-      <div class="stat"><b>${w.length}</b><span>просмотрено</span></div>
-      <div class="stat"><b>${movies.length - w.length}</b><span>хочу посмотреть</span></div>
-      <div class="stat"><b>${avg}</b><span>средняя оценка</span></div>
-      <div class="stat"><b>${hours}</b><span>часов кино</span></div>
-      <div class="stat"><b>${r.filter(m => m.my_rating >= 9).length}</b><span>оценок 9–10</span></div>
-      <div class="stat"><b>${w.filter(m => m.media_type === "tv").length}</b><span>сериалов</span></div>
+    <div class="mstats">
+      <span><b>${w.length}</b>просмотрено</span>
+      <span><b>${movies.length - w.length}</b>хочу посмотреть</span>
+      <span><b>${avg}</b>средняя оценка</span>
+      <span><b>${hours}</b>часов кино</span>
+      <span><b>${r.filter(m => m.my_rating >= 9).length}</b>оценок 9–10</span>
+      <span><b>${w.filter(m => m.media_type === "tv").length}</b>сериалов</span>
     </div>
-    <div class="pf-sec cols">
+    <div class="fold-bar"><button class="lnk" id="pfFoldAll">Свернуть всё</button></div>
+    ${fold("rt", "Оценки и жанры", r.length ? "средняя " + avg + (gl.length ? " · " + esc(gl[0][0]) : "") : "пока нет оценок", `<div class="cols">
       <div class="panel"><h3>Мои оценки</h3>${r.length ? `<div class="hist">${hist.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / hmax * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div>` : `<div class="meta">Оцените первый фильм, и здесь появится график.</div>`}</div>
       <div class="panel"><h3>Любимые жанры</h3>${gl.length ? gl.slice(0, 6).map(([g, n]) => `<div class="gb"><span>${esc(g)}</span><i style="width:${Math.round(n / gmax * 100)}%"></i><span>${n}</span></div>`).join("") : `<div class="meta">Пока нет данных.</div>`}</div>
-    </div>
-    <div class="pf-sec" id="yrBox"></div>
-    <div class="pf-sec" id="ppBox"></div>
-    <div class="pf-sec"><h3>Друзья</h3><div id="frBox"></div></div>
-    <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
-    <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
-    <details class="taste"><summary>Мой вкус и промт для подбора фильмов</summary><ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button></details>`;
+    </div>`)}
+    ${fold("yr", "Итоги года", "", `<div class="sk" style="height:60px"></div>`)}
+    ${fold("pp", "Режиссёры и актёры", "по фильмам с оценкой 8+", "")}
+    ${fold("fr", "Друзья", "", `<div class="sk" style="height:60px"></div>`)}
+    ${fold("top", "Любимые фильмы", topF.length ? esc(topF[0].title) + (topF.length > 1 ? " и ещё " + (topF.length - 1) : "") : "пока нет", topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`)}
+    ${fold("rec", "Недавно просмотренные", recent.length ? recent.length + " шт." : "пока ничего", recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`)}
+    ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`;
   $("#pfAv").onclick = () => pickImage("avatar");
   $("#pfBn").onclick = () => pickImage("banner");
   $("#pfEdit").onclick = editProfile;
   $("#copyPrompt").onclick = openAi;
-  yearBox(); loadPeople(); renderFriends();
+  $("#pfFoldAll").onclick = e => {
+    const ds = [...document.querySelectorAll("#profileView details.fold")], any = ds.some(d => d.open);
+    ds.forEach(d => d.open = !any); e.target.textContent = any ? "Развернуть всё" : "Свернуть всё";
+  };
+  yearBox(); if (foldOpen("pp")) loadPeople(); renderFriends();
 }
 
 /* ---------- тема ---------- */
