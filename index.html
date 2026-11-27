@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<!-- АДМИН-ПАНЕЛЬ: впишите свою почту между кавычками после content=, например content="me@mail.ru". Несколько почт через запятую. Кавычки не удаляйте. -->
+<meta name="admin-email" content="bogdanpexno@gmail.com">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Поиск кадров</title>
 <meta name="description" content="Личный список фильмов: что посмотреть и что уже смотрел, с оценками и заметками.">
@@ -673,19 +675,20 @@ main:focus{outline:none}
 <div id="sg" hidden role="listbox"></div>
 
 <script>
-/* сбор метрик и ошибок для админ-панели (#admin): ничего не отправляет наружу, всё хранится в памяти страницы */
-(() => {
+/* сбор метрик и ошибок для админ-панели (#admin): ничего не отправляет наружу, всё хранится в памяти страницы; любой сбой здесь не должен влиять на сайт */
+(() => { try {
   const E = window.__adm = { err: [], net: [], delay: 0, vit: { cls: 0, lt: 0, ltms: 0, inp: 0 } }, v = E.vit;
   const push = (a, o) => { a.push(o); if (a.length > 80) a.shift(); };
   addEventListener("error", e => push(E.err, { t: Date.now(), k: "error", m: e.message, s: String(e.filename || "").split("/").pop() + ":" + e.lineno }));
   addEventListener("unhandledrejection", e => push(E.err, { t: Date.now(), k: "promise", m: String((e.reason && e.reason.message) || e.reason) }));
   const f = window.fetch;
-  window.fetch = function (u) {
-    const url = String((u && u.url) || u).replace(/api_key=[^&]+/, "api_key=…"), t0 = performance.now(), a = arguments, self = this;
-    const d = E.delay && /themoviedb\.org/.test(url) ? E.delay : 0;
-    return (d ? new Promise(r => setTimeout(r, d)) : Promise.resolve()).then(() => f.apply(self, a)).then(
-      r => { push(E.net, { t: Date.now(), u: url, s: r.type === "opaque" ? 200 : r.status, ms: Math.round(performance.now() - t0) }); return r; },
-      e => { push(E.net, { t: Date.now(), u: url, s: 0, ms: Math.round(performance.now() - t0), m: String(e && e.message) }); throw e; });
+  if (typeof f === "function") window.fetch = function () {
+    const a = arguments; let url = "", t0 = 0;
+    try { const u = a[0]; url = String((u && u.url) || u).replace(/api_key=[^&]+/, "api_key=…"); t0 = performance.now(); } catch (e) {}
+    const go = () => f.apply(window, a), d = E.delay && /themoviedb\.org/.test(url) ? E.delay : 0;
+    return (d ? new Promise(r => setTimeout(r, d)).then(go) : go()).then(
+      r => { try { push(E.net, { t: Date.now(), u: url, s: r.type === "opaque" ? 200 : r.status, ms: Math.round(performance.now() - t0) }); } catch (e) {} return r; },
+      e => { try { push(E.net, { t: Date.now(), u: url, s: 0, ms: Math.round(performance.now() - t0), m: String(e && e.message) }); } catch (x) {} throw e; });
   };
   const ob = (type, cb, extra) => { try { new PerformanceObserver(l => l.getEntries().forEach(cb)).observe(Object.assign({ type, buffered: true }, extra || {})); } catch (e) {} };
   ob("paint", e => { if (e.name === "first-contentful-paint") v.fcp = e.startTime; });
@@ -693,7 +696,19 @@ main:focus{outline:none}
   ob("layout-shift", e => { if (!e.hadRecentInput) v.cls += e.value; });
   ob("longtask", e => { v.lt++; v.ltms += e.duration; });
   ob("event", e => { if (e.interactionId && e.duration > v.inp) v.inp = e.duration; }, { durationThreshold: 40 });
-})();
+} catch (e) {} })();
+/* страж запуска: если через 6 секунд не виден ни вход, ни приложение, показываем причину вместо пустой страницы */
+addEventListener("load", () => setTimeout(() => { try {
+  const a = document.getElementById("app"), u = document.getElementById("auth");
+  if (!a || !u || !a.hidden || !u.hidden) return;
+  const errs = ((window.__adm && window.__adm.err) || []).slice(-4).map(x => x.k + ": " + x.m + " (" + x.s + ")").join("\n");
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;inset:0;z-index:9999;background:#0b0b0f;color:#f2f2f4;font:15px/1.5 system-ui,sans-serif;padding:24px;overflow:auto";
+  d.innerHTML = "<h2>Сайт не запустился</h2><p>" + (typeof supabase === "undefined" ? "Не загрузилась библиотека Supabase (сеть, VPN или блокировщик)." : "Скрипт сайта остановился с ошибкой.") + "</p><pre style='white-space:pre-wrap;color:#f5b041'></pre><p><button style='padding:10px 16px;font:inherit'>Сбросить кэш и перезагрузить</button></p>";
+  d.querySelector("pre").textContent = errs || "(ошибок в журнале нет)";
+  d.querySelector("button").onclick = async () => { try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); for (const k of await caches.keys()) await caches.delete(k); } catch (e) {} location.reload(); };
+  document.body.appendChild(d);
+} catch (e) {} }, 6000));
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -725,9 +740,9 @@ function showSession(s) {
   $("#auth").hidden = !!s;
   $("#app").hidden = !s;
   userEmail = (s && s.user && s.user.email) || "";
-  if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); admGate(); } else { profile = {}; userId = ""; }
+  if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); try { if (typeof admGate === "function") admGate(); } catch (e) {} } else { profile = {}; userId = ""; }
 }
-sb.auth.getSession().then(({ data }) => showSession(data.session));
+sb.auth.getSession().then(({ data }) => showSession(data.session)).catch(() => showSession(null));
 sb.auth.onAuthStateChange((_, s) => showSession(s));
 
 /* ---------- данные ---------- */
@@ -2308,10 +2323,13 @@ async function imRun(items, dest, o = { dir: "new", upd: false, n: items.length 
   if (!err) { go("watched"); toast("Импорт завершён"); }
 }
 
+</script>
+<script>
+/* дополнения: админ-панель, картинка итогов, резервная копия, доступность. Живут в отдельном скрипте: сбой здесь не останавливает основной сайт */
 /* ======================= АДМИН-ПАНЕЛЬ (#admin) =======================
    Открывается по ссылке с #admin и только если вы вошли под почтой из ADMIN_EMAILS.
    Панель ничего не меняет в данных, кроме явного «теста записи» (одна служебная запись, которая тут же удаляется). */
-const ADMIN_EMAILS = ["bogdanpexno@gmail.com"]; /* впишите свою почту, например ["me@mail.ru"]; пока список пуст, панель закрыта */
+const ADMIN_EMAILS = (((document.querySelector('meta[name="admin-email"]') || {}).content) || "").split(",").map(x => x.trim()).filter(Boolean); /* почта берётся из <meta name="admin-email"> в начале файла */
 const admSleep = ms => new Promise(r => setTimeout(r, ms));
 const admR = { tests: [], sweep: [] };
 let admTab = "screens";
@@ -2320,7 +2338,7 @@ function admGate() {
   if (location.hash !== "#admin") { if (!el.hidden) admClose(true); return; }
   if (!userEmail) return;
   const ok = ADMIN_EMAILS.some(x => String(x).toLowerCase() === userEmail.toLowerCase());
-  if (!ok) { history.replaceState(null, "", location.pathname + location.search); toast(ADMIN_EMAILS.length ? "Нет доступа" : "Панель выключена: впишите «" + userEmail + "» в ADMIN_EMAILS"); return; }
+  if (!ok) { history.replaceState(null, "", location.pathname + location.search); toast(ADMIN_EMAILS.length ? "Нет доступа" : "Панель выключена: впишите «" + userEmail + "» в строку <meta name=\"admin-email\"> в начале index.html"); return; }
   admOpen();
 }
 addEventListener("hashchange", admGate);
@@ -2711,6 +2729,8 @@ $("#bkFile").onchange = async e => {
   };
   let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(fix, 400); }).observe(document.body, { childList: true, subtree: true }); fix();
 }
+/* если вход завершился раньше, чем загрузился этот скрипт, откроем панель сейчас */
+try { admGate(); } catch (e) {}
 </script>
 </body>
 </html>
