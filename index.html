@@ -547,38 +547,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
   .pf-tabs button{min-height:44px}
   .pf-banner{height:120px}
 }
-/* ===== админ-панель и доступность (26.11.2026) ===== */
-#toast{z-index:400}
-.skip{position:fixed;left:12px;top:-64px;z-index:500;background:var(--acc);color:var(--on-acc);padding:10px 16px;border-radius:10px;font-weight:700;text-decoration:none}
-.skip:focus{top:calc(8px + env(safe-area-inset-top,0px))}
-main:focus{outline:none}
-#adm{position:fixed;inset:0;z-index:200;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;font-size:14px}
-#adm[hidden]{display:none}
-.adm-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.adm-tabs,.adm-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.adm-tabs{flex:1}.adm-bar{margin-bottom:10px}
-#adm .ab{min-height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--tx);font:inherit;cursor:pointer}
-#adm .ab.on{border-color:var(--acc);color:var(--acc)}#adm .ab:disabled{opacity:.5}
-#admBody{flex:1;overflow:auto;padding:14px calc(14px + env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) 14px}
-.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-.adm-grid.ph{grid-template-columns:repeat(auto-fit,minmax(260px,420px))}.adm-grid.dk{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
-.adm-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px;overflow:hidden;min-width:0}
-.adm-card h4{margin:0 0 8px;font-size:.95rem}.adm-h{margin:16px 0 8px;font-size:1rem}
-.adm-fr{position:relative;overflow:hidden;border-radius:8px;border:1px solid var(--line);background:#000}
-.adm-fr iframe{border:0;display:block;transform-origin:0 0;background:var(--bg)}
-.adm-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line);min-width:0}
-.adm-row>span:first-child{min-width:0;overflow-wrap:anywhere}.adm-row>span:last-child{text-align:right;flex:none;max-width:60%;overflow-wrap:anywhere}
-.adm-chk{display:flex;gap:6px;align-items:center;font-size:.85rem}
-.adm-st{margin-top:8px;font-size:.8rem;line-height:1.5}
-.adm-pre{white-space:pre-wrap;word-break:break-word;font:12px/1.45 ui-monospace,Menlo,monospace;max-height:260px;overflow:auto;margin:10px 0 0}
-.adm-t{border-collapse:collapse;width:100%;font-size:.85rem}.adm-t th,.adm-t td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-#adm .ok{color:#3ecf8e}#adm .warn{color:#f5b041}#adm .bad{color:#ff6b6b}
-@media(max-width:640px){.adm-top{flex-wrap:nowrap}.adm-top>b{display:none}.adm-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.adm-tabs .ab{flex:none}}
-[data-theme=light] #adm .ok{color:#0b7a4b}[data-theme=light] #adm .warn{color:#9a5d08}[data-theme=light] #adm .bad{color:#c0262d}
 </style>
 </head>
 <body>
-<a class="skip" href="#" id="skipLnk">К содержимому</a>
-<main tabindex="-1">
+<main>
 
 <section id="auth" hidden>
   <div class="logo"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5"/><path class="pl" d="M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z"/></svg><b>Поиск кадров</b></div>
@@ -607,7 +579,7 @@ main:focus{outline:none}
       </div>
     </div></div>
   </header>
-  <div class="tabs" id="tabs" role="navigation" aria-label="Разделы">
+  <div class="tabs" id="tabs">
     <button data-t="home" class="on">Главная</button>
     <button data-t="watchlist">Хочу посмотреть</button>
     <button data-t="watched">Просмотрено</button>
@@ -624,19 +596,19 @@ main:focus{outline:none}
     <div class="bar">
       <input id="fq" placeholder="Поиск по моему списку" style="flex:1;min-width:180px">
       <select id="fg" hidden></select>
-      <select id="fr" aria-label="Длительность">
+      <select id="fr">
         <option value="">Любая длительность</option>
         <option value="95">до 95 минут</option>
         <option value="125">до 2 часов</option>
         <option value="155">до 2,5 часов</option>
       </select>
-      <select id="fm" aria-label="Минимальный рейтинг">
+      <select id="fm">
         <option value="">Любой рейтинг</option>
         <option value="7">от 7</option>
         <option value="7.5">от 7,5</option>
         <option value="8">от 8</option>
       </select>
-      <select id="fs" aria-label="Сортировка"><option value="new">Сначала новые</option><option value="my">По моей оценке</option><option value="tm">По рейтингу TMDB</option><option value="yr">По году</option><option value="rt">По длительности</option></select>
+      <select id="fs"><option value="new">Сначала новые</option><option value="my">По моей оценке</option><option value="tm">По рейтингу TMDB</option><option value="yr">По году</option><option value="rt">По длительности</option></select>
       <button id="vwBtn" type="button" title="Вид списка: постеры или строки" aria-label="Вид списка"></button>
       <button id="selBtn">Выбрать</button>
       <button class="main" id="pickBtn">Что посмотреть сегодня?</button>
@@ -661,9 +633,7 @@ main:focus{outline:none}
   <dialog id="aiDlg" style="width:min(720px,94vw);max-height:92vh;overflow:auto"><h2>Промт для подбора фильмов</h2><div id="aiBody"></div></dialog>
   <dialog id="imDlg" style="width:min(640px,94vw)"><h2>Импорт с Кинопоиска</h2><div id="imBody"></div></dialog>
   <div id="selBar" hidden><b id="selN">0</b> выбрано <button data-a="rate">Оценить по очереди</button><button data-a="seen" id="selSeen">В «Просмотрено»</button><button data-a="want" id="selWant">В «Хочу»</button><button data-a="del">Удалить</button><button data-a="x">Отмена</button></div>
-  <div id="toast" hidden role="status" aria-live="polite"></div>
-  <div id="adm" hidden role="dialog" aria-label="Админ-панель"></div>
-  <input type="file" id="bkFile" accept=".json,application/json" hidden>
+  <div id="toast" hidden></div>
   <nav id="bnav" aria-label="Разделы"><button data-t="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button><button data-t="watchlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v17l-5-4-5 4z"/></svg><span>Хочу</span></button><button data-t="watched"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg><span>Смотрел</span></button><button data-t="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 5 5.4.7-4 3.8 1 5.4L12 16.2 7.2 18.9l1-5.4-4-3.8 5.4-.7z"/></svg><span>Для вас</span></button><button data-t="colls"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Коллекции</span></button><button data-t="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><span>Поиск</span></button></nav>
   <footer>Данные о фильмах: TMDB. Этот сайт не связан с TMDB и не одобрен им.</footer>
 </section>
@@ -672,29 +642,6 @@ main:focus{outline:none}
 
 <div id="sg" hidden role="listbox"></div>
 
-<script>
-/* сбор метрик и ошибок для админ-панели (#admin): ничего не отправляет наружу, всё хранится в памяти страницы */
-(() => {
-  const E = window.__adm = { err: [], net: [], delay: 0, vit: { cls: 0, lt: 0, ltms: 0, inp: 0 } }, v = E.vit;
-  const push = (a, o) => { a.push(o); if (a.length > 80) a.shift(); };
-  addEventListener("error", e => push(E.err, { t: Date.now(), k: "error", m: e.message, s: String(e.filename || "").split("/").pop() + ":" + e.lineno }));
-  addEventListener("unhandledrejection", e => push(E.err, { t: Date.now(), k: "promise", m: String((e.reason && e.reason.message) || e.reason) }));
-  const f = window.fetch;
-  window.fetch = function (u) {
-    const url = String((u && u.url) || u).replace(/api_key=[^&]+/, "api_key=…"), t0 = performance.now(), a = arguments, self = this;
-    const d = E.delay && /themoviedb\.org/.test(url) ? E.delay : 0;
-    return (d ? new Promise(r => setTimeout(r, d)) : Promise.resolve()).then(() => f.apply(self, a)).then(
-      r => { push(E.net, { t: Date.now(), u: url, s: r.type === "opaque" ? 200 : r.status, ms: Math.round(performance.now() - t0) }); return r; },
-      e => { push(E.net, { t: Date.now(), u: url, s: 0, ms: Math.round(performance.now() - t0), m: String(e && e.message) }); throw e; });
-  };
-  const ob = (type, cb, extra) => { try { new PerformanceObserver(l => l.getEntries().forEach(cb)).observe(Object.assign({ type, buffered: true }, extra || {})); } catch (e) {} };
-  ob("paint", e => { if (e.name === "first-contentful-paint") v.fcp = e.startTime; });
-  ob("largest-contentful-paint", e => { v.lcp = e.startTime; });
-  ob("layout-shift", e => { if (!e.hadRecentInput) v.cls += e.value; });
-  ob("longtask", e => { v.lt++; v.ltms += e.duration; });
-  ob("event", e => { if (e.interactionId && e.duration > v.inp) v.inp = e.duration; }, { durationThreshold: 40 });
-})();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== Вставьте свои ключи ===== */
@@ -725,7 +672,7 @@ function showSession(s) {
   $("#auth").hidden = !!s;
   $("#app").hidden = !s;
   userEmail = (s && s.user && s.user.email) || "";
-  if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); admGate(); } else { profile = {}; userId = ""; }
+  if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); } else { profile = {}; userId = ""; }
 }
 sb.auth.getSession().then(({ data }) => showSession(data.session));
 sb.auth.onAuthStateChange((_, s) => showSession(s));
@@ -798,7 +745,7 @@ const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist
 function go(t) {
   sgHide();
   tab = t; animNext = true;
-  document.querySelectorAll("#tabs button,#bnav button").forEach(b => { const on = b.dataset.t === t; b.classList.toggle("on", on); on ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"); });
+  document.querySelectorAll("#tabs button,#bnav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   for (const v of new Set(Object.values(VIEWS))) $("#" + v).hidden = VIEWS[t] !== v;
   $("#pick").hidden = true;
   if (t === "profile") friendsLoaded = false;
@@ -1160,12 +1107,11 @@ function yearBox(y) {
   const phours = Math.round(pl.filter(m => m.media_type !== "tv").reduce((a, m) => a + (m.runtime || 0), 0) / 60);
   const avgN = r.length ? r.reduce((a, m) => a + m.my_rating, 0) / r.length : 0, pavgN = pr.length ? pr.reduce((a, m) => a + m.my_rating, 0) / pr.length : 0;
   const dlt = (a, b, fx) => { if (!pl.length || (fx && !pr.length)) return ""; const d = a - b, s = fx ? Math.abs(d).toFixed(1).replace(".", ",") : Math.abs(d); return `<em class="dl ${d > 0 ? "up" : d < 0 ? "dn" : "eq"}">${d > 0 ? "▲" : d < 0 ? "▼" : "="} ${d ? s + " " : ""}к ${py}</em>`; };
-  box.innerHTML = `<div style="margin:0 0 12px"><select id="yrSel" style="width:auto">${years.map(x => `<option ${x === y ? "selected" : ""}>${x}</option>`).join("")}</select><button id="yrShare" style="margin-left:8px">Поделиться картинкой</button></div>
+  box.innerHTML = `<div style="margin:0 0 12px"><select id="yrSel" style="width:auto">${years.map(x => `<option ${x === y ? "selected" : ""}>${x}</option>`).join("")}</select></div>
     <div class="stats" style="margin-top:0"><div class="stat"><b>${l.length}</b><span>просмотрено</span>${dlt(l.length, pl.length)}</div><div class="stat"><b>${hours}</b><span>часов кино</span>${dlt(hours, phours)}</div><div class="stat"><b>${avg}</b><span>средняя оценка</span>${dlt(avgN, pavgN, 1)}</div><div class="stat"><b>${tg ? esc(tg[0]) : "–"}</b><span>главный жанр</span></div></div>
     <div class="panel" style="margin-top:14px"><h3>По месяцам</h3><div class="hist">${mon.map((n, i) => `<div>${n || ""}<i style="height:${Math.round(n / mx * 100)}%"></i><small>${i + 1}</small></div>`).join("")}</div></div>
     ${best.length ? `<h3 style="margin:18px 0 10px">Лучшее за год</h3><div class="strip">${best.map((m, i) => tile(m, i)).join("")}</div>` : ""}${note}`;
   $("#yrSel").onchange = e => yearBox(e.target.value);
-  $("#yrShare").onclick = () => yearCard({ y, n: l.length, hours, avg, genre: tg && tg[0], mon, best });
   const ys = $("#yrSub"); if (ys) ys.textContent = y + " · " + l.length + " просмотрено · " + hours + " ч";
 }
 let curPair = null, pairKey = null;
@@ -1845,7 +1791,7 @@ function renderProfile() {
       <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
       <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
       ${ignSet().size ? `<p class="hint" style="margin-top:14px">Скрыто из рекомендаций: ${ignSet().size}. <button class="lnk" id="ignClear">Вернуть все</button></p>` : ""}
-      ${fold("data", "Данные: импорт и резервная копия", "", `<div class="acts" style="margin:0"><button id="pfImp">Импорт с Кинопоиска</button><button id="pfBak">Скачать мой список (CSV)</button><button id="pfBakJ">Резервная копия (JSON)</button><button id="pfRes">Восстановить из копии</button></div><p class="hint" style="margin-top:8px">Файл CSV можно импортировать обратно. Копия JSON сохраняет всё одним файлом (оценки, даты, заметки, прогресс сериалов); при восстановлении добавляются только недостающие фильмы.</p>`)}
+      ${fold("data", "Данные: импорт и резервная копия", "", `<div class="acts" style="margin:0"><button id="pfImp">Импорт с Кинопоиска</button><button id="pfBak">Скачать мой список (CSV)</button></div><p class="hint" style="margin-top:8px">Файл CSV можно импортировать обратно.</p>`)}
       ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`,
     stats: () => `
       <div class="cols pf-sec">
@@ -1861,7 +1807,7 @@ function renderProfile() {
     pfTab = k; try { localStorage.setItem("pfTab", k); } catch (e) {}
     document.querySelectorAll("#pfTabs button").forEach(b => b.classList.toggle("on", b.dataset.pt === k));
     $("#pfBody").innerHTML = body[k]();
-    if (k === "overview") { $("#copyPrompt").onclick = openAi; $("#pfImp").onclick = openImport; $("#pfBak").onclick = exportCsv; $("#pfBakJ").onclick = exportJson; $("#pfRes").onclick = () => $("#bkFile").click(); }
+    if (k === "overview") { $("#copyPrompt").onclick = openAi; $("#pfImp").onclick = openImport; $("#pfBak").onclick = exportCsv; }
     if (k === "stats") { yearBox(); loadPeople(); hotBox(); }
     if (k === "friends") renderFriends();
   };
@@ -2306,410 +2252,6 @@ async function imRun(items, dest, o = { dir: "new", upd: false, n: items.length 
   $("#imBody").insertAdjacentHTML("beforeend", `<div class="acts"><button class="main" id="imX">Готово</button></div>`);
   $("#imX").onclick = () => $("#imDlg").close();
   if (!err) { go("watched"); toast("Импорт завершён"); }
-}
-
-/* ======================= АДМИН-ПАНЕЛЬ (#admin) =======================
-   Открывается по ссылке с #admin и только если вы вошли под почтой из ADMIN_EMAILS.
-   Панель ничего не меняет в данных, кроме явного «теста записи» (одна служебная запись, которая тут же удаляется). */
-const ADMIN_EMAILS = [bogdanpexno@gmail.com]; /* впишите свою почту, например ["me@mail.ru"]; пока список пуст, панель закрыта */
-const admSleep = ms => new Promise(r => setTimeout(r, ms));
-const admR = { tests: [], sweep: [] };
-let admTab = "screens";
-function admGate() {
-  const el = $("#adm"); if (!el) return;
-  if (location.hash !== "#admin") { if (!el.hidden) admClose(true); return; }
-  if (!userEmail) return;
-  const ok = ADMIN_EMAILS.some(x => String(x).toLowerCase() === userEmail.toLowerCase());
-  if (!ok) { history.replaceState(null, "", location.pathname + location.search); toast(ADMIN_EMAILS.length ? "Нет доступа" : "Панель выключена: впишите «" + userEmail + "» в ADMIN_EMAILS"); return; }
-  admOpen();
-}
-addEventListener("hashchange", admGate);
-function admOpen() {
-  const el = $("#adm"); if (!el.hidden) return;
-  el.hidden = false; document.body.style.overflow = "hidden";
-  const tabs = [["screens", "Экраны"], ["speed", "Скорость"], ["errors", "Ошибки"], ["test", "Самотест"], ["a11y", "Доступность"], ["tools", "Инструменты"]];
-  el.innerHTML = `<div class="adm-top"><b>Админ-панель</b><div class="adm-tabs">${tabs.map(t => `<button class="ab" data-at="${t[0]}">${t[1]}</button>`).join("")}</div><button class="ab" id="admX" aria-label="Закрыть панель">✕</button></div><div id="admBody"></div>`;
-  el.onclick = e => { const b = e.target.closest("[data-at]"); if (b) admShow(b.dataset.at); if (e.target.closest("#admX")) admClose(); };
-  admShow(admTab);
-}
-function admClose(fromHash) {
-  const el = $("#adm"); if (!el) return;
-  el.querySelectorAll("iframe").forEach(f => { f.src = "about:blank"; });
-  el.hidden = true; el.innerHTML = ""; document.body.style.overflow = "";
-  if (!fromHash && location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search);
-}
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#adm") && !$("#adm").hidden && !document.querySelector("dialog[open]")) admClose(); });
-function admShow(k) {
-  admTab = k;
-  document.querySelectorAll("#adm [data-at]").forEach(b => b.classList.toggle("on", b.dataset.at === k));
-  const body = $("#admBody"); $("#adm").querySelectorAll("iframe").forEach(f => { f.src = "about:blank"; });
-  ({ screens: admScreens, speed: admSpeed, errors: admErrors, test: admTest, a11y: admA11y, tools: admTools })[k](body);
-}
-const admRow = (a, b, c) => `<div class="adm-row"><span>${a}</span><span class="${c || ""}">${b}</span></div>`;
-const admMark = c => c === "ok" ? "✓" : c === "warn" ? "⚠" : "✗";
-const admDesc = e => e.tagName.toLowerCase() + (e.id ? "#" + e.id : "") + (typeof e.className === "string" && e.className.trim() ? "." + e.className.trim().split(/\s+/)[0] : "") + ((e.textContent || "").trim() ? " «" + e.textContent.trim().slice(0, 18) + "»" : "");
-
-/* ---------- проверка страницы (используется и для кадров, и для текущей страницы) ---------- */
-function admAudit(d, w, phone) {
-  const vis = e => e.getClientRects().length > 0 && !e.closest("[hidden],dialog:not([open]),#adm") && w.getComputedStyle(e).visibility !== "hidden";
-  const inter = [...d.querySelectorAll("button,a[href],[role=button],[role=link],select,input:not([type=hidden]),textarea")].filter(vis);
-  const named = e => {
-    if (e.getAttribute("aria-label") || e.getAttribute("aria-labelledby") || e.getAttribute("title")) return true;
-    if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.tagName)) return !!(e.labels && e.labels.length);
-    return !!((e.textContent || "").trim() || e.querySelector("img[alt]:not([alt=''])"));
-  };
-  const noName = inter.filter(e => !named(e));
-  const small = inter.filter(e => { const r = e.getBoundingClientRect(); return (r.width < 32 || r.height < 32) && !(e.tagName === "INPUT" && /checkbox|radio/.test(e.type)); });
-  const ids = {}; d.querySelectorAll("[id]").forEach(e => { ids[e.id] = (ids[e.id] || 0) + 1; });
-  return {
-    overflow: Math.max(0, d.documentElement.scrollWidth - w.innerWidth),
-    small: small.length, smallEx: small.slice(0, 4).map(admDesc),
-    noName: noName.length, noNameEx: noName.slice(0, 4).map(admDesc),
-    broken: [...d.images].filter(i => i.complete && !i.naturalWidth && i.getAttribute("src")).length,
-    noAlt: [...d.images].filter(i => !i.hasAttribute("alt") && !i.closest("#adm")).length,
-    dupIds: Object.keys(ids).filter(k => ids[k] > 1),
-    err: w.__adm ? w.__adm.err.length : 0,
-    tmdb: w.__adm ? w.__adm.net.filter(n => /themoviedb\.org/.test(n.u)).length : 0,
-    phone
-  };
-}
-const admBadges = r => [
-  ["Гориз. прокрутка", r.overflow ? r.overflow + " px" : "нет", r.overflow > 1 ? "bad" : "ok"],
-  ["Мелкие цели (<32 px)", r.small, r.small ? (r.phone ? "warn" : "ok") : "ok"],
-  ["Без имени", r.noName, r.noName ? "warn" : "ok"],
-  ["Битые картинки", r.broken, r.broken ? "bad" : "ok"],
-  ["Ошибки JS", r.err, r.err ? "bad" : "ok"],
-  ["Запросы TMDB", r.tmdb, "ok"]
-];
-
-/* ---------- кадры: сайт внутри рамок телефона и компьютера ---------- */
-const ADM_SCREENS = [["home", "Главная"], ["watchlist", "Хочу посмотреть"], ["watched", "Просмотрено"], ["recs", "Рекомендации"], ["colls", "Коллекции"], ["search", "Поиск"], ["profile", "Профиль"], ["movie", "Окно фильма"]];
-const ADM_DEV = { phone: [390, 780, "Телефон 390×780"], desktop: [1280, 800, "Компьютер 1280×800"] };
-function admMakeFrame(dev, wrap) {
-  const f = document.createElement("iframe"); const [w, h] = ADM_DEV[dev];
-  f.width = w; f.height = h; f.title = "Предпросмотр: " + ADM_DEV[dev][2];
-  f.src = location.origin + location.pathname;
-  wrap.appendChild(f);
-  const k = Math.min(1, wrap.clientWidth / w); f.style.transform = `scale(${k})`; wrap.style.height = Math.round(h * k) + "px";
-  return f;
-}
-async function admReady(f) {
-  await new Promise(r => { f.onload = r; });
-  const w = f.contentWindow, d = w.document;
-  for (let i = 0; i < 40; i++) { const a = d.querySelector("#app"); if (a && !a.hidden) break; await admSleep(250); }
-  for (let i = 0; i < 30; i++) { try { if (w.eval("movies.length") > 0) break; } catch (e) {} await admSleep(250); }
-  return w;
-}
-async function admGo(w, sc) {
-  if (sc === "movie") { w.eval("go('home'); if (movies[0]) openMovie(movies[0].tmdb_id, movies[0].media_type || 'movie')"); await admSleep(3000); }
-  else { w.eval("go(" + JSON.stringify(sc) + ")"); await admSleep(2200); }
-}
-function admScreens(body) {
-  body.innerHTML = `<div class="adm-bar">${ADM_SCREENS.map(s => `<button class="ab" data-sc="${s[0]}">${s[1]}</button>`).join("")}</div>
-    <div class="adm-bar"><button class="ab" id="admSweep">Проверить все экраны (таблица)</button><label class="adm-chk"><input type="checkbox" id="admBord"> показывать границы элементов</label></div>
-    <p class="hint">Выберите экран: покажу его в рамках телефона и компьютера, в тёмной и светлой теме, с автопроверкой под каждым кадром. Сайт внутри рамок живой, его можно прокручивать и нажимать. Кадры грузятся по очереди, на слабом телефоне это занимает до минуты.</p><div id="admOut"></div>`;
-  body.onclick = e => {
-    const b = e.target.closest("[data-sc]"); if (b) { body.querySelectorAll("[data-sc]").forEach(x => x.classList.toggle("on", x === b)); admShoot(b.dataset.sc); }
-    if (e.target.closest("#admSweep")) admSweep();
-    const z = e.target.closest("[data-zoom]"); if (z) { const wp = z.closest(".adm-card").querySelector(".adm-fr"), f = wp.querySelector("iframe"), full = f.dataset.full !== "1"; f.dataset.full = full ? "1" : ""; const k = full ? 1 : Math.min(1, wp.clientWidth / f.width); f.style.transform = `scale(${k})`; wp.style.height = Math.round(f.height * k) + "px"; wp.style.overflowX = full ? "auto" : "hidden"; }
-  };
-}
-async function admShoot(sc) {
-  const out = $("#admOut"); out.innerHTML = "";
-  out.insertAdjacentHTML("beforeend", `<h3 class="adm-h">Телефон</h3><div class="adm-grid ph" id="gPh"></div><h3 class="adm-h">Компьютер</h3><div class="adm-grid dk" id="gDk"></div>`);
-  const cards = [];
-  for (const dev of ["phone", "desktop"]) for (const th of ["dark", "light"]) {
-    const c = document.createElement("div"); c.className = "adm-card"; c.dataset.theme = th; c.dataset.dev = dev;
-    c.innerHTML = `<h4>${ADM_DEV[dev][2]} · ${th === "dark" ? "тёмная" : "светлая"} <button class="ab" data-zoom="1" style="float:right;min-height:28px">1:1</button></h4><div class="adm-fr"></div><div class="adm-st hint">в очереди…</div>`;
-    $(dev === "phone" ? "#gPh" : "#gDk").appendChild(c); cards.push(c);
-  }
-  const bord = $("#admBord") && $("#admBord").checked;
-  for (const c of cards) {
-    if (!$("#adm") || $("#adm").hidden || !out.isConnected) return;
-    const st = c.querySelector(".adm-st"); st.textContent = "загрузка…";
-    try {
-      const f = admMakeFrame(c.dataset.dev, c.querySelector(".adm-fr")), w = await admReady(f), d = w.document;
-      d.documentElement.dataset.theme = c.dataset.theme;
-      if (bord) { const s = d.createElement("style"); s.textContent = "*{outline:1px solid rgba(255,60,60,.35)!important}"; d.head.appendChild(s); }
-      await admGo(w, sc);
-      const r = admAudit(d, w, c.dataset.dev === "phone"), key = `${sc}/${c.dataset.dev}/${c.dataset.theme}`;
-      admR.sweep = admR.sweep.filter(x => x.key !== key); admR.sweep.push({ key, ...r });
-      st.innerHTML = admBadges(r).map(b => `<span class="${b[2]}">${admMark(b[2])} ${b[0]}: ${b[1]}</span>`).join(" · ") + (r.smallEx.length ? `<br>Мелкие: ${esc(r.smallEx.join("; "))}` : "") + (r.noNameEx.length ? `<br>Без имени: ${esc(r.noNameEx.join("; "))}` : "");
-    } catch (e) { st.innerHTML = `<span class="bad">✗ ${esc(e.message)}</span>`; }
-  }
-}
-async function admSweep() {
-  const out = $("#admOut"); out.innerHTML = `<div class="adm-card"><h4>Проверка всех экранов</h4><div class="adm-fr" style="max-width:260px"></div><div id="admSwSt" class="hint">запуск…</div></div><div class="adm-card" style="margin-top:12px"><div style="overflow:auto"><table class="adm-t" id="admSwT"><tr><th>Экран</th><th>Устр.</th><th>Тема</th><th>Прокр.</th><th>Мелк.</th><th>Без имени</th><th>Битые</th><th>JS</th></tr></table></div></div>`;
-  const wrap = out.querySelector(".adm-fr"), t = $("#admSwT"), st = $("#admSwSt"); admR.sweep = [];
-  for (const dev of ["phone", "desktop"]) {
-    wrap.innerHTML = ""; if (!out.isConnected) return;
-    const f = admMakeFrame(dev, wrap), w = await admReady(f), d = w.document;
-    for (const th of ["dark", "light"]) {
-      d.documentElement.dataset.theme = th;
-      for (const sc of ADM_SCREENS.map(s => s[0])) {
-        if (!out.isConnected) return;
-        st.textContent = `${dev} · ${th} · ${sc}`;
-        try { await admGo(w, sc); } catch (e) {}
-        const r = admAudit(d, w, dev === "phone"); admR.sweep.push({ key: `${sc}/${dev}/${th}`, ...r });
-        const c = (v, bad) => `<td class="${v ? (bad ? "bad" : "warn") : "ok"}">${v}</td>`;
-        t.insertAdjacentHTML("beforeend", `<tr><td>${esc(ADM_SCREENS.find(s => s[0] === sc)[1])}</td><td>${dev === "phone" ? "тел." : "ПК"}</td><td>${th === "dark" ? "тёмн." : "светл."}</td>${c(r.overflow > 1 ? r.overflow : 0, 1)}${c(r.small)}${c(r.noName)}${c(r.broken, 1)}${c(r.err, 1)}</tr>`);
-        try { w.eval("document.querySelectorAll('dialog[open]').forEach(x=>x.close())"); } catch (e) {}
-      }
-    }
-  }
-  st.innerHTML = `<span class="ok">Готово.</span> Красное нужно чинить, жёлтое смотреть по ситуации.`;
-}
-
-/* ---------- скорость ---------- */
-const admBytes = s => s >= 1048576 ? (s / 1048576).toFixed(1) + " МБ" : s >= 1024 ? Math.round(s / 1024) + " КБ" : s + " Б";
-async function admStore() {
-  let tm = 0, tmN = 0, other = 0, all = 0;
-  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || "").length) * 2; all += n; if (k.startsWith("tm:")) { tm += n; tmN++; } else other += n; }
-  const sw = {}; try { for (const n of await caches.keys()) sw[n] = (await (await caches.open(n)).keys()).length; } catch (e) {}
-  let est = null; try { est = await navigator.storage.estimate(); } catch (e) {}
-  return { tm, tmN, other, all, sw, est };
-}
-async function admSpeed(body) {
-  body.innerHTML = `<p class="hint">Считаю…</p>`;
-  const nav = performance.getEntriesByType("navigation")[0] || {}, v = __adm.vit, res = performance.getEntriesByType("resource"), st = await admStore();
-  const host = {}; res.forEach(r => { try { const h = new URL(r.name).hostname; host[h] = (host[h] || 0) + 1; } catch (e) {} });
-  const g = (x, a, b) => x == null ? "" : x <= a ? "ok" : x <= b ? "warn" : "bad", s1 = x => x == null ? "–" : (x / 1000).toFixed(2) + " с";
-  const net = __adm.net, slow = net.filter(n => n.ms > 2000).length, fail = net.filter(n => !n.s || n.s >= 400).length;
-  admR.speed = { fcp: v.fcp, lcp: v.lcp, cls: v.cls, inp: v.inp, lt: v.lt, ltms: Math.round(v.ltms), ttfb: nav.responseStart, dcl: nav.domContentLoadedEventEnd, load: nav.loadEventEnd, host, st, slow, fail };
-  body.innerHTML = `<div class="adm-grid">
-  <div class="adm-card"><h4>Загрузка (с момента открытия вкладки)</h4>
-    ${admRow("Ответ сервера (TTFB)", s1(nav.responseStart), g(nav.responseStart, 800, 1800))}
-    ${admRow("Первая отрисовка (FCP)", s1(v.fcp), g(v.fcp, 1800, 3000))}
-    ${admRow("Самый крупный элемент (LCP)", s1(v.lcp), g(v.lcp, 2500, 4000))}
-    ${admRow("Сдвиги вёрстки (CLS)", v.cls.toFixed(3), g(v.cls, .1, .25))}
-    ${admRow("Самый долгий отклик (≈INP)", v.inp ? Math.round(v.inp) + " мс" : "нет данных", v.inp ? g(v.inp, 200, 500) : "")}
-    ${admRow("Долгие задачи (>50 мс)", v.lt + " шт, " + Math.round(v.ltms) + " мс", g(v.lt, 5, 15))}
-    ${admRow("DOM готов / страница загружена", s1(nav.domContentLoadedEventEnd) + " / " + s1(nav.loadEventEnd), "")}
-    <p class="hint">Цифры честнее всего на «холодной» загрузке: закройте вкладку, откройте сайт заново, потом зайдите в #admin.</p></div>
-  <div class="adm-card"><h4>Запросы с этой страницы</h4>
-    ${Object.entries(host).sort((a, b) => b[1] - a[1]).map(([h, n]) => admRow(esc(h), n, "")).join("")}
-    ${admRow("Через fetch: всего / ошибок / медленных (>2 с)", `${net.length} / ${fail} / ${slow}`, fail ? "bad" : slow ? "warn" : "ok")}
-    ${admRow("Очередь TMDB: идёт / ждёт / в памяти", `${TB.run} / ${TB.wait.length} / ${TB.mem.size}`, "")}</div>
-  <div class="adm-card"><h4>Кэш и память</h4>
-    ${admRow("Кэш TMDB (tm:): записей / размер", `${st.tmN} / ${admBytes(st.tm)}`, "")}
-    ${admRow("Остальной localStorage", admBytes(st.other), "")}
-    ${Object.entries(st.sw).map(([k, n]) => admRow("Кэш SW «" + esc(k) + "»", n + " файлов", "")).join("") || admRow("Кэш Service Worker", "пусто", "warn")}
-    ${st.est ? admRow("Хранилище браузера", `${admBytes(st.est.usage || 0)} из ${admBytes(st.est.quota || 0)}`, "") : ""}</div></div>`;
-}
-
-/* ---------- ошибки ---------- */
-function admErrors(body) {
-  const e = __adm.err.slice().reverse(), n = __adm.net.filter(x => !x.s || x.s >= 400 || x.ms > 2000).slice().reverse();
-  const tm = t => new Date(t).toLocaleTimeString("ru-RU");
-  body.innerHTML = `<div class="adm-bar"><button class="ab" id="admClr">Очистить журнал</button></div><div class="adm-grid">
-  <div class="adm-card"><h4>Ошибки JS (${e.length})</h4>${e.length ? e.map(x => `<div class="adm-row"><span class="bad">${esc(x.k)} · ${esc(x.s || "")}<br>${esc(x.m)}</span><span>${tm(x.t)}</span></div>`).join("") : `<p class="ok">✓ ошибок нет</p>`}</div>
-  <div class="adm-card"><h4>Неудачные и медленные запросы (${n.length})</h4>${n.length ? n.map(x => `<div class="adm-row"><span class="${!x.s || x.s >= 400 ? "bad" : "warn"}">${x.s || "сеть"} · ${x.ms} мс<br>${esc(x.u.slice(0, 120))}${x.m ? "<br>" + esc(x.m) : ""}</span><span>${tm(x.t)}</span></div>`).join("") : `<p class="ok">✓ всё быстро и без ошибок</p>`}</div></div>`;
-  $("#admClr").onclick = () => { __adm.err.length = 0; __adm.net.length = 0; admErrors(body); };
-}
-
-/* ---------- самотест ---------- */
-function admContrast() {
-  const hex = h => { h = h.trim().replace("#", ""); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255); };
-  const L = h => { const [r, g, b] = hex(h).map(c => c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4); return .2126 * r + .7152 * g + .0722 * b; };
-  const cr = (a, b) => { const x = L(a), y = L(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
-  const rules = {}; for (const ss of document.styleSheets) { try { for (const r of ss.cssRules) { const sel = String(r.selectorText).replace(/"/g, ""); if (sel === ":root" && r.style.getPropertyValue("--bg")) rules.dark = r.style; if (sel === "[data-theme=light]" && r.style.getPropertyValue("--bg")) rules.light = r.style; } } catch (e) {} }
-  const out = [];
-  for (const th of ["dark", "light"]) { const s = rules[th]; if (!s) continue; const v = k => s.getPropertyValue("--" + k);
-    [["tx", "bg", "Основной текст"], ["mut", "bg", "Серый текст на фоне"], ["mut", "paper", "Серый текст на карточке"], ["acc", "bg", "Акцент на фоне"], ["acc", "paper", "Акцент на карточке"], ["on-acc", "acc", "Текст на кнопке акцента"]].forEach(([a, b, n]) => out.push({ th, n, r: cr(v(a), v(b)) })); }
-  return out;
-}
-async function admTests(withWrite) {
-  const T = [], add = (name, fn, warnOnly) => T.push({ name, fn, warnOnly });
-  const imgPath = (movies.find(m => m.poster) || {}).poster;
-  add("Вход в Supabase", async () => { const { data } = await sb.auth.getSession(); if (!data.session) throw new Error("нет сессии"); return data.session.user.email; });
-  add("Список фильмов читается и совпадает с экраном", async () => { const { count, error } = await sb.from("movies").select("id", { count: "exact", head: true }).eq("user_id", userId); if (error) throw new Error(error.message); if (count !== movies.length) throw new Error(`в базе ${count}, на экране ${movies.length}: нажмите «Обновить» или проверьте кэш mvc:`); return count + " шт."; });
-  for (const t of ["profiles", "friendships", "collections", "collection_items", "pair_votes"]) add("Таблица " + t + " доступна", async () => { const { error } = await sb.from(t).select("*").limit(1); if (error) throw new Error(error.message); return "ok"; });
-  add("TMDB отвечает", async () => { const t0 = performance.now(), r = await fetch(tmdbUrl("configuration")); if (!r.ok) throw new Error("HTTP " + r.status); return Math.round(performance.now() - t0) + " мс"; });
-  if (imgPath) add("Картинки TMDB грузятся", async () => { const t0 = performance.now(), r = await fetch(IMG + imgPath, { mode: "no-cors", cache: "no-store" }); return "ответ получен за " + Math.round(performance.now() - t0) + " мс"; });
-  add("Кэш TMDB: второй запрос не идёт в сеть", async () => { const key = "configuration"; localStorage.removeItem("tm:" + key); TB.mem.delete(key); const cnt = () => __adm.net.filter(n => n.u.includes("/configuration")).length, a = cnt(); await tmdbBg(key, { ttl: 6e4 }); const b = cnt(); await tmdbBg(key, { ttl: 6e4 }); const c = cnt(); localStorage.removeItem("tm:" + key); TB.mem.delete(key); if (b - a !== 1 || c !== b) throw new Error(`запросов: ${b - a} и ${c - b}`); return "1 запрос, затем кэш"; });
-  add("localStorage пишет и читает", async () => { localStorage.setItem("adm:t", "1"); const ok = localStorage.getItem("adm:t") === "1"; localStorage.removeItem("adm:t"); if (!ok) throw new Error("не записалось"); return "ok"; });
-  add("Service Worker работает", async () => { if (!("serviceWorker" in navigator)) throw new Error("не поддерживается"); const r = await navigator.serviceWorker.getRegistration(); if (!r || !r.active) throw new Error("не активирован (нужен https и повторный заход)"); const sw = await (await fetch("sw.js", { cache: "no-store" })).text(), want = (sw.match(/const C = "([^"]+)"/) || [])[1], have = await caches.keys(); if (want && !have.includes(want)) throw new Error(`в sw.js кэш «${want}», в браузере ${have.join(", ") || "пусто"}: обновите страницу`); return "кэш " + want; });
-  for (const f of ["manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "og-image.png"]) add("Файл " + f + " на месте", async () => { const r = await fetch(f, { cache: "no-store" }); if (!r.ok) throw new Error("HTTP " + r.status); return admBytes((await r.blob()).size); });
-  add("Обе темы определены", async () => { const c = admContrast(); if (!c.some(x => x.th === "dark") || !c.some(x => x.th === "light")) throw new Error("не нашёл переменные темы"); return "тёмная и светлая"; });
-  add("Контраст цветов не ниже 4,5 (WCAG AA)", async () => { const bad = admContrast().filter(x => x.r < 4.5); if (bad.length) throw new Error(bad.map(x => `${x.th}: ${x.n} ${x.r.toFixed(2)}`).join("; ")); return "все пары в норме"; });
-  add("Нет горизонтальной прокрутки", async () => { const o = document.documentElement.scrollWidth - innerWidth; if (o > 1) throw new Error(o + " px лишней ширины"); return "ok"; });
-  add("Данные списка в порядке", async () => { const seen = new Set(), dup = [], bad = []; movies.forEach(m => { const k = keyOf(m); seen.has(k) ? dup.push(m.title) : seen.add(k); if (!m.title || !m.tmdb_id) bad.push(m.id); }); if (dup.length || bad.length) throw new Error(`дублей ${dup.length}, без названия или id ${bad.length}`); const nr = movies.filter(m => m.status === "watched" && !m.my_rating).length, g = movies.filter(m => m.date_guess).length; return `просмотренных без оценки ${nr}, с примерной датой ${g}`; }, true);
-  add("За сессию нет ошибок JS и запросов", async () => { if (__adm.err.length) throw new Error(__adm.err.length + " ошибок, см. вкладку «Ошибки»"); const f = __adm.net.filter(n => !n.s || n.s >= 400).length; if (f) throw new Error(f + " неудачных запросов"); return "чисто"; }, true);
-  if (withWrite) add("Тест записи: добавить, оценить, удалить", async () => {
-    const id = -987654, row = { ...mediaRow({ title: "__selftest__", release_date: "2000-01-01", vote_average: 1, runtime: 1, genres: [] }, id, "movie"), user_id: userId, status: "watchlist" };
-    const del = () => sb.from("movies").delete().eq("user_id", userId).eq("tmdb_id", id);
-    try {
-      let r = await sb.from("movies").upsert(row, { onConflict: "user_id,tmdb_id,media_type" }).select(); if (r.error) throw new Error("вставка: " + r.error.message);
-      r = await sb.from("movies").update({ my_rating: 7, status: "watched", watched_at: today() }).eq("user_id", userId).eq("tmdb_id", id).select(); if (r.error || !r.data.length) throw new Error("обновление: " + (r.error ? r.error.message : "строка не найдена"));
-      if (r.data[0].my_rating !== 7) throw new Error("оценка не сохранилась");
-      r = await del(); if (r.error) throw new Error("удаление: " + r.error.message);
-      const c = await sb.from("movies").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("tmdb_id", id); if (c.count) throw new Error("запись осталась после удаления");
-      return "вставка, обновление, удаление";
-    } finally { await del(); await load(); }
-  });
-  return T;
-}
-function admTest(body) {
-  body.innerHTML = `<div class="adm-bar"><button class="ab" id="admRun">Запустить самотест</button><label class="adm-chk"><input type="checkbox" id="admW"> включить тест записи (создаёт и сразу удаляет одну служебную запись «__selftest__»)</label></div><div class="adm-card" id="admTR"><p class="hint">Тест только читает данные и проверяет файлы. Красное значит сломано, жёлтое значит обратите внимание.</p></div>`;
-  $("#admRun").onclick = async () => {
-    const box = $("#admTR"); box.innerHTML = ""; admR.tests = []; $("#admRun").disabled = true;
-    const T = await admTests($("#admW").checked); let ok = 0, wr = 0, bad = 0;
-    for (const t of T) {
-      const row = document.createElement("div"); row.className = "adm-row"; row.innerHTML = `<span>${esc(t.name)}</span><span class="hint">…</span>`; box.appendChild(row);
-      const t0 = performance.now(); let cls = "ok", msg;
-      try { msg = await t.fn(); } catch (e) { cls = t.warnOnly ? "warn" : "bad"; msg = e.message || String(e); }
-      cls === "ok" ? ok++ : cls === "warn" ? wr++ : bad++;
-      row.lastChild.className = cls; row.lastChild.innerHTML = `${admMark(cls)} ${esc(String(msg))} <small>(${Math.round(performance.now() - t0)} мс)</small>`;
-      admR.tests.push({ name: t.name, cls, msg: String(msg) });
-    }
-    box.insertAdjacentHTML("afterbegin", `<div class="adm-row"><b>Итог</b><b><span class="ok">✓ ${ok}</span> · <span class="warn">⚠ ${wr}</span> · <span class="bad">✗ ${bad}</span></b></div>`);
-    $("#admRun").disabled = false;
-  };
-}
-
-/* ---------- доступность ---------- */
-function admA11y(body) {
-  const r = admAudit(document, window, innerWidth <= 640), con = admContrast();
-  const heads = [...document.querySelectorAll("h1,h2,h3,h4")].filter(e => e.getClientRects().length), jumps = []; let prev = 0;
-  heads.forEach(h => { const n = +h.tagName[1]; if (prev && n > prev + 1) jumps.push(h.tagName + " «" + h.textContent.trim().slice(0, 20) + "»"); prev = n; });
-  const posTab = [...document.querySelectorAll("[tabindex]")].filter(e => +e.getAttribute("tabindex") > 0).length;
-  body.innerHTML = `<div class="adm-grid"><div class="adm-card"><h4>Текущая страница</h4>
-    ${admRow("Кнопки и поля без имени", r.noName, r.noName ? "warn" : "ok")}${r.noNameEx.length ? `<div class="hint">${esc(r.noNameEx.join("; "))}</div>` : ""}
-    ${admRow("Мелкие цели нажатия (<32 px)", r.small, r.small ? "warn" : "ok")}${r.smallEx.length ? `<div class="hint">${esc(r.smallEx.join("; "))}</div>` : ""}
-    ${admRow("Картинки без атрибута alt", r.noAlt, r.noAlt ? "warn" : "ok")}
-    ${admRow("Повторяющиеся id", r.dupIds.length, r.dupIds.length ? "bad" : "ok")}${r.dupIds.length ? `<div class="hint">${esc(r.dupIds.join(", "))}</div>` : ""}
-    ${admRow("Пропуски в уровнях заголовков", jumps.length, jumps.length ? "warn" : "ok")}${jumps.length ? `<div class="hint">${esc(jumps.slice(0, 4).join("; "))}</div>` : ""}
-    ${admRow("tabindex больше 0", posTab, posTab ? "warn" : "ok")}
-    ${admRow("Язык страницы", document.documentElement.lang || "не задан", document.documentElement.lang ? "ok" : "bad")}
-    ${admRow("Уважается «уменьшить движение»", matchMedia("(prefers-reduced-motion: reduce)").matches ? "включено в системе" : "правило есть в CSS", "ok")}
-    <p class="hint">Проверка идёт по тому, что сейчас видно под панелью (вкладка, открытая до панели). Для других экранов используйте «Экраны → Проверить все».</p></div>
-  <div class="adm-card"><h4>Контраст (норма WCAG AA: 4,5)</h4>${con.map(x => admRow(`${x.th === "dark" ? "Тёмная" : "Светлая"}: ${x.n}`, x.r.toFixed(2), x.r >= 7 ? "ok" : x.r >= 4.5 ? "ok" : "bad")).join("")}</div></div>`;
-}
-
-/* ---------- инструменты и отчёт ---------- */
-function admReport() {
-  const L = [], st = admR.speed || {}, f = n => n == null ? "–" : (n / 1000).toFixed(2) + "с";
-  L.push("ОТЧЁТ «Поиск кадров» " + new Date().toLocaleString("ru-RU"));
-  L.push(`Устройство: ${innerWidth}x${innerHeight}, dpr ${devicePixelRatio}, ${navigator.userAgent}`);
-  const c = navigator.connection; if (c) L.push(`Сеть: ${c.effectiveType}, downlink ${c.downlink}, saveData ${c.saveData}`);
-  L.push(`Фильмов в списке: ${movies.length}`);
-  if (admR.speed) L.push(`Скорость: TTFB ${f(st.ttfb)}, FCP ${f(st.fcp)}, LCP ${f(st.lcp)}, CLS ${(st.cls || 0).toFixed(3)}, INP≈${Math.round(st.inp || 0)}мс, долгих задач ${st.lt} (${st.ltms}мс), медленных запросов ${st.slow}, ошибок сети ${st.fail}`);
-  const s = admR.speed && admR.speed.st; if (s) L.push(`Кэш tm: ${s.tmN} зап., ${admBytes(s.tm)}; localStorage всего ${admBytes(s.all)}`);
-  L.push(`Ошибки JS: ${__adm.err.length}` + __adm.err.slice(-5).map(x => `\n  - ${x.k} ${x.s || ""} ${x.m}`).join(""));
-  const nf = __adm.net.filter(x => !x.s || x.s >= 400); L.push(`Неудачные запросы: ${nf.length}` + nf.slice(-5).map(x => `\n  - ${x.s || "сеть"} ${x.u.slice(0, 100)}`).join(""));
-  if (admR.tests.length) { L.push("Самотест:"); admR.tests.forEach(t => L.push(`  ${admMark(t.cls)} ${t.name}: ${t.msg}`)); }
-  if (admR.sweep.length) { L.push("Экраны (прокрутка/мелкие/без имени/битые/JS):"); admR.sweep.forEach(r => L.push(`  ${r.key}: ${r.overflow}/${r.small}/${r.noName}/${r.broken}/${r.err}`)); }
-  return L.join("\n");
-}
-async function admCopy(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { const a = document.createElement("textarea"); a.value = t; document.body.appendChild(a); a.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {} a.remove(); return ok; } }
-function admTools(body) {
-  body.innerHTML = `<div class="adm-grid"><div class="adm-card"><h4>Отчёт для разработчика</h4><p class="hint">Соберите данные во вкладках (скорость, самотест, экраны), нажмите кнопку и вставьте текст в чат.</p><div class="adm-bar"><button class="ab" id="admCp">Скопировать отчёт</button></div><pre class="adm-pre" id="admRp"></pre></div>
-  <div class="adm-card"><h4>Инструменты</h4><div class="adm-bar" style="flex-direction:column;align-items:stretch">
-    <button class="ab" id="tSlow">Замедлить TMDB на 1,5 с: ${__adm.delay ? "ВКЛЮЧЕНО" : "выключено"}</button>
-    <button class="ab" id="tTm">Очистить кэш TMDB (tm:)</button>
-    <button class="ab" id="tMvc">Очистить локальную копию списка (mvc:)</button>
-    <button class="ab" id="tSw">Сбросить Service Worker и кэши, перезагрузить</button></div>
-    <p class="hint" id="tMsg"></p></div></div>`;
-  $("#admRp").textContent = admReport();
-  $("#admCp").onclick = async () => { $("#admRp").textContent = admReport(); toast((await admCopy(admReport())) ? "Отчёт скопирован" : "Не удалось скопировать, выделите текст вручную"); };
-  const msg = t => { $("#tMsg").textContent = t; };
-  $("#tSlow").onclick = e => { __adm.delay = __adm.delay ? 0 : 1500; e.target.textContent = "Замедлить TMDB на 1,5 с: " + (__adm.delay ? "ВКЛЮЧЕНО" : "выключено"); };
-  $("#tTm").onclick = () => { tbPurge(true); TB.mem.clear(); msg("Кэш TMDB очищен."); };
-  $("#tMvc").onclick = () => { for (const k of Object.keys(localStorage)) if (k.startsWith("mvc:")) localStorage.removeItem(k); msg("Локальная копия списка удалена, при следующем заходе загрузится из базы."); };
-  $("#tSw").onclick = async () => { try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); for (const k of await caches.keys()) await caches.delete(k); } catch (e) {} location.href = location.pathname; };
-}
-
-/* ---------- картинка «Итоги года» для друзей (рисуется в браузере, без сервера) ---------- */
-const ycImg = src => new Promise(res => { const i = new Image(), t = setTimeout(() => res(null), 6000); i.crossOrigin = "anonymous"; i.onload = () => { clearTimeout(t); res(i); }; i.onerror = () => { clearTimeout(t); res(null); }; i.src = src; });
-const ycPoster = async p => (await ycImg("https://image.tmdb.org/t/p/w185" + p)) || (await ycImg("https://image.tmdb.org/t/p/w185" + p + "?cors=1"));
-async function yearCard(d) {
-  toast("Рисую картинку…");
-  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
-  try { await document.fonts.ready; } catch (e) {}
-  const disp = 'Oswald,"Arial Narrow",Impact,sans-serif', ui = 'Manrope,system-ui,sans-serif', A = "#f5b041", MUT = "#8a8a96", TX = "#f2f2f4";
-  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
-  g.fillStyle = "#0b0b0f"; g.fillRect(0, 0, W, H);
-  const rg = g.createRadialGradient(160, 40, 0, 160, 40, 980); rg.addColorStop(0, "rgba(245,176,65,.20)"); rg.addColorStop(1, "rgba(245,176,65,0)"); g.fillStyle = rg; g.fillRect(0, 0, W, H);
-  g.strokeStyle = A; g.lineWidth = 6; g.lineCap = "round";
-  const br = (x, y, dx, dy) => { g.beginPath(); g.moveTo(x + dx * 80, y); g.lineTo(x, y); g.lineTo(x, y + dy * 80); g.stroke(); };
-  br(56, 56, 1, 1); br(W - 56, 56, -1, 1); br(56, H - 56, 1, -1); br(W - 56, H - 56, -1, -1);
-  g.fillStyle = A; g.beginPath(); g.arc(112, 128, 9, 0, 7); g.fill();
-  g.font = "800 28px " + ui; g.fillText("ПОИСК КАДРОВ · ЛИЧНЫЙ КИНОТРЕКЕР", 140, 138);
-  g.fillStyle = TX; g.font = "700 170px " + disp; g.fillText("ИТОГИ", 100, 330);
-  g.fillStyle = A; g.fillText(String(d.y), 100, 490);
-  [[d.n, "просмотрено"], [d.hours, "часов кино"], [d.avg, "средняя оценка"]].forEach((s, i) => {
-    const x = 100 + i * 300; g.fillStyle = TX; g.font = "700 112px " + disp; g.fillText(String(s[0]), x, 640); g.fillStyle = MUT; g.font = "600 26px " + ui; g.fillText(s[1], x, 684);
-  });
-  if (d.genre) {
-    g.fillStyle = MUT; g.font = "600 30px " + ui; g.fillText("Любимый жанр", 100, 748);
-    let px = 60; g.font = "700 " + px + "px " + disp; while (px > 30 && g.measureText(d.genre).width > 420) { px -= 4; g.font = "700 " + px + "px " + disp; }
-    g.fillStyle = TX; g.fillText(d.genre, 100, 812);
-  }
-  const mx = Math.max(1, ...d.mon); g.fillStyle = MUT; g.font = "600 30px " + ui; g.fillText("По месяцам", 580, 748);
-  d.mon.forEach((n, i) => { const h = n ? Math.max(8, Math.round(n / mx * 74)) : 4; g.fillStyle = n ? A : "#26262f"; rr(580 + i * 33, 836 - h, 22, h, Math.min(5, h / 2)); g.fill(); });
-  if (d.best.length) {
-    g.fillStyle = MUT; g.font = "600 30px " + ui; g.fillText("Лучшее за год", 100, 930);
-    const list = d.best.slice(0, 5), imgs = await Promise.all(list.map(m => m.poster ? ycPoster(m.poster) : null));
-    list.forEach((m, i) => {
-      const x = 100 + i * 180, y = 960; g.save(); rr(x, y, 160, 240, 14); g.clip();
-      if (imgs[i]) g.drawImage(imgs[i], x, y, 160, 240);
-      else { g.fillStyle = "#16161d"; g.fillRect(x, y, 160, 240); g.fillStyle = MUT; g.font = "700 20px " + ui; const w = String(m.title || "").slice(0, 40).split(" "); let line = "", ly = y + 40; w.forEach(t => { if (g.measureText(line + t).width > 130) { g.fillText(line, x + 14, ly); ly += 26; line = ""; } line += t + " "; }); g.fillText(line, x + 14, ly); }
-      g.restore();
-      g.fillStyle = "rgba(0,0,0,.78)"; rr(x + 8, y + 198, 62, 34, 17); g.fill(); g.fillStyle = A; g.font = "800 22px " + ui; g.fillText("★ " + m.my_rating, x + 18, y + 222);
-    });
-  }
-  g.fillStyle = MUT; g.font = "600 28px " + ui; g.textAlign = "center"; g.fillText("xkohb.github.io/movies", W / 2, 1272); g.textAlign = "left";
-  c.toBlob(async b => {
-    if (!b) return toast("Не удалось создать картинку");
-    const file = new File([b], `itogi-${d.y}.png`, { type: "image/png" });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: "Мои итоги " + d.y }); return; } catch (e) { if (e.name === "AbortError") return; } }
-    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Картинка сохранена");
-  }, "image/png");
-}
-
-/* ---------- резервная копия одним файлом (JSON) ---------- */
-const BK_COLS = ["tmdb_id", "media_type", "title", "year", "poster", "tmdb_rating", "runtime", "genres", "status", "my_rating", "note", "watched_at", "created_at", "season", "episode", "date_guess"];
-function exportJson() {
-  if (!movies.length) return toast("Список пока пуст");
-  const prefs = {}; for (const k of ["th", "vw", "ign:" + userId]) { try { const v = localStorage.getItem(k); if (v != null) prefs[k.replace(userId, "@")] = v; } catch (e) {} }
-  const data = { app: "poisk-kadrov", v: 1, exported_at: new Date().toISOString(), movies: movies.map(m => { const o = {}; BK_COLS.forEach(k => { if (m[k] !== undefined) o[k] = m[k]; }); return o; }), prefs };
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
-  a.download = `poisk-kadrov-backup-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  toast("Резервная копия скачана (" + movies.length + ")");
-}
-$("#bkFile").onchange = async e => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  let d; try { d = JSON.parse(await f.text()); } catch (err) { return toast("Это не JSON-файл"); }
-  if (!d || d.app !== "poisk-kadrov" || !Array.isArray(d.movies)) return toast("Это не резервная копия «Поиска кадров»");
-  const okRow = m => m && Number.isInteger(m.tmdb_id) && /^(movie|tv)$/.test(m.media_type || "movie") && /^(watched|watchlist)$/.test(m.status) && m.title;
-  const have = new Set(movies.map(keyOf)), good = d.movies.filter(okRow), fresh = good.filter(m => !have.has(keyOf({ ...m, media_type: m.media_type || "movie" })));
-  if (!good.length) return toast("В копии нет подходящих фильмов");
-  if (!fresh.length) return toast(`Все ${good.length} фильмов из копии уже есть в списке`);
-  if (!confirm(`В копии ${good.length} фильмов, новых для вас: ${fresh.length}.\nДобавить новые? Существующие записи не изменятся, ничего не удалится.`)) return;
-  const rows = fresh.map(m => {
-    const o = { user_id: userId }; BK_COLS.forEach(k => { if (m[k] !== undefined) o[k] = m[k]; });
-    o.media_type = o.media_type || "movie";
-    if (o.my_rating != null) o.my_rating = Math.max(1, Math.min(10, Math.round(+o.my_rating))) || null;
-    if (o.watched_at != null && !/^\d{4}-\d{2}-\d{2}$/.test(o.watched_at)) o.watched_at = null;
-    return o;
-  });
-  let err = "";
-  for (let i = 0; i < rows.length && !err; i += 50) { const { error } = await sb.from("movies").upsert(rows.slice(i, i + 50), { onConflict: "user_id,tmdb_id,media_type", ignoreDuplicates: true }); if (error) err = error.message; }
-  try { const ig = d.prefs && d.prefs["ign:@"]; if (ig) { const u = new Set([...JSON.parse(localStorage.getItem("ign:" + userId) || "[]"), ...JSON.parse(ig)]); localStorage.setItem("ign:" + userId, JSON.stringify([...u])); ignSet.u = null; } } catch (x) {}
-  await load(); toast(err ? "Ошибка: " + err : "Восстановлено фильмов: " + rows.length);
-};
-
-/* ---------- доступность: подписи окон, пропуск навигации, имена у элементов без текста ---------- */
-{
-  const dl = $("#dlg"); if (dl) dl.setAttribute("aria-labelledby", "dTitle");
-  ["#pfDlg", "#aiDlg", "#imDlg"].forEach(s => { const d = $(s), h = d && d.querySelector("h2"); if (d && h) d.setAttribute("aria-label", h.textContent.trim()); });
-  const sk = $("#skipLnk"); if (sk) sk.onclick = e => { e.preventDefault(); const t = document.querySelector("#tabs button.on") || $("#tabs button"); (t && t.offsetParent ? t : $("main")).focus(); };
-  const fix = () => {
-    document.querySelectorAll("button[title]:not([aria-label])").forEach(b => { if (!(b.textContent || "").trim()) b.setAttribute("aria-label", b.title); });
-    document.querySelectorAll("img:not([alt])").forEach(i => i.setAttribute("alt", ""));
-    document.querySelectorAll("input:not([aria-label]):not([type=hidden]),select:not([aria-label]),textarea:not([aria-label])").forEach(i => { if (!(i.labels && i.labels.length) && (i.placeholder || i.title)) i.setAttribute("aria-label", i.placeholder || i.title); });
-  };
-  let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(fix, 400); }).observe(document.body, { childList: true, subtree: true }); fix();
 }
 </script>
 </body>
