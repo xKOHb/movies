@@ -2311,7 +2311,7 @@ async function imRun(items, dest, o = { dir: "new", upd: false, n: items.length 
 /* ======================= АДМИН-ПАНЕЛЬ (#admin) =======================
    Открывается по ссылке с #admin и только если вы вошли под почтой из ADMIN_EMAILS.
    Панель ничего не меняет в данных, кроме явного «теста записи» (одна служебная запись, которая тут же удаляется). */
-const ADMIN_EMAILS = []; /* впишите свою почту, например ["me@mail.ru"]; пока список пуст, панель закрыта */
+const ADMIN_EMAILS = ["bogdanpexno@gmail.com"]; /* впишите свою почту, например ["me@mail.ru"]; пока список пуст, панель закрыта */
 const admSleep = ms => new Promise(r => setTimeout(r, ms));
 const admR = { tests: [], sweep: [] };
 let admTab = "screens";
