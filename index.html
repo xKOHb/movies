@@ -551,6 +551,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 }
 /* ===== админ-панель и доступность (26.11.2026) ===== */
 #toast{z-index:400}
+#logoHome{padding:8px 4px;margin:-8px -4px}
+.sec-h .lnk{padding:10px 8px;margin:-6px -4px}
 .skip{position:fixed;left:12px;top:-64px;z-index:500;background:var(--acc);color:var(--on-acc);padding:10px 16px;border-radius:10px;font-weight:700;text-decoration:none}
 .skip:focus{top:calc(8px + env(safe-area-inset-top,0px))}
 main:focus{outline:none}
@@ -961,7 +963,16 @@ function renderHome() {
 }
 /* первый экран (шапка, продолжить, hero, статистика) рисуется сразу; остальное после отрисовки или когда блок близко к экрану */
 let homeIO = null;
+function homeReserve() {
+  ["soonBox", "epBox", "premBox", "feedBox"].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    let h = 0; try { h = +localStorage.getItem("hh:" + id) || 0; } catch (e) {}
+    if (h && !el.children.length) el.style.minHeight = h + "px";
+    let t = 0; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { el.style.minHeight = ""; try { localStorage.setItem("hh:" + id, String(Math.round(el.offsetHeight))); } catch (e) {} }, 500); }).observe(el, { childList: true });
+  });
+}
 function homeLater(tok) {
+  homeReserve();
   if (homeIO) { homeIO.disconnect(); homeIO = null; }
   const idle = fn => "requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 250);
   const lazy = [["#recBox", loadRecs], ["#trendBox", loadTrend]];
@@ -2332,7 +2343,7 @@ async function imRun(items, dest, o = { dir: "new", upd: false, n: items.length 
 const ADMIN_EMAILS = (((document.querySelector('meta[name="admin-email"]') || {}).content) || "").split(",").map(x => x.trim()).filter(Boolean); /* почта берётся из <meta name="admin-email"> в начале файла */
 const admSleep = ms => new Promise(r => setTimeout(r, ms));
 const admR = { tests: [], sweep: [] };
-let admTab = "screens";
+let admTab = "screens", admRunId = 0;
 function admGate() {
   const el = $("#adm"); if (!el) return;
   if (location.hash !== "#admin") { if (!el.hidden) admClose(true); return; }
@@ -2358,7 +2369,7 @@ function admClose(fromHash) {
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#adm") && !$("#adm").hidden && !document.querySelector("dialog[open]")) admClose(); });
 function admShow(k) {
-  admTab = k;
+  admTab = k; admRunId++;
   document.querySelectorAll("#adm [data-at]").forEach(b => b.classList.toggle("on", b.dataset.at === k));
   const body = $("#admBody"); $("#adm").querySelectorAll("iframe").forEach(f => { f.src = "about:blank"; });
   ({ screens: admScreens, speed: admSpeed, errors: admErrors, test: admTest, a11y: admA11y, tools: admTools })[k](body);
@@ -2433,7 +2444,7 @@ function admScreens(body) {
   };
 }
 async function admShoot(sc) {
-  const out = $("#admOut"); out.innerHTML = "";
+  const my = ++admRunId, out = $("#admOut"); out.innerHTML = "";
   out.insertAdjacentHTML("beforeend", `<h3 class="adm-h">Телефон</h3><div class="adm-grid ph" id="gPh"></div><h3 class="adm-h">Компьютер</h3><div class="adm-grid dk" id="gDk"></div>`);
   const cards = [];
   for (const dev of ["phone", "desktop"]) for (const th of ["dark", "light"]) {
@@ -2443,13 +2454,13 @@ async function admShoot(sc) {
   }
   const bord = $("#admBord") && $("#admBord").checked;
   for (const c of cards) {
-    if (!$("#adm") || $("#adm").hidden || !out.isConnected) return;
+    if (!$("#adm") || $("#adm").hidden || !out.isConnected || my !== admRunId) return;
     const st = c.querySelector(".adm-st"); st.textContent = "загрузка…";
     try {
       const f = admMakeFrame(c.dataset.dev, c.querySelector(".adm-fr")), w = await admReady(f), d = w.document;
-      d.documentElement.dataset.theme = c.dataset.theme;
+      d.documentElement.dataset.theme = c.dataset.theme; if (my !== admRunId) return;
       if (bord) { const s = d.createElement("style"); s.textContent = "*{outline:1px solid rgba(255,60,60,.35)!important}"; d.head.appendChild(s); }
-      await admGo(w, sc);
+      await admGo(w, sc); if (my !== admRunId) return;
       const r = admAudit(d, w, c.dataset.dev === "phone"), key = `${sc}/${c.dataset.dev}/${c.dataset.theme}`;
       admR.sweep = admR.sweep.filter(x => x.key !== key); admR.sweep.push({ key, ...r });
       st.innerHTML = admBadges(r).map(b => `<span class="${b[2]}">${admMark(b[2])} ${b[0]}: ${b[1]}</span>`).join(" · ") + (r.smallEx.length ? `<br>Мелкие: ${esc(r.smallEx.join("; "))}` : "") + (r.noNameEx.length ? `<br>Без имени: ${esc(r.noNameEx.join("; "))}` : "");
@@ -2457,17 +2468,18 @@ async function admShoot(sc) {
   }
 }
 async function admSweep() {
-  const out = $("#admOut"); out.innerHTML = `<div class="adm-card"><h4>Проверка всех экранов</h4><div class="adm-fr" style="max-width:260px"></div><div id="admSwSt" class="hint">запуск…</div></div><div class="adm-card" style="margin-top:12px"><div style="overflow:auto"><table class="adm-t" id="admSwT"><tr><th>Экран</th><th>Устр.</th><th>Тема</th><th>Прокр.</th><th>Мелк.</th><th>Без имени</th><th>Битые</th><th>JS</th></tr></table></div></div>`;
+  const my = ++admRunId, out = $("#admOut"); out.innerHTML = `<div class="adm-card"><h4>Проверка всех экранов</h4><div class="adm-fr" style="max-width:260px"></div><div id="admSwSt" class="hint">запуск…</div></div><div class="adm-card" style="margin-top:12px"><div style="overflow:auto"><table class="adm-t" id="admSwT"><tr><th>Экран</th><th>Устр.</th><th>Тема</th><th>Прокр.</th><th>Мелк.</th><th>Без имени</th><th>Битые</th><th>JS</th></tr></table></div></div>`;
   const wrap = out.querySelector(".adm-fr"), t = $("#admSwT"), st = $("#admSwSt"); admR.sweep = [];
   for (const dev of ["phone", "desktop"]) {
-    wrap.innerHTML = ""; if (!out.isConnected) return;
-    const f = admMakeFrame(dev, wrap), w = await admReady(f), d = w.document;
+    wrap.innerHTML = ""; if (!out.isConnected || my !== admRunId) return;
+    const f = admMakeFrame(dev, wrap), w = await admReady(f), d = w.document; if (my !== admRunId) return;
     for (const th of ["dark", "light"]) {
       d.documentElement.dataset.theme = th;
       for (const sc of ADM_SCREENS.map(s => s[0])) {
-        if (!out.isConnected) return;
+        if (!out.isConnected || my !== admRunId) return;
         st.textContent = `${dev} · ${th} · ${sc}`;
         try { await admGo(w, sc); } catch (e) {}
+        if (my !== admRunId) return;
         const r = admAudit(d, w, dev === "phone"); admR.sweep.push({ key: `${sc}/${dev}/${th}`, ...r });
         const c = (v, bad) => `<td class="${v ? (bad ? "bad" : "warn") : "ok"}">${v}</td>`;
         t.insertAdjacentHTML("beforeend", `<tr><td>${esc(ADM_SCREENS.find(s => s[0] === sc)[1])}</td><td>${dev === "phone" ? "тел." : "ПК"}</td><td>${th === "dark" ? "тёмн." : "светл."}</td>${c(r.overflow > 1 ? r.overflow : 0, 1)}${c(r.small)}${c(r.noName)}${c(r.broken, 1)}${c(r.err, 1)}</tr>`);
