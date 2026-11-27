@@ -578,6 +578,29 @@ main:focus{outline:none}
 #adm .ok{color:#3ecf8e}#adm .warn{color:#f5b041}#adm .bad{color:#ff6b6b}
 @media(max-width:640px){.adm-top{flex-wrap:nowrap}.adm-top>b{display:none}.adm-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.adm-tabs .ab{flex:none}}
 [data-theme=light] #adm .ok{color:#0b7a4b}[data-theme=light] #adm .warn{color:#9a5d08}[data-theme=light] #adm .bad{color:#c0262d}
+/* ссылки IMDb/Кинопоиск и достижения */
+.exts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.ext{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;font-size:.8rem;font-weight:600;color:var(--tx);text-decoration:none;background:var(--glass)}
+.ext:hover{border-color:var(--acc);color:var(--acc)}
+.ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.ach-i{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.ach-i.lv0{opacity:.55}.ach-i.lv0 .ach-e{filter:grayscale(1)}
+.ach-i.lv3{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.ach-e{font-size:1.5rem;line-height:1;flex:none;margin-top:2px}
+.ach-t{flex:1;min-width:0}.ach-t b{display:block;font-size:.92rem}
+.ach-d{display:flex;align-items:center;gap:3px;font-size:.72rem;color:var(--acc);font-weight:700;margin:3px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+.ach-d i{width:8px;height:8px;border-radius:50%;background:var(--line)}.ach-d i.on{background:var(--acc)}.ach-d i:last-of-type{margin-right:4px}
+.ach-i .meta{font-size:.76rem}.ach-i .pbar{height:4px;margin:5px 0 0}
+@media (max-width:640px){.ach{grid-template-columns:1fr 1fr}.ach-i{padding:9px}.ach-e{font-size:1.25rem}}
+/* гостевой режим */
+.guest-go{display:grid;gap:6px;justify-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.guest-go span{font-size:.78rem;color:var(--mut)}.guest-go button{width:100%}.guest-go small{color:var(--mut);font-size:.78rem;text-align:center}
+#guestBar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 6px;padding:10px 14px;border:1px solid var(--acc);border-radius:14px;background:var(--glass);font-size:.88rem}
+#guestBar[hidden]{display:none}#guestBar button{padding:7px 14px;min-height:36px}
+.guest-lock{display:grid;gap:8px;justify-items:center;text-align:center;padding:22px 16px;border:1px dashed var(--line);border-radius:16px}
+.guest-lock .gl-i{font-size:2rem;line-height:1}.guest-lock p{max-width:420px;margin:0}
+#guestDlg{width:min(440px,92vw)}
+@media (max-width:640px){#guestBar{font-size:.82rem;padding:7px 8px 7px 12px;flex-wrap:nowrap}#guestBar .gb-l{display:none}#guestBar button{padding:6px 12px;min-height:34px;flex:none}}
 </style>
 </head>
 <body>
@@ -592,9 +615,11 @@ main:focus{outline:none}
   <button class="main" onclick="authGo('in')">Войти</button>
   <button onclick="authGo('up')">Зарегистрироваться</button>
   <div id="msg"></div>
+  <div class="guest-go"><span>или</span><button type="button" onclick="guestGo()">Зайти как гость</button><small>Посмотреть сайт на примере списка, без регистрации</small></div>
 </section>
 
 <section id="app" hidden>
+  <div id="guestBar" hidden><span><b>Гостевой режим</b> · пример списка<span class="gb-l">. Свой список, оценки, профиль и друзья откроются после регистрации</span></span><button class="main" type="button" onclick="guestExit(true)">Зарегистрироваться</button></div>
   <div class="top">
   <header>
     <div class="logo" id="logoHome" title="На главную" role="link" tabindex="0"><svg class="mk" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16"/><path d="M16 24.5V16h8.5M39.5 16H48v8.5M48 39.5V48h-8.5M24.5 48H16v-8.5"/><path class="pl" d="M28.2 24.8c0-1.4 1.5-2.2 2.7-1.5l10.8 7.2c1.1.8 1.1 2.3 0 3l-10.8 7.2c-1.2.8-2.7-.1-2.7-1.5z"/></svg><b>Поиск кадров</b></div>
@@ -739,10 +764,105 @@ async function authGo(kind) {
     : (kind === "up" ? "Готово. Если сайт просит подтвердить почту, подтвердите её и войдите." : "");
 }
 function showSession(s) {
+  if (s && isGuest) { guestOff(); movies = []; }
+  if (!s && (isGuest || guestFlag())) return guestGo();
   $("#auth").hidden = !!s;
   $("#app").hidden = !s;
   userEmail = (s && s.user && s.user.email) || "";
   if (s) { userId = s.user.id; animNext = true; load(); loadProfile(); try { if (typeof admGate === "function") admGate(); } catch (e) {} } else { profile = {}; userId = ""; }
+}
+/* ---------- гостевой режим: пример списка, запись в базу закрыта ---------- */
+var isGuest = false;
+const GUEST_MSG = "Доступно после регистрации";
+const guestFlag = () => { try { return localStorage.getItem("guest") === "1"; } catch (e) { return false; } };
+const DEMO = [
+  [11324, "movie", "Остров проклятых", "2010", "триллер, детектив, драма", 138, 8.2, "watched", 10, "Финал до сих пор в голове", "2026-11-14"],
+  [70523, "tv", "Тьма", "2017", "криминал, драма, детектив, фантастика", 60, 8.4, "watched", 10, "Лучший сериал про путешествия во времени", "2026-10-30"],
+  [550, "movie", "Бойцовский клуб", "1999", "драма", 139, 8.4, "watched", 10, "", "2026-10-11"],
+  [546554, "movie", "Достать ножи", "2019", "комедия, криминал, детектив", 131, 7.8, "watched", 9, "Первая часть лучшая", "2026-09-20"],
+  [157336, "movie", "Интерстеллар", "2014", "приключения, драма, фантастика", 169, 8.4, "watched", 10, "", "2026-09-02"],
+  [1124, "movie", "Престиж", "2006", "драма, детектив, фантастика", 130, 8.2, "watched", 9, "", "2026-08-15"],
+  [27205, "movie", "Начало", "2010", "боевик, фантастика, приключения", 148, 8.4, "watched", 9, "", "2026-07-26"],
+  [807, "movie", "Семь", "1995", "криминал, детектив, триллер", 127, 8.4, "watched", 9, "", "2026-06-18"],
+  [146233, "movie", "Пленницы", "2013", "драма, триллер, криминал", 153, 8.1, "watched", 8, "", "2026-05-09"],
+  [1396, "tv", "Во все тяжкие", "2008", "драма, криминал", 47, 8.9, "watched", 9, "", "2026-04-12"],
+  [77, "movie", "Помни", "2000", "детектив, триллер", 113, 8.2, "watched", 8, "", "2026-03-21"],
+  [210577, "movie", "Исчезнувшая", "2014", "детектив, триллер, драма", 149, 7.9, "watched", 8, "", "2026-02-14"],
+  [264660, "movie", "Из машины", "2015", "драма, фантастика", 108, 7.6, "watched", 8, "", "2026-01-24"],
+  [329865, "movie", "Прибытие", "2016", "драма, фантастика, детектив", 116, 7.6, "watched", 7, "Медленно, но красиво", "2025-12-28"],
+  [95396, "tv", "Разделение", "2022", "драма, фантастика, детектив", 50, 8.4, "watchlist", null, "", null, 1, 4],
+  [496243, "movie", "Паразиты", "2019", "комедия, триллер, драма", 133, 8.5, "watchlist"],
+  [670, "movie", "Олдбой", "2003", "драма, триллер, детектив", 120, 8.3, "watchlist"],
+  [438631, "movie", "Дюна", "2021", "фантастика, приключения", 155, 7.8, "watchlist"],
+  [335984, "movie", "Бегущий по лезвию 2049", "2017", "фантастика, драма", 164, 7.5, "watchlist"],
+  [46648, "tv", "Настоящий детектив", "2014", "драма, детектив, криминал", 60, 8.3, "watchlist"],
+  [745, "movie", "Шестое чувство", "1999", "мистика, триллер, драма", 107, 7.9, "watchlist"]
+].map((d, i) => ({ id: -1000 - i, user_id: "guest", tmdb_id: d[0], media_type: d[1], title: d[2], year: d[3], genres: d[4], runtime: d[5], tmdb_rating: d[6],
+  status: d[7], my_rating: d[8] || null, note: d[9] || "", watched_at: d[10] || null, season: d[11] || null, episode: d[12] || null, date_guess: false, poster: null,
+  created_at: new Date(Date.UTC(2026, 10, 26) - i * 864e5 * 9).toISOString() }));
+let demoEnriched = false;
+function guestEnrich() {
+  if (demoEnriched) return; demoEnriched = true;
+  let t = null;
+  DEMO.forEach(d => tmdbBg(`${d.media_type}/${d.tmdb_id}`, { ttl: 6048e5, pick: j => ({ poster_path: j.poster_path, vote_average: j.vote_average, backdrop_path: j.backdrop_path }) })
+    .then(j => {
+      if (!j || !j.poster_path) return; d.poster = j.poster_path; if (j.vote_average) d.tmdb_rating = +j.vote_average.toFixed(1);
+      const m = movies.find(x => x.id === d.id); if (m) { m.poster = d.poster; m.tmdb_rating = d.tmdb_rating; }
+      clearTimeout(t); t = setTimeout(() => { if (isGuest) render(); }, 250);
+    }).catch(() => {}));
+}
+/* подмена Supabase в гостевом режиме: чтение отдаёт пример, любая запись показывает «зарегистрируйтесь» */
+function guestQuery(table) {
+  let write = false, single = false;
+  const result = () => {
+    if (write) { guestNeed(); return { data: null, error: { message: GUEST_MSG }, status: 401 }; }
+    if (single) return { data: null, error: null };
+    return { data: table === "movies" ? DEMO.map(d => ({ ...d })) : [], error: null, count: 0 };
+  };
+  const q = new Proxy({}, { get(_, k) {
+    if (k === "then") return (a, b) => Promise.resolve(result()).then(a, b);
+    if (k === "catch") return b => Promise.resolve(result()).catch(b);
+    return () => { if (["insert", "update", "upsert", "delete"].includes(k)) write = true; if (k === "single" || k === "maybeSingle") single = true; return q; };
+  } });
+  return q;
+}
+(() => {
+  const f = sb.from.bind(sb), r = sb.rpc.bind(sb), st = sb.storage.from.bind(sb.storage);
+  sb.from = t => isGuest ? guestQuery(t) : f(t);
+  sb.rpc = (n, a) => isGuest ? (n === "my_invite_code" ? Promise.resolve({ data: "", error: null }) : (guestNeed(), Promise.resolve({ data: null, error: { message: GUEST_MSG } }))) : r(n, a);
+  sb.storage.from = b => isGuest ? { upload: async () => (guestNeed(), { error: { message: GUEST_MSG } }), getPublicUrl: () => ({ data: { publicUrl: "" } }), remove: async () => ({ error: null }) } : st(b);
+})();
+function guestGo() {
+  try { localStorage.setItem("guest", "1"); } catch (e) {}
+  if (isGuest) return;
+  isGuest = true; document.body.classList.add("is-guest");
+  $("#auth").hidden = true; $("#app").hidden = false; $("#guestBar").hidden = false;
+  userEmail = ""; userId = "guest"; profile = { display_name: "Гость", bio: "Это пример профиля. После регистрации здесь будет ваше имя, аватар и баннер." };
+  movies = []; animNext = true; friends = []; friendsLoaded = true;
+  load().then(guestEnrich);
+}
+function guestOff() {
+  isGuest = false; demoEnriched = false; document.body.classList.remove("is-guest"); $("#guestBar").hidden = true;
+  try { localStorage.removeItem("guest"); localStorage.removeItem("mvc:guest"); } catch (e) {}
+  friends = []; friendsLoaded = false;
+}
+function guestExit(reg) {
+  guestOff(); movies = []; profile = {}; userId = "";
+  try { const g = $("#guestDlg"); if (g && g.open) g.close(); const mv = $("#mv"); if (mv && mv.open) mv.close(); } catch (e) {}
+  $("#app").hidden = true; $("#auth").hidden = false;
+  $("#msg").textContent = reg ? "Введите почту и пароль (от 6 символов) и нажмите «Зарегистрироваться»." : "";
+  if (reg) setTimeout(() => $("#em").focus(), 50);
+  window.scrollTo(0, 0);
+}
+const guestLock = (t, d) => `<div class="guest-lock"><div class="gl-i" aria-hidden="true">🔒</div><b>${esc(t)}</b><p class="meta">${esc(d)}</p><button class="main" type="button" onclick="guestExit(true)">Зарегистрироваться</button></div>`;
+let guestNeedT = 0;
+function guestNeed(what) {
+  if (Date.now() - guestNeedT < 800) return; guestNeedT = Date.now();
+  let d = $("#guestDlg");
+  if (!d) { d = document.createElement("dialog"); d.id = "guestDlg"; d.setAttribute("aria-labelledby", "gdT"); document.body.appendChild(d); }
+  d.innerHTML = `<div class="guest-lock" style="border:0;padding:4px 0 0"><div class="gl-i" aria-hidden="true">🎬</div><b id="gdT">${esc(what || "Сохранять фильмы и оценки")} — после регистрации</b><p class="meta">Регистрация бесплатная и занимает полминуты: только почта и пароль. Потом можно вести свой список «Хочу» и «Просмотрено», ставить оценки, импортировать список с Кинопоиска, добавлять друзей и собирать общие коллекции.</p><div class="acts" style="justify-content:center"><button type="button" data-g="no">Пока посмотрю</button><button class="main" type="button" data-g="reg">Зарегистрироваться</button></div></div>`;
+  d.onclick = e => { const b = e.target.closest("[data-g]"); if (b) { d.close(); if (b.dataset.g === "reg") guestExit(true); } else if (e.target === d) d.close(); };
+  if (!d.open) d.showModal();
 }
 sb.auth.getSession().then(({ data }) => showSession(data.session)).catch(() => showSession(null));
 sb.auth.onAuthStateChange((_, s) => showSession(s));
@@ -756,6 +876,7 @@ async function load() {
   movies = data.sort(cmpNew);
   try { localStorage.setItem("mvc:" + userId, JSON.stringify(movies)); } catch (e) {}
   render();
+  try { achCheck(); } catch (e) {}
 }
 
 function filtered() {
@@ -813,6 +934,7 @@ function render() {
 /* ---------- вкладки и фильтры ---------- */
 const VIEWS = { colls: "collView", recs: "recsView", home: "homeView", watchlist: "listView", watched: "listView", search: "searchView", profile: "profileView" };
 function go(t) {
+  if (isGuest && t === "colls") return guestNeed("Общие коллекции с друзьями");
   sgHide();
   tab = t; animNext = true;
   document.querySelectorAll("#tabs button,#bnav button").forEach(b => { const on = b.dataset.t === t; b.classList.toggle("on", on); on ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"); });
@@ -1055,6 +1177,7 @@ const avStyle = f => f.profile.avatar_url ? `style="background-image:url('${esc(
 
 async function renderFriends() {
   let v = $("#frBox"); if (!v) return;
+  if (isGuest) { v.innerHTML = guestLock("Друзья", "Добавляйте друзей по коду, смотрите их оценки, процент совпадения вкусов и выбирайте фильм вдвоём."); return; }
   if (!friendsLoaded) { v.innerHTML = `<div class="sk" style="height:140px"></div>`; await loadFriends(); v = $("#frBox"); if (tab !== "profile" || !v) return; }
   if (friends === null) { v.innerHTML = `<div class="empty">Друзья ещё не подключены. Выполните migration_friends.sql в Supabase и обновите страницу.</div>`; return; }
   if (!myCode) { try { myCode = (await sb.rpc("my_invite_code")).data || ""; } catch (e) {} }
@@ -1627,6 +1750,7 @@ $("#qBtn").onclick = doSearch;
 $("#q").onkeydown = e => { if (e.key === "Enter") doSearch(); };
 
 async function addMovie(tid, status, mt = "movie") {
+  if (isGuest) return guestNeed(status === "watched" ? "Отмечать просмотренное и ставить оценки" : "Добавлять фильмы в «Хочу посмотреть»");
   let my = null, note = null, dt = null;
   if (status === "watched") {
     const r = await rateDialog("Ваша оценка", 0, "", today()); if (!r) return false;
@@ -1644,6 +1768,7 @@ $("#found").onclick = async e => { const c = e.target.closest("[data-tid]"); if 
 
 const dPatch = (m, r) => { const p = { watched_at: r.date || (m.status === "watchlist" ? today() : (m.date_guess ? m.watched_at : null)) }; if ("date_guess" in m) p.date_guess = r.date || m.status === "watchlist" ? false : !!m.date_guess; return p; };
 function rateDialog(title, rating, note, date) {
+  if (isGuest) { guestNeed("Ставить оценки"); return Promise.resolve(null); }
   return new Promise(res => {
     const d = $("#dlg"), nums = $("#dNums"); let val = rating || 0;
     $("#dTitle").textContent = title; $("#dNote").value = note || ""; $("#dDate").value = date || ""; $("#dDate").max = today();
@@ -1870,6 +1995,7 @@ function renderProfile() {
     overview: () => `
       <div class="pf-sec"><h3>Любимые фильмы</h3>${topF.length ? strip(topF) : `<div class="meta">Поставьте оценки, и лучшие фильмы окажутся здесь.</div>`}</div>
       <div class="pf-sec"><h3>Недавно просмотренные</h3>${recent.length ? strip(recent) : `<div class="meta">Пока ничего.</div>`}</div>
+      ${achHtml()}
       ${ignSet().size ? `<p class="hint" style="margin-top:14px">Скрыто из рекомендаций: ${ignSet().size}. <button class="lnk" id="ignClear">Вернуть все</button></p>` : ""}
       ${fold("data", "Данные: импорт и резервная копия", "", `<div class="acts" style="margin:0"><button id="pfImp">Импорт с Кинопоиска</button><button id="pfBak">Скачать мой список (CSV)</button><button id="pfBakJ">Резервная копия (JSON)</button><button id="pfRes">Восстановить из копии</button></div><p class="hint" style="margin-top:8px">Файл CSV можно импортировать обратно. Копия JSON сохраняет всё одним файлом (оценки, даты, заметки, прогресс сериалов); при восстановлении добавляются только недостающие фильмы.</p>`)}
       ${fold("taste", "Мой вкус и промт для подбора фильмов", "", `<ul class="prof">${tasteLines().map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="main" id="copyPrompt">Составить промт для подбора фильмов</button>`)}`,
@@ -1887,17 +2013,74 @@ function renderProfile() {
     pfTab = k; try { localStorage.setItem("pfTab", k); } catch (e) {}
     document.querySelectorAll("#pfTabs button").forEach(b => b.classList.toggle("on", b.dataset.pt === k));
     $("#pfBody").innerHTML = body[k]();
-    if (k === "overview") { $("#copyPrompt").onclick = openAi; $("#pfImp").onclick = openImport; $("#pfBak").onclick = exportCsv; $("#pfBakJ").onclick = exportJson; $("#pfRes").onclick = () => $("#bkFile").click(); }
+    if (k === "overview") { $("#copyPrompt").onclick = openAi; $("#pfImp").onclick = () => isGuest ? guestNeed("Импорт с Кинопоиска") : openImport(); $("#pfBak").onclick = exportCsv; $("#pfBakJ").onclick = exportJson; $("#pfRes").onclick = () => isGuest ? guestNeed("Восстановление из копии") : $("#bkFile").click(); }
     if (k === "stats") { yearBox(); loadPeople(); hotBox(); }
     if (k === "friends") renderFriends();
   };
   $("#pfTabs").onclick = e => { const b = e.target.closest("[data-pt]"); if (b) show(b.dataset.pt); };
-  $("#pfAv").onclick = () => pickImage("avatar");
-  $("#pfBn").onclick = () => pickImage("banner");
-  $("#pfEdit").onclick = editProfile;
+  $("#pfAv").onclick = () => isGuest ? guestNeed("Свой аватар") : pickImage("avatar");
+  $("#pfBn").onclick = () => isGuest ? guestNeed("Свой баннер") : pickImage("banner");
+  $("#pfEdit").onclick = () => isGuest ? guestNeed("Свой профиль") : editProfile();
   show(body[pfTab] ? pfTab : "overview");
   if (!friendsLoaded) loadFriends().then(() => { const c = $("#pfFrCnt"); if (c && friends && friends.length) { c.textContent = friends.length; c.hidden = false; } });
   else { const c = $("#pfFrCnt"); if (c && friends && friends.length) { c.textContent = friends.length; c.hidden = false; } }
+}
+
+/* ---------- ссылки IMDb и Кинопоиск в окне фильма ---------- */
+function extLinks(f, ftitle, fdate, tv) {
+  const imdb = f.imdb_id || (f.external_ids || {}).imdb_id, y = (fdate || "").slice(0, 4);
+  const q = encodeURIComponent(ftitle + (y ? " " + y : ""));
+  const L = [];
+  if (imdb) L.push(`<a class="ext" href="https://www.imdb.com/title/${encodeURIComponent(imdb)}/" target="_blank" rel="noopener">IMDb ↗</a>`);
+  L.push(`<a class="ext" href="https://www.kinopoisk.ru/index.php?kp_query=${q}" target="_blank" rel="noopener" title="Поиск на Кинопоиске (может не открываться без VPN)">Кинопоиск ↗</a>`);
+  return `<div class="exts">${L.join("")}</div>`;
+}
+
+/* ---------- достижения (считаются из списка, без базы) ---------- */
+function achList() {
+  const w = movies.filter(m => m.status === "watched"), r = w.filter(m => m.my_rating);
+  const dated = w.filter(m => m.watched_at && !m.date_guess), yr = String(new Date().getFullYear());
+  const days = {}; dated.forEach(m => days[m.watched_at] = (days[m.watched_at] || 0) + 1);
+  const mset = new Set(dated.map(m => m.watched_at.slice(0, 7)));
+  let streak = 0, cur = 0, prev = null;
+  [...mset].sort().forEach(k => { const [Y, M] = k.split("-").map(Number), n = Y * 12 + M; cur = prev !== null && n === prev + 1 ? cur + 1 : 1; prev = n; streak = Math.max(streak, cur); });
+  const gen = new Set(); w.forEach(m => (m.genres || "").split(", ").filter(Boolean).forEach(g => gen.add(g)));
+  const films = w.filter(m => m.media_type !== "tv");
+  const fr = typeof friends !== "undefined" && friendsLoaded ? friends.length : null;
+  return [
+    { k: "watch", i: "🎬", n: "Киноман", d: "просмотрено фильмов и сериалов", v: w.length, t: [25, 100, 250] },
+    { k: "hours", i: "⏱", n: "Часы в зале", d: "часов фильмов", v: Math.round(films.reduce((a, m) => a + (m.runtime || 0), 0) / 60), t: [50, 200, 500] },
+    { k: "tv", i: "📺", n: "Сериальщик", d: "сериалов в «Просмотрено»", v: w.filter(m => m.media_type === "tv").length, t: [3, 10, 25] },
+    { k: "rate", i: "⭐", n: "Критик", d: "оценок поставлено", v: r.length, t: [10, 50, 150] },
+    { k: "note", i: "✍️", n: "Рецензент", d: "заметок к фильмам", v: w.filter(m => (m.note || "").trim()).length, t: [5, 20, 50] },
+    { k: "ten", i: "🏆", n: "Шедевры", d: "оценок 10/10", v: r.filter(m => m.my_rating === 10).length, t: [3, 10, 25] },
+    { k: "harsh", i: "🧐", n: "Строгий судья", d: "оценок 4 и ниже", v: r.filter(m => m.my_rating <= 4).length, t: [1, 5, 15] },
+    { k: "genre", i: "🌈", n: "Всеядный", d: "разных жанров", v: gen.size, t: [8, 12, 16] },
+    { k: "year", i: "📅", n: "Год кино", d: "просмотров в " + yr + " году", v: dated.filter(m => m.watched_at.startsWith(yr)).length, t: [12, 52, 100] },
+    { k: "binge", i: "🔥", n: "Марафон", d: "больше всего за один день", v: Math.max(0, ...Object.values(days)), t: [2, 3, 5] },
+    { k: "streak", i: "🗓", n: "Постоянство", d: "месяцев подряд с просмотрами", v: streak, t: [3, 6, 12] },
+    { k: "classic", i: "🎞", n: "Классика", d: "фильмов до 2000 года", v: films.filter(m => +m.year && +m.year < 2000).length, t: [5, 15, 30] },
+    { k: "fresh", i: "🆕", n: "Свежак", d: "новинок " + yr + " года", v: w.filter(m => m.year === yr).length, t: [3, 10, 20] },
+    { k: "long", i: "🐘", n: "Долгое кино", d: "фильмов от 150 минут", v: films.filter(m => (m.runtime || 0) >= 150).length, t: [5, 15, 30] },
+    { k: "plan", i: "📋", n: "Планировщик", d: "фильмов в «Хочу»", v: movies.length - w.length, t: [10, 30, 75] },
+    ...(fr === null ? [] : [{ k: "friends", i: "🤝", n: "Компания", d: "друзей на сайте", v: fr, t: [1, 3, 5] }])
+  ].map(a => ({ ...a, lv: a.t.filter(x => a.v >= x).length }));
+}
+function achHtml() {
+  const L = achList(), got = L.filter(a => a.lv).length, lv = L.reduce((s, a) => s + a.lv, 0);
+  const lvName = ["", "бронза", "серебро", "золото"];
+  return fold("ach", "Достижения", `открыто ${got} из ${L.length} · уровней ${lv} из ${L.length * 3}`, `<div class="ach">${L.map(a => {
+    const nx = a.t[a.lv], base = a.lv ? a.t[a.lv - 1] : 0, pct = nx ? Math.min(100, Math.round((a.v - base) / (nx - base) * 100)) : 100;
+    return `<div class="ach-i lv${a.lv}" title="${esc(a.n + ": " + a.d)}"><span class="ach-e" aria-hidden="true">${a.i}</span><div class="ach-t"><b>${esc(a.n)}</b><span class="ach-d">${a.t.map((x, i) => `<i class="${i < a.lv ? "on" : ""}"></i>`).join("")}${a.lv ? lvName[a.lv] : ""}</span><div class="meta">${nx ? `${a.v} / ${nx} ${esc(a.d)}` : `${a.v} ${esc(a.d)} · максимум`}</div>${nx ? `<div class="pbar"><i style="width:${Math.max(0, pct)}%"></i></div>` : ""}</div></div>`;
+  }).join("")}</div>`, true);
+}
+function achCheck() {
+ if (!userId || !movies.length || isGuest) return;
+  const key = "ach:" + userId, L = achList(); let old = null;
+  try { old = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
+  const now = {}; L.forEach(a => now[a.k] = a.lv);
+  if (old) { const up = L.filter(a => a.k in old && a.lv > old[a.k]); if (up.length) { const a = up[0]; toast(`${a.i} Новое достижение: «${a.n}» · ${["", "бронза", "серебро", "золото"][a.lv]}${up.length > 1 ? " и ещё " + (up.length - 1) : ""}`); } }
+  try { localStorage.setItem(key, JSON.stringify({ ...(old || {}), ...now })); } catch (e) {}
 }
 
 /* ---------- быстрая оценка: долгое нажатие или правый клик по карточке ---------- */
@@ -2107,7 +2290,7 @@ function toggleTheme() {
 /* ---------- меню профиля (иконка человечка) ---------- */
 const menu = $("#meMenu");
 function syncMenu() {
-  $("#meMail").textContent = userEmail;
+  $("#meMail").textContent = isGuest ? "Гость · пример списка" : userEmail;
   const mb = $("#meBtn"), has = !!profile.avatar_url;
   mb.style.backgroundImage = has ? `url("${profile.avatar_url}")` : ""; mb.querySelector("svg").style.display = has ? "none" : "";
   $("#mTheme").textContent = "Тема: " + ({ auto: "как в системе", dark: "тёмная", light: "светлая" })[themeMode()];
@@ -2122,7 +2305,7 @@ menu.onclick = e => {
   const m = b.dataset.m;
   if (m === "theme") return toggleTheme();
   closeMenu();
-  if (m === "profile") go("profile"); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") sb.auth.signOut();
+  if (m === "profile") go("profile"); else if (m === "install" && deferredInstall) { deferredInstall.prompt(); deferredInstall = null; $("#mInstall").hidden = true; } else if (m === "out") { if (isGuest) guestExit(false); else sb.auth.signOut(); }
 };
 document.addEventListener("click", e => { if (!menu.hidden && !e.target.closest(".me")) closeMenu(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
@@ -2142,7 +2325,7 @@ async function openMovie(tid, mt = "movie") {
   body.innerHTML = `<div style="padding:22px;display:grid;gap:12px"><div class="sk" style="height:190px"></div><div class="sk" style="height:26px;width:50%"></div><div class="sk" style="height:70px"></div></div>`;
   let f;
   try {
-    const r = await fetch(`https://api.themoviedb.org/3/${mt}/${tid}?api_key=${TMDB_KEY}&language=ru-RU&append_to_response=credits,videos,similar&include_video_language=ru,en,null`);
+    const r = await fetch(`https://api.themoviedb.org/3/${mt}/${tid}?api_key=${TMDB_KEY}&language=ru-RU&append_to_response=credits,videos,similar,external_ids&include_video_language=ru,en,null`);
     f = await r.json(); if (!r.ok) throw new Error(f.status_message || r.status);
   } catch (err) { body.innerHTML = `<div class="empty" style="padding:50px 22px">Не удалось загрузить фильм (${esc(err.message)}).</div>`; return; }
   const tv = mt === "tv", ftitle = f.title || f.name, fdate = f.release_date || f.first_air_date || "", frun = f.runtime || (f.episode_run_time || [])[0] || null;
@@ -2166,6 +2349,7 @@ async function openMovie(tid, mt = "movie") {
       <h2>${esc(ftitle)} <span class="meta">${tv ? "сериал, " : ""}${esc(fdate.slice(0, 4))}</span></h2>
       <div class="meta">${frun ? frun + (tv ? " мин/серия" : " мин") : ""}${tv && f.number_of_seasons ? ", сезонов: " + f.number_of_seasons : ""}${f.vote_average ? ", TMDB " + f.vote_average.toFixed(1) : ""}</div>
       <div class="meta">${esc((f.genres || []).map(g => g.name).join(", "))}</div>
+      ${extLinks(f, ftitle, fdate, tv)}
       ${f.tagline ? `<p class="tag">${esc(f.tagline)}</p>` : ""}
       <p>${esc(f.overview || "Описания пока нет.")}</p>
       ${dir ? `<p class="meta">${tv ? "Создатели" : "Режиссёр"}: ${esc(dir)}</p>` : ""}${cast ? `<p class="meta">В ролях: ${esc(cast)}</p>` : ""}
